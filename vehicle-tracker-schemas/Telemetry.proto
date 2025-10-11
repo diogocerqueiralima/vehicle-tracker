@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package com.github.diogocerqueiralima.vehicle.tracker.schemas.v1.telemetry;
+
+message DeviceTelemetry {
+
+  int64 timestamp = 1;
+  int64 uptime = 2;
+  float battery_percentage = 3;
+  double cpu_usage = 4;
+  double memory_usage = 5;
+  double disk_usage = 6;
+  NetworkTelemetry network_telemetry = 7;
+
+}
+
+message NetworkTelemetry {
+
+  string network_type = 1;
+  string mobile_country_code = 2;
+  string mobile_network_code = 3;
+  string cell_id = 4;
+  int32 signal_strength = 5;
+
+}
