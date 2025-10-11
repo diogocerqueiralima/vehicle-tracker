@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package com.github.diogocerqueiralima.vehicle.tracker.schemas.v1.telemetry;
+package schemas.v1.telemetry;
 
 message DeviceTelemetry {
 

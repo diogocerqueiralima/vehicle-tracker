@@ -1,0 +1,1 @@
+To compile this to C, use the command: **protoc --cpp_out=../lilygo/src Telemetry.proto**
