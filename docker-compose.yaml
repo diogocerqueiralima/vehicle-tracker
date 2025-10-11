@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres
+    container_name: tracker_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRESQL_DATABASE}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - 5432:5432
+    networks:
+      - network
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: tracker_keycloak
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB_URL: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+      KC_DB_USERNAME: ${POSTGRESQL_USERNAME}
+      KC_DB_PASSWORD: ${POSTGRESQL_PASSWORD}
+      KC_DB: postgres
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HEALTH_ENABLED: true
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    ports:
+      - 9090:8080
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - network
+  rabbitmq:
+    image: rabbitmq
+    container_name: tracker_rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - 15672:15672
+      - 1883:1883
+    networks:
+      - network
+ 
+networks:
+  network:
+    driver: bridge
