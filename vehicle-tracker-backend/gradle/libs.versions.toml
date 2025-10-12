@@ -1,0 +1,15 @@
+[versions]
+spring-boot = "3.5.6"
+spring-dependency-management = "1.1.7"
+paho-client-mqttv3 = "1.2.5"
+
+[libraries]
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+spring-integration-mqtt = { module = "org.springframework.integration:spring-integration-mqtt" }
+spring-amqp = { module = "org.springframework.amqp:spring-amqp" }
+paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho-client-mqttv3" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

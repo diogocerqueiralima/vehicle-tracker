@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: ingestion-service
+
+mqtt:
+  url: "tcp://${MQTT_IP:localhost}:${MQTT_PORT:1883}"
+  username: "${MQTT_USERNAME:admin}"
+  password: "${MQTT_PASSWORD:admin}"
+  topic: "${MQTT_TOPIC:vehicle-tracker/location}"
