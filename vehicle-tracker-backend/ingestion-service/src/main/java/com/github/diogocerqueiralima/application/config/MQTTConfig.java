@@ -77,8 +77,11 @@ public class MQTTConfig {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory, mqttTopic);
 
+        DefaultPahoMessageConverter converter = new DefaultPahoMessageConverter();
+        converter.setPayloadAsBytes(true);
+
+        adapter.setConverter(converter);
         adapter.setCompletionTimeout(5000);
-        adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(0);
         adapter.setOutputChannel(mqttInputChannel);
 

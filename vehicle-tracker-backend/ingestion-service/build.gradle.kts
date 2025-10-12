@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.integration.mqtt)
     implementation(libs.paho.client.mqttv3)
+    implementation(libs.protobuf)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
