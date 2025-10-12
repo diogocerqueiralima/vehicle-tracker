@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package schemas.v1.location;
+
+message Location {
+
+  int64 timestamp = 1;
+  double latitude = 2;
+  string latitude_hemisphere = 3;
+  double longitude = 4;
+  string longitude_hemisphere = 5;
+  float altitude = 6;
+  float speed = 7;
+  float heading = 8;
+
+}

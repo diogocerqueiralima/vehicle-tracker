@@ -1,0 +1,1 @@
+To compile this to C, use the command: **~/Documentos/nanopb-0.4.8-linux-x86/generator-bin/protoc     --nanopb_out=lilygo/src/ vehicle-tracker-schemas/*.proto**
