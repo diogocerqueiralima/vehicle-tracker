@@ -1,29 +1,40 @@
-#include <HardwareSerial.h>
+#include "MicroControllerClient.h"
 
-HardwareSerial SerialAT(1); // Serial1 para o módulo
+MicroControllerClient client;
 
 void setup() {
-  Serial.begin(115200);                  // Monitor Serial
-  SerialAT.begin(115200, SERIAL_8N1, 26, 27); // RX=26, TX=27 do SIM7600
 
-  Serial.println("Terminal AT iniciado.");
-  Serial.println("Digite comandos AT e pressione ENTER.");
+    if (!client.init()) {
+        Serial.println("Failed to initialize MicroControllerClient");
+        return;
+    }
+    
+    Serial.println("MicroControllerClient initialized successfully");
+
+    if (!client.gps().enable(GPS_STANDALONE_MODE)) {
+        Serial.println("Failed to enable GPS");
+        return;
+    }
+
+    Serial.println("GPS enabled successfully");
 }
 
 void loop() {
-  // 1️⃣ Ler comando do monitor serial
-  if (Serial.available()) {
-    String comando = Serial.readStringUntil('\n');
-    comando.trim();
-    if (comando.length() > 0) {
-      SerialAT.println(comando); // envia para o modem
-    }
-  }
 
-  // 2️⃣ Ler resposta do modem
-  while (SerialAT.available()) {
-    String resposta = SerialAT.readStringUntil('\n');
-    resposta.trim();
-    Serial.println(resposta); // mostra no monitor serial
-  }
+    GPSInfo info = client.gps().getInfo();
+    if (info.valid) {
+        Serial.print("Latitude: "); Serial.print(info.lat); Serial.print(" "); Serial.println(info.NS);
+        Serial.print("Longitude: "); Serial.print(info.lon); Serial.print(" "); Serial.println(info.EW);
+        Serial.print("Date: "); Serial.println(info.date);
+        Serial.print("UTC Time: "); Serial.println(info.utcTime);
+        Serial.print("Altitude: "); Serial.println(info.altitude);
+        Serial.print("Speed: "); Serial.println(info.speed);
+        Serial.print("Course: "); Serial.println(info.course);
+    } else {
+        Serial.println("No valid GPS data available");
+    }
+
+    delay(5000);
+
 }
+
