@@ -55,21 +55,21 @@ GPSInfo GPS::getInfo() {
         return field;
     };
 
-    info.lat     = nextField();
-    info.NS      = nextField()[0];
-    info.lon     = nextField();
-    info.EW      = nextField()[0];
+    info.lat = nextField();
+    info.NS = nextField()[0];
+    info.lon = nextField();
+    info.EW = nextField()[0];
 
     if (info.lat.length() == 0 || info.lon.length() == 0 || info.lat == "0.0" || info.lon == "0.0") {
         info.valid = false;
         return info;
     }
 
-    info.date    = nextField();
+    info.date = nextField();
     info.utcTime = nextField();
-    info.altitude= nextField().toFloat();
-    info.speed   = nextField().toFloat();
-    info.course  = nextField().toFloat();
+    info.altitude = nextField().toFloat();
+    info.speed = nextField().toFloat();
+    info.course = nextField().toFloat();
 
     info.valid = true;
     return info;
