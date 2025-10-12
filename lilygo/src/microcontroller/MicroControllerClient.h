@@ -18,8 +18,27 @@
 class MicroControllerClient {
 public:
     MicroControllerClient();
+
+    /**
+     * 
+     * Initializes the serial communication with the modem and powers it on.
+     * If the modem does not respond to AT commands within the timeout, it returns false.
+     * 
+     */
     bool init();
+
+    /**
+     * 
+     * Returns a reference to the GPS object for interacting with the GPS module.
+     * 
+     */
     GPS& gps() { return _gps; }
+
+    /**
+     * 
+     * Sends an AT command to the modem and returns the response as a String.
+     * 
+     */
     String sendATCommand(const String& cmd);
 
 private:

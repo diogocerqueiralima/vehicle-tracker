@@ -10,6 +10,14 @@ MicroControllerClient client;
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
+/**
+ * WiFi initialization, this function connects to the WiFi network using the credentials defined in secrets.h
+ * It blocks until the connection is established.
+ * 
+ * This function is only for demonstration purposes. In a production application, it will be necessary to implement
+ * with mobile network.
+ * 
+ */
 void initWifi() {
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -23,6 +31,12 @@ void initWifi() {
     Serial.println("Connected to WiFi");
 }
 
+/**
+ * 
+ * MQTT initialization, this function connects to the MQTT broker using the credentials defined in secrets.h
+ * It blocks until the connection is established.
+ * 
+ */
 void initMqtt() {
 
     while (!mqttClient.connected()) {
@@ -43,6 +57,11 @@ void initMqtt() {
 
 }
 
+/**
+ * 
+ * Creates a callback function for the pb_ostream_t that publishes the encoded data to the MQTT broker.
+ * 
+ */
 bool mqttStreamCallback(pb_ostream_t *stream, const uint8_t *buf, size_t count) {
     
     if (mqttClient.connected()) {
@@ -54,6 +73,11 @@ bool mqttStreamCallback(pb_ostream_t *stream, const uint8_t *buf, size_t count) 
 
 }
 
+/**
+ * 
+ * Creates a new pb_ostream_t for publishing messages to MQTT.
+ * 
+ */
 pb_ostream_t makeMqttOStream() {
     pb_ostream_t stream;
     stream.callback = mqttStreamCallback;
