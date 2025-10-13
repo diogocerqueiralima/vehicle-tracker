@@ -103,16 +103,19 @@ pb_ostream_t makeBufferOStream() {
  *
  */
 void setup() {
+
     if (!client.init()) {
         Serial.println("Failed to initialize MicroControllerClient");
         return;
     }
+
     Serial.println("MicroControllerClient initialized successfully");
 
     if (!client.gps().enable(GPS_STANDALONE_MODE)) {
         Serial.println("Failed to enable GPS");
         return;
     }
+    
     Serial.println("GPS enabled successfully");
 
     initWifi();
