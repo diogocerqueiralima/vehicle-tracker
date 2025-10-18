@@ -17,12 +17,12 @@ bool encode_location(const GPSInfo &gps, pb_ostream_t stream, size_t *encoded_si
 
     schemas_v1_location_Location msg = schemas_v1_location_Location_init_zero;
 
-    msg.latitude = gps.lat.toFloat();
-    msg.longitude = gps.lon.toFloat();
     msg.altitude = gps.altitude;
     msg.speed = gps.speed;
     msg.heading = gps.course;
 
+    static char lat_str[16];
+    static char lon_str[16];
     static char time_str[16];
     static char date_str[16];
     static char ns_str[2];
@@ -34,10 +34,22 @@ bool encode_location(const GPSInfo &gps, pb_ostream_t stream, size_t *encoded_si
     strncpy(date_str, gps.date.c_str(), sizeof(date_str)-1);
     date_str[sizeof(date_str)-1] = '\0';
 
+    strncpy(lat_str, gps.lat.c_str(), sizeof(lat_str)-1);
+    lat_str[sizeof(lat_str)-1] = '\0';
+
+    strncpy(lon_str, gps.lon.c_str(), sizeof(lon_str)-1);
+    lon_str[sizeof(lon_str)-1] = '\0';
+
     ns_str[0] = gps.NS;
     ns_str[1] = '\0';
     ew_str[0] = gps.EW;
     ew_str[1] = '\0';
+
+    msg.latitude.funcs.encode = &string_encode_callback;
+    msg.latitude.arg = (void*)lat_str;
+
+    msg.longitude.funcs.encode = &string_encode_callback;
+    msg.longitude.arg = (void*)lon_str;
 
     msg.time.funcs.encode = &string_encode_callback;
     msg.time.arg = (void*)time_str;
