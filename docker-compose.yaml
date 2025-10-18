@@ -54,6 +54,18 @@ services:
       - 1883:1883
     networks:
       - network
+  ingestion-service:
+    image: docker.io/library/ingestion-service:1.0.0
+    container_name: tracker_ingestion_service
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - network
  
 networks:
   network:

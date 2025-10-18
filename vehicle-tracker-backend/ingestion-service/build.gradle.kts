@@ -13,11 +13,16 @@ repositories {
 
 dependencies {
 
+    implementation(project(":events"))
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.integration.mqtt)
     implementation(libs.paho.client.mqttv3)
     implementation(libs.protobuf)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(platform("org.junit:junit-bom:5.10.0"))

@@ -8,6 +8,8 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 import static schemas.v1.location.LocationOuterClass.*;
 
 @Component
@@ -43,7 +45,7 @@ public class LocationMessageHandler {
                         location.getAltitude(),
                         location.getSpeed(),
                         location.getHeading(),
-                        "1"
+                        UUID.randomUUID()
                 );
 
                 locationService.receive(command);

@@ -1,9 +1,18 @@
 spring:
   application:
     name: ingestion-service
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+queues:
+  location:
+    name: ${LOCATION_QUEUE_NAME}
 
 mqtt:
-  url: "tcp://${MQTT_IP:localhost}:${MQTT_PORT:1883}"
-  username: "${MQTT_USERNAME:admin}"
-  password: "${MQTT_PASSWORD:admin}"
-  topic: "${MQTT_TOPIC:vehicle-tracker/location}"
+  url: ${MQTT_URL}
+  username: ${MQTT_USERNAME}
+  password: ${MQTT_PASSWORD}
+  topic: ${MQTT_TOPIC}

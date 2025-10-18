@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
 
 @Service
 public class LocationServiceImpl implements LocationService {
@@ -28,7 +29,11 @@ public class LocationServiceImpl implements LocationService {
         double latitude = convertNMEACoordinateToDecimal(command.latitude(), command.latitudeDirection());
         double longitude = convertNMEACoordinateToDecimal(command.longitude(), command.longitudeDirection());
         double altitude = command.altitude();
-        Location location = new Location(timestamp, latitude, longitude, altitude);
+        double speed = command.speed() * (1852.0 / 3600000.0); // Convert from knots to m/s
+        double course = command.course();
+        UUID deviceId = command.deviceId();
+
+        Location location = new Location(timestamp, latitude, longitude, altitude, speed, course, deviceId);
 
         locationPublisher.publish(location);
     }
