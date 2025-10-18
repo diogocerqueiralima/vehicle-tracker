@@ -14,6 +14,7 @@ repositories {
 dependencies {
 
     implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.integration.mqtt)
     implementation(libs.paho.client.mqttv3)
     implementation(libs.protobuf)

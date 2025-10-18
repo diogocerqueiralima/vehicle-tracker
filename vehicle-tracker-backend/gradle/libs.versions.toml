@@ -6,6 +6,7 @@ protobuf = "4.32.1"
 
 [libraries]
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-integration-mqtt = { module = "org.springframework.integration:spring-integration-mqtt" }
 spring-amqp = { module = "org.springframework.amqp:spring-amqp" }
 paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho-client-mqttv3" }
