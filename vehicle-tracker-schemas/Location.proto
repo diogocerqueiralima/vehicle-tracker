@@ -6,9 +6,9 @@ message Location {
 
   string time = 1;
   string date = 2;
-  double latitude = 3;
+  string latitude = 3;
   string latitude_hemisphere = 4;
-  double longitude = 5;
+  string longitude = 5;
   string longitude_hemisphere = 6;
   float altitude = 7;
   float speed = 8;
