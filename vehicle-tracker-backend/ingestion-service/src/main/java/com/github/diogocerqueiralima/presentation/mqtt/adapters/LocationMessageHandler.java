@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.application.adapters;
+package com.github.diogocerqueiralima.presentation.mqtt.adapters;
 
 import com.github.diogocerqueiralima.application.commands.ReceiveLocationCommand;
 import com.github.diogocerqueiralima.domain.ports.inbound.LocationService;

@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.application.config;
+package com.github.diogocerqueiralima.presentation.mqtt.config;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
