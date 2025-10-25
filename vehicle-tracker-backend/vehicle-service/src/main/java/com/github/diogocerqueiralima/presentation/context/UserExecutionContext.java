@@ -1,5 +1,7 @@
 package com.github.diogocerqueiralima.presentation.context;
 
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import java.util.UUID;
 
 public class UserExecutionContext extends ExecutionContext {
@@ -15,8 +17,8 @@ public class UserExecutionContext extends ExecutionContext {
         return userId;
     }
 
-    public static UserExecutionContext create(UUID userId) {
-        return new UserExecutionContext(Type.USER, userId);
+    public static ExecutionContext fromJwt(Jwt jwt) {
+        return new UserExecutionContext(Type.USER, UUID.fromString(jwt.getSubject()));
     }
 
 }

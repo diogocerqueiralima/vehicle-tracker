@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.application.commands;
 
-import com.github.diogocerqueiralima.application.validations.Plate;
-import com.github.diogocerqueiralima.application.validations.Year;
+import com.github.diogocerqueiralima.application.validators.Plate;
+import com.github.diogocerqueiralima.application.validators.Year;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

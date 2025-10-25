@@ -4,9 +4,7 @@ import com.github.diogocerqueiralima.application.commands.ReceiveLocationCommand
 import com.github.diogocerqueiralima.domain.model.Location;
 import com.github.diogocerqueiralima.domain.ports.inbound.LocationService;
 import com.github.diogocerqueiralima.domain.ports.outbound.LocationPublisher;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

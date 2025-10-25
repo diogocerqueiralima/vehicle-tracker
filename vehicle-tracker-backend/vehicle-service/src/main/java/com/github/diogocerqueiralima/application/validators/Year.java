@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.application.validations;
+package com.github.diogocerqueiralima.application.validators;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
