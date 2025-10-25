@@ -1,11 +1,15 @@
 package com.github.diogocerqueiralima.application.services;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.LookupVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
+import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.model.Vehicle;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleDataSource;
+import com.github.diogocerqueiralima.presentation.context.InternalExecutionContext;
+import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -126,6 +131,112 @@ class VehicleServiceImplTest {
         assertEquals(command.manufacturer(), result.manufacturer());
         assertEquals(command.year(), result.year());
         assertEquals(command.ownerId(), result.ownerId());
+    }
+
+    @Test
+    public void get_vehicle_by_id_that_does_not_exist_should_throw_exception() {
+
+        UUID vehicleId = UUID.randomUUID();
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(VehicleNotFoundException.class, () -> {
+            vehicleService.getById(new LookupVehicleByIdCommand(vehicleId), InternalExecutionContext.create("system"));
+        });
+    }
+
+    @Test
+    public void get_vehicle_by_id_that_exists_but_not_owned_by_user_should_throw_exception() {
+
+        UUID vehicleId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+        UUID otherUserId = UUID.randomUUID();
+
+        Vehicle vehicle = new Vehicle(
+                vehicleId,
+                "1HGCM82633A123456",
+                "AB-12-C3",
+                "Civic",
+                "Honda",
+                2020,
+                ownerId
+        );
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.of(vehicle));
+
+        assertThrows(VehicleNotFoundException.class, () -> {
+            vehicleService.getById(new LookupVehicleByIdCommand(vehicleId), UserExecutionContext.create(otherUserId));
+        });
+    }
+
+    @Test
+    public void get_vehicle_by_id_that_exists_and_owned_by_user_should_succeed() {
+
+        UUID vehicleId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+
+        Vehicle vehicle = new Vehicle(
+                vehicleId,
+                "1HGCM82633A123456",
+                "AB-12-C3",
+                "Civic",
+                "Honda",
+                2020,
+                ownerId
+        );
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.of(vehicle));
+
+        VehicleResult result = vehicleService.getById(
+                new LookupVehicleByIdCommand(vehicleId),
+                UserExecutionContext.create(ownerId)
+        );
+
+        assertNotNull(result);
+        assertEquals(vehicleId, result.id());
+        assertEquals(vehicle.getVin(), result.vin());
+        assertEquals(vehicle.getPlate(), result.plate());
+        assertEquals(vehicle.getModel(), result.model());
+        assertEquals(vehicle.getManufacturer(), result.manufacturer());
+        assertEquals(vehicle.getYear(), result.year());
+        assertEquals(vehicle.getOwnerId(), result.ownerId());
+    }
+
+    @Test
+    public void get_vehicle_by_id_as_internal_context_should_succeed() {
+
+        UUID vehicleId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+
+        Vehicle vehicle = new Vehicle(
+                vehicleId,
+                "1HGCM82633A123456",
+                "AB-12-C3",
+                "Civic",
+                "Honda",
+                2020,
+                ownerId
+        );
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.of(vehicle));
+
+        VehicleResult result = vehicleService.getById(
+                new LookupVehicleByIdCommand(vehicleId),
+                InternalExecutionContext.create("system")
+        );
+
+        assertNotNull(result);
+        assertEquals(vehicleId, result.id());
+        assertEquals(vehicle.getVin(), result.vin());
+        assertEquals(vehicle.getPlate(), result.plate());
+        assertEquals(vehicle.getModel(), result.model());
+        assertEquals(vehicle.getManufacturer(), result.manufacturer());
+        assertEquals(vehicle.getYear(), result.year());
+        assertEquals(vehicle.getOwnerId(), result.ownerId());
     }
 
 }
