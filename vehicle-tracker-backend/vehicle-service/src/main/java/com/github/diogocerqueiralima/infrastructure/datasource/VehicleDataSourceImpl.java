@@ -37,4 +37,14 @@ public class VehicleDataSourceImpl implements VehicleDataSource {
                 .map(vehicleMapper::toDomain);
     }
 
+    @Override
+    public boolean existsByVin(String vin) {
+        return vehicleRepository.existsByVin(vin);
+    }
+
+    @Override
+    public boolean existsByPlate(String plate) {
+        return vehicleRepository.existsByPlate(plate);
+    }
+
 }

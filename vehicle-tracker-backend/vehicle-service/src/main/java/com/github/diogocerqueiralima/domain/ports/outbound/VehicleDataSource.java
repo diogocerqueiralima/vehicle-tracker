@@ -28,4 +28,22 @@ public interface VehicleDataSource {
      */
     Optional<Vehicle> findById(UUID id);
 
+    /**
+     *
+     * Checks if a vehicle exists by its VIN.
+     *
+     * @param vin the vehicle identification number of the vehicle
+     * @return true if a vehicle with the given VIN exists, false otherwise
+     */
+    boolean existsByVin(String vin);
+
+    /**
+     *
+     * Checks if a vehicle exists by its plate.
+     *
+     * @param plate the plate of the vehicle
+     * @return true if a vehicle with the given plate exists, false otherwise
+     */
+    boolean existsByPlate(String plate);
+
 }

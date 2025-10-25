@@ -5,6 +5,7 @@ import com.github.diogocerqueiralima.application.commands.LookupVehicleByIdComma
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
+import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 
@@ -20,6 +21,7 @@ public interface VehicleService {
      *
      * @param command the command containing vehicle details
      * @return the result of the vehicle creation
+     * @throws VehicleAlreadyExistsException If there is any vehicle with the same VIN or plate
      */
     VehicleResult create(@Valid CreateVehicleCommand command);
 
