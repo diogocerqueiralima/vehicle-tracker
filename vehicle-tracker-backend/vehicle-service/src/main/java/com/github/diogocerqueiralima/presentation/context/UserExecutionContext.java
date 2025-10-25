@@ -17,8 +17,12 @@ public class UserExecutionContext extends ExecutionContext {
         return userId;
     }
 
+    public static ExecutionContext create(UUID userId) {
+        return new UserExecutionContext(Type.USER, userId);
+    }
+
     public static ExecutionContext fromJwt(Jwt jwt) {
-        return new UserExecutionContext(Type.USER, UUID.fromString(jwt.getSubject()));
+        return create(UUID.fromString(jwt.getSubject()));
     }
 
 }

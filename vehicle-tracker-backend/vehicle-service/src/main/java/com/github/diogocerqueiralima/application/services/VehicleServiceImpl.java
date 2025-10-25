@@ -10,8 +10,11 @@ import com.github.diogocerqueiralima.domain.model.Vehicle;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleService;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleDataSource;
 import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
+import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class VehicleServiceImpl implements VehicleService {
@@ -51,9 +54,21 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleResult getById(LookupVehicleByIdCommand command, ExecutionContext context) {
-        return vehicleDataSource.findById(command.id())
-                .map(vehicleMapper::toResult)
+
+        Vehicle vehicle = vehicleDataSource.findById(command.id())
                 .orElseThrow(() -> new VehicleNotFoundException(command.id()));
+
+        if (context.isUser()) {
+
+            UserExecutionContext userContext = (UserExecutionContext) context;
+            UUID userId = userContext.getUserId();
+
+            if (!vehicle.getOwnerId().equals(userId))
+                throw new VehicleNotFoundException(command.id());
+
+        }
+
+        return vehicleMapper.toResult(vehicle);
     }
 
 }
