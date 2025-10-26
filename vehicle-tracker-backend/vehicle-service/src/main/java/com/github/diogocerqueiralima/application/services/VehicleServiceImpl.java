@@ -54,9 +54,29 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleResult getById(LookupVehicleByIdCommand command, ExecutionContext context) {
+        Vehicle vehicle = getById(command.id(), context);
+        return vehicleMapper.toResult(vehicle);
+    }
 
-        Vehicle vehicle = vehicleDataSource.findById(command.id())
-                .orElseThrow(() -> new VehicleNotFoundException(command.id()));
+    @Override
+    public void deleteById(LookupVehicleByIdCommand command, ExecutionContext context) {
+        Vehicle vehicle = getById(command.id(), context);
+        vehicleDataSource.delete(vehicle);
+    }
+
+    /**
+     *
+     * Retrieves a vehicle by its ID.
+     *
+     * @param id the unique identifier of the vehicle
+     * @param context the execution context
+     * @return the vehicle with the specified ID
+     * @throws VehicleNotFoundException if the vehicle is not found
+     */
+    private Vehicle getById(UUID id, ExecutionContext context) {
+
+        Vehicle vehicle = vehicleDataSource.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException(id));
 
         if (context.isUser()) {
 
@@ -64,12 +84,12 @@ public class VehicleServiceImpl implements VehicleService {
             UUID userId = userContext.getUserId();
 
             if (!vehicle.isOwnedBy(userId)) {
-                throw new VehicleNotFoundException(command.id());
+                throw new VehicleNotFoundException(id);
             }
 
         }
 
-        return vehicleMapper.toResult(vehicle);
+        return vehicle;
     }
 
 }

@@ -30,6 +30,14 @@ public interface VehicleDataSource {
 
     /**
      *
+     * Deletes the given vehicle from the data source.
+     *
+     * @param vehicle the vehicle to be deleted
+     */
+    void delete(Vehicle vehicle);
+
+    /**
+     *
      * Checks if a vehicle exists by its VIN.
      *
      * @param vin the vehicle identification number of the vehicle

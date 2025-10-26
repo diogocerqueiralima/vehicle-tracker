@@ -38,6 +38,12 @@ public class VehicleDataSourceImpl implements VehicleDataSource {
     }
 
     @Override
+    public void delete(Vehicle vehicle) {
+        VehicleEntity entity = vehicleMapper.toEntity(vehicle);
+        vehicleRepository.delete(entity);
+    }
+
+    @Override
     public boolean existsByVin(String vin) {
         return vehicleRepository.existsByVin(vin);
     }

@@ -30,9 +30,19 @@ public interface VehicleService {
      * Retrieves a vehicle by its ID based on the provided command.
      *
      * @param command the command containing the vehicle ID
+     * @param context the execution context
      * @return the result of the vehicle lookup
      * @throws VehicleNotFoundException if the vehicle is not found
      */
     VehicleResult getById(@Valid LookupVehicleByIdCommand command, ExecutionContext context);
+
+    /**
+     *
+     * Deletes a vehicle by its ID based on the provided command.
+     *
+     * @param command the command containing the vehicle ID
+     * @param context the execution context
+     */
+    void deleteById(@Valid LookupVehicleByIdCommand command, ExecutionContext context);
 
 }

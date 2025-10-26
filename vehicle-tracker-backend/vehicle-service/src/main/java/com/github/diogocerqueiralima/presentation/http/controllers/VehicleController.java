@@ -88,4 +88,24 @@ public class VehicleController {
                 .body(ApiResponseDTO.of(resultDTO, "Vehicle retrieved successfully"));
     }
 
+    /**
+     *
+     * Deletes a vehicle by its ID.
+     *
+     * @param id the UUID of the vehicle to delete
+     * @param jwt the JWT token of the authenticated user
+     * @return a ResponseEntity containing a success message
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+
+        ExecutionContext context = UserExecutionContext.fromJwt(jwt);
+        LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(id);
+        vehicleService.deleteById(command, context);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponseDTO.of(null, "Vehicle deleted successfully"));
+    }
+
 }
