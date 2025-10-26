@@ -239,4 +239,96 @@ class VehicleServiceImplTest {
         assertEquals(vehicle.getOwnerId(), result.ownerId());
     }
 
+    @Test
+    public void delete_vehicle_by_id_that_does_not_exist_should_throw_exception() {
+
+        UUID vehicleId = UUID.randomUUID();
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.empty());
+
+        LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
+        assertThrows(VehicleNotFoundException.class, () -> {
+            vehicleService.deleteById(command, InternalExecutionContext.create("system"));
+        });
+
+    }
+
+    @Test
+    public void delete_vehicle_by_id_that_exists_but_not_owned_by_user_should_throw_exception() {
+
+        UUID vehicleId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+        UUID otherUserId = UUID.randomUUID();
+
+        Vehicle vehicle = new Vehicle(
+                vehicleId,
+                "1HGCM82633A123456",
+                "AB-12-C3",
+                "Civic",
+                "Honda",
+                2020,
+                ownerId
+        );
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.of(vehicle));
+
+        LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
+        assertThrows(VehicleNotFoundException.class, () -> {
+            vehicleService.deleteById(command, UserExecutionContext.create(otherUserId));
+        });
+
+    }
+
+    @Test
+    public void delete_vehicle_by_id_that_exists_and_owned_by_user_should_succeed() {
+
+        UUID vehicleId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+
+        Vehicle vehicle = new Vehicle(
+                vehicleId,
+                "1HGCM82633A123456",
+                "AB-12-C3",
+                "Civic",
+                "Honda",
+                2020,
+                ownerId
+        );
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.of(vehicle));
+
+        LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
+        vehicleService.deleteById(command, UserExecutionContext.create(ownerId));
+
+        verify(vehicleDataSource).delete(vehicle);
+    }
+
+    @Test
+    public void delete_vehicle_by_id_as_internal_context_should_succeed() {
+
+        UUID vehicleId = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
+
+        Vehicle vehicle = new Vehicle(
+                vehicleId,
+                "1HGCM82633A123456",
+                "AB-12-C3",
+                "Civic",
+                "Honda",
+                2020,
+                ownerId
+        );
+
+        when(vehicleDataSource.findById(vehicleId))
+                .thenReturn(Optional.of(vehicle));
+
+        LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
+        vehicleService.deleteById(command, InternalExecutionContext.create("system"));
+
+        verify(vehicleDataSource).delete(vehicle);
+    }
+
 }

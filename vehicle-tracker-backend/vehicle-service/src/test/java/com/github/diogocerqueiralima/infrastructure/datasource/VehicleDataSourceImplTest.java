@@ -124,6 +124,36 @@ class VehicleDataSourceImplTest {
     }
 
     @Test
+    public void delete_vehicle_should_succeed() {
+
+        Vehicle vehicle = new Vehicle(
+                UUID.randomUUID(),
+                "VIN123",
+                "AS-A2-GA",
+                "2008",
+                "Peugeot",
+                2020,
+                UUID.randomUUID()
+        );
+
+        VehicleEntity entity = new VehicleEntity();
+        entity.setId(vehicle.getId());
+        entity.setVin(vehicle.getVin());
+        entity.setPlate(vehicle.getPlate());
+        entity.setModel(vehicle.getModel());
+        entity.setManufacturer(vehicle.getManufacturer());
+        entity.setYear(vehicle.getYear());
+        entity.setOwnerId(vehicle.getOwnerId());
+
+        when(vehicleMapper.toEntity(vehicle)).thenReturn(entity);
+
+        vehicleDataSource.delete(vehicle);
+
+        verify(vehicleMapper).toEntity(vehicle);
+        verify(vehicleRepository).delete(entity);
+    }
+
+    @Test
     public void exists_by_vin_should_return_true_if_exists() {
 
         String vin = "VIN123";
