@@ -20,7 +20,6 @@ services:
       KC_DB_USERNAME: ${POSTGRESQL_USERNAME}
       KC_DB_PASSWORD: ${POSTGRESQL_PASSWORD}
       KC_DB: postgres
-      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KC_HEALTH_ENABLED: true
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
@@ -71,6 +70,8 @@ services:
     container_name: tracker_vehicle_service
     env_file:
       - .env
+    ports:
+      - 8080:8080
     depends_on:
       postgres:
         condition: service_started
