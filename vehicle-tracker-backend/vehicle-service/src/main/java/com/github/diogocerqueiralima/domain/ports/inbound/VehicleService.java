@@ -42,6 +42,7 @@ public interface VehicleService {
      *
      * @param command the command containing the vehicle ID
      * @param context the execution context
+     * @throws VehicleNotFoundException if the vehicle is not found
      */
     void deleteById(@Valid LookupVehicleByIdCommand command, ExecutionContext context);
 
