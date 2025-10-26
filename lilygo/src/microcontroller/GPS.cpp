@@ -33,8 +33,8 @@ bool GPS::disable() {
 }
 
 GPSInfo GPS::getInfo() {
-    GPSInfo info;
 
+    GPSInfo info;
     String resp = _send("AT+CGPSINFO");
 
     int idx = resp.indexOf("+CGPSINFO:");

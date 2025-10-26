@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: ingestion-service
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+queues:
+  location:
+    name: ${LOCATION_QUEUE_NAME}
+
+mqtt:
+  url: ${MQTT_URL}
+  username: ${MQTT_USERNAME}
+  password: ${MQTT_PASSWORD}
+  topic: ${MQTT_TOPIC}
