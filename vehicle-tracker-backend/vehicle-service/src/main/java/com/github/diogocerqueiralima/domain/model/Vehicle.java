@@ -27,6 +27,10 @@ public class Vehicle {
         this(null, vin, plate, model, manufacturer, year, ownerId);
     }
 
+    public boolean isOwnedBy(UUID userId) {
+        return ownerId.equals(userId);
+    }
+
     public String getDisplayName() {
         return String.format("%s - %s %s", plate, manufacturer, model);
     }

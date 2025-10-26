@@ -63,8 +63,9 @@ public class VehicleServiceImpl implements VehicleService {
             UserExecutionContext userContext = (UserExecutionContext) context;
             UUID userId = userContext.getUserId();
 
-            if (!vehicle.getOwnerId().equals(userId))
+            if (!vehicle.isOwnedBy(userId)) {
                 throw new VehicleNotFoundException(command.id());
+            }
 
         }
 
