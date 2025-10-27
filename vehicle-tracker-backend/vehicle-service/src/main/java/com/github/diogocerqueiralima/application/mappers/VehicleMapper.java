@@ -4,7 +4,7 @@ import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.model.Vehicle;
 import org.springframework.stereotype.Component;
 
-@Component("application")
+@Component("vm-application")
 public class VehicleMapper {
 
     public VehicleResult toResult(Vehicle vehicle) {
@@ -16,6 +16,18 @@ public class VehicleMapper {
                 vehicle.getManufacturer(),
                 vehicle.getYear(),
                 vehicle.getOwnerId()
+        );
+    }
+
+    public Vehicle toDomain(VehicleResult vehicleResult) {
+        return new Vehicle(
+                vehicleResult.id(),
+                vehicleResult.vin(),
+                vehicleResult.plate(),
+                vehicleResult.model(),
+                vehicleResult.manufacturer(),
+                vehicleResult.year(),
+                vehicleResult.ownerId()
         );
     }
 

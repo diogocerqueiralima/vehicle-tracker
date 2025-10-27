@@ -4,7 +4,7 @@ import com.github.diogocerqueiralima.domain.model.Vehicle;
 import com.github.diogocerqueiralima.infrastructure.entities.VehicleEntity;
 import org.springframework.stereotype.Component;
 
-@Component("infrastructure")
+@Component("vm-infrastructure")
 public class VehicleMapper {
 
     public VehicleEntity toEntity(Vehicle vehicle) {

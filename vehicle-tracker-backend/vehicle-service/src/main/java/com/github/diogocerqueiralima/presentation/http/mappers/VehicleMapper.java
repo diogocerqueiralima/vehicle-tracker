@@ -1,10 +1,10 @@
-package com.github.diogocerqueiralima.presentation.mappers;
+package com.github.diogocerqueiralima.presentation.http.mappers;
 
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.presentation.http.dto.VehicleDTO;
 import org.springframework.stereotype.Component;
 
-@Component("presentation")
+@Component("vm-presentation")
 public class VehicleMapper {
 
     public VehicleDTO toDTO(VehicleResult vehicleResult) {

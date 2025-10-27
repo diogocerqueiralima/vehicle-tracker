@@ -11,7 +11,6 @@ import java.util.UUID;
 /**
  *
  * Command to create a new vehicle.
- * The entry point for the vehicle creation use case.
  *
  * @param vin the Vehicle Identification Number
  * @param plate the vehicle's license plate

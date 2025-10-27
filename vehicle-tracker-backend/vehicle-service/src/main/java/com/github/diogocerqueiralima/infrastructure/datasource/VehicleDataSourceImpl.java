@@ -17,7 +17,7 @@ public class VehicleDataSourceImpl implements VehicleDataSource {
     private final VehicleMapper vehicleMapper;
     private final VehicleRepository vehicleRepository;
 
-    public VehicleDataSourceImpl(@Qualifier("infrastructure") VehicleMapper vehicleMapper, VehicleRepository vehicleRepository) {
+    public VehicleDataSourceImpl(@Qualifier("vm-infrastructure") VehicleMapper vehicleMapper, VehicleRepository vehicleRepository) {
         this.vehicleMapper = vehicleMapper;
         this.vehicleRepository = vehicleRepository;
     }

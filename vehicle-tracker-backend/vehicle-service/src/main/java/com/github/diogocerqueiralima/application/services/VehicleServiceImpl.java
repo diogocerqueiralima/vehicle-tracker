@@ -22,7 +22,7 @@ public class VehicleServiceImpl implements VehicleService {
     private final VehicleMapper vehicleMapper;
     private final VehicleDataSource vehicleDataSource;
 
-    public VehicleServiceImpl(@Qualifier("application") VehicleMapper vehicleMapper, VehicleDataSource vehicleDataSource) {
+    public VehicleServiceImpl(@Qualifier("vm-application") VehicleMapper vehicleMapper, VehicleDataSource vehicleDataSource) {
         this.vehicleMapper = vehicleMapper;
         this.vehicleDataSource = vehicleDataSource;
     }

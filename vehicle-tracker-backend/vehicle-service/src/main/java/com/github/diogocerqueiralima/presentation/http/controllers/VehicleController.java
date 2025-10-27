@@ -9,7 +9,7 @@ import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.CreateVehicleDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.VehicleDTO;
-import com.github.diogocerqueiralima.presentation.mappers.VehicleMapper;
+import com.github.diogocerqueiralima.presentation.http.mappers.VehicleMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,7 @@ public class VehicleController {
     private final VehicleMapper vehicleMapper;
     private final VehicleService vehicleService;
 
-    public VehicleController(@Qualifier("presentation") VehicleMapper vehicleMapper, VehicleService vehicleService) {
+    public VehicleController(@Qualifier("vm-presentation") VehicleMapper vehicleMapper, VehicleService vehicleService) {
         this.vehicleMapper = vehicleMapper;
         this.vehicleService = vehicleService;
     }

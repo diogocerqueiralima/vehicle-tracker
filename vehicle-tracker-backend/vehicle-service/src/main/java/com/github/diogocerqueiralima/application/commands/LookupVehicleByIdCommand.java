@@ -7,7 +7,6 @@ import java.util.UUID;
 /**
  *
  * Command to look up a vehicle by its ID.
- * The entry point for the vehicle lookup use case.
  *
  * @param id the unique identifier of the vehicle
  */

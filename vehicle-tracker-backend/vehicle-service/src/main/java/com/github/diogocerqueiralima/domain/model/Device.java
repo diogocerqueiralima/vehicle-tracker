@@ -10,21 +10,18 @@ public class Device {
     private final String imei;
     private final String serialNumber;
     private final String manufacturer;
-    private final Instant installedAt;
-    private final Instant lastSeen;
     private final Vehicle vehicle;
 
-    public Device(
-            UUID id, String imei, String serialNumber, String manufacturer,
-            Instant installedAt, Instant lastSeen, Vehicle vehicle
-    ) {
+    public Device(UUID id, String imei, String serialNumber, String manufacturer, Vehicle vehicle) {
         this.id = id;
         this.imei = imei;
         this.serialNumber = serialNumber;
         this.manufacturer = manufacturer;
-        this.installedAt = installedAt;
-        this.lastSeen = lastSeen;
         this.vehicle = vehicle;
+    }
+
+    public Device(String imei, String serialNumber, String manufacturer, Vehicle vehicle) {
+        this(null, imei, serialNumber, manufacturer, vehicle);
     }
 
     public UUID getId() {
@@ -41,14 +38,6 @@ public class Device {
 
     public String getManufacturer() {
         return manufacturer;
-    }
-
-    public Instant getInstalledAt() {
-        return installedAt;
-    }
-
-    public Instant getLastSeen() {
-        return lastSeen;
     }
 
     public Vehicle getVehicle() {

@@ -15,4 +15,9 @@ public class Paths {
      */
     public final static String VEHICLE_PATH = API_V1_PATH + "/vehicles";
 
+    /**
+     * Path for device-related endpoints.
+     */
+    public final static String DEVICE_PATH = API_V1_PATH + "/devices";
+
 }
