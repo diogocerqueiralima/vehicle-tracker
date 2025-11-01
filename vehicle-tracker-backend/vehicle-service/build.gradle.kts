@@ -14,9 +14,6 @@ repositories {
 dependencies {
 
     implementation(project(":vehicle-service-contract"))
-    implementation(libs.grpc.netty.shaded)
-    implementation(libs.grpc.protobuf)
-    implementation(libs.grpc.stub)
     implementation(libs.spring.boot.grpc)
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.web)
