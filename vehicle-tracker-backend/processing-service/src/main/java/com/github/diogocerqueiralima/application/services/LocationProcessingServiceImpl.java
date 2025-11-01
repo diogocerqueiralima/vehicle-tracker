@@ -2,12 +2,16 @@ package com.github.diogocerqueiralima.application.services;
 
 import com.github.diogocerqueiralima.domain.ports.inbound.LocationProcessingService;
 import com.github.diogocerqueiralima.location.ReceiveLocationEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
 public class LocationProcessingServiceImpl implements LocationProcessingService {
+
+    private static final Logger log = LoggerFactory.getLogger(LocationProcessingServiceImpl.class);
 
     /**
      *
@@ -22,6 +26,7 @@ public class LocationProcessingServiceImpl implements LocationProcessingService 
 
         UUID deviceId = event.deviceId();
 
+        log.info("Received location event from device with id: {}", deviceId);
     }
 
 }

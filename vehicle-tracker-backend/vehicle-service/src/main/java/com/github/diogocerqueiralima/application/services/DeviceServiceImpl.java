@@ -30,7 +30,7 @@ public class DeviceServiceImpl implements DeviceService {
 
     public DeviceServiceImpl(
             VehicleService vehicleService, DeviceDataSource deviceDataSource,
-            @Qualifier("dm-application") DeviceMapper deviceMapper, @Qualifier("application") VehicleMapper vehicleMapper
+            @Qualifier("dm-application") DeviceMapper deviceMapper, @Qualifier("vm-application") VehicleMapper vehicleMapper
     ) {
         this.vehicleService = vehicleService;
         this.deviceDataSource = deviceDataSource;

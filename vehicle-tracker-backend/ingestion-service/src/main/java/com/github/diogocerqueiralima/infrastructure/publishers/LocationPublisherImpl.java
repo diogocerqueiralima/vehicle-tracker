@@ -2,13 +2,15 @@ package com.github.diogocerqueiralima.infrastructure.publishers;
 
 import com.github.diogocerqueiralima.domain.model.Location;
 import com.github.diogocerqueiralima.domain.ports.outbound.LocationPublisher;
-import com.github.diogocerqueiralima.infrastructure.config.ApplicationConfig;
+import com.github.diogocerqueiralima.location.config.ApplicationConfig;
 import com.github.diogocerqueiralima.location.ReceiveLocationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
+@Import(ApplicationConfig.class)
 @Component
 public class LocationPublisherImpl implements LocationPublisher {
 

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package vehicle.tracker;
+
+option java_multiple_files = true;
+option java_package = "com.github.diogocerqueiralima.proto";
+option java_outer_classname = "VehicleProto";
+
+service VehicleService {
+
+  rpc getById(VehicleId) returns (Vehicle);
+
+}
+
+message VehicleId {
+  string id = 1;
+}
+
+message Vehicle {
+  string id = 1;
+  string vin = 2;
+  string plate = 3;
+  string model = 4;
+  string manufacturer = 5;
+  int32 year = 6;
+  string ownerId = 7;
+}

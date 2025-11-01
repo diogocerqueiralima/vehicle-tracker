@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.infrastructure.config;
+package com.github.diogocerqueiralima.location.config;
 
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
