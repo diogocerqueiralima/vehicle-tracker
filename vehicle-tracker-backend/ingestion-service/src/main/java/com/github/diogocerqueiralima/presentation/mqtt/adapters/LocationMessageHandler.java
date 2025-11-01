@@ -32,6 +32,8 @@ public class LocationMessageHandler {
     public MessageHandler handleLocationMessage() {
         return message -> {
 
+            System.out.println(message.getHeaders());
+
             try {
 
                 Location location = Location.parseFrom((byte[]) message.getPayload());
