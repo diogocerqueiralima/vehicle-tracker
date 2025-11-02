@@ -1,7 +1,8 @@
 package com.github.diogocerqueiralima.application.services;
 
+import com.github.diogocerqueiralima.application.commands.LocationCommand;
 import com.github.diogocerqueiralima.domain.ports.inbound.LocationProcessingService;
-import com.github.diogocerqueiralima.location.ReceiveLocationEvent;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehicleGrpc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,12 @@ public class LocationProcessingServiceImpl implements LocationProcessingService 
 
     private static final Logger log = LoggerFactory.getLogger(LocationProcessingServiceImpl.class);
 
+    private final VehicleGrpc vehicleGrpc;
+
+    public LocationProcessingServiceImpl(VehicleGrpc vehicleGrpc) {
+        this.vehicleGrpc = vehicleGrpc;
+    }
+
     /**
      *
      * {@inheritDoc}
@@ -22,9 +29,10 @@ public class LocationProcessingServiceImpl implements LocationProcessingService 
      *
      */
     @Override
-    public void process(ReceiveLocationEvent event) {
+    public void process(LocationCommand command) {
 
-        UUID deviceId = event.deviceId();
+        UUID deviceId = command.deviceId();
+        vehicleGrpc.findById(deviceId).ifPresent(System.out::println);
 
         log.info("Received location event from device with id: {}", deviceId);
     }

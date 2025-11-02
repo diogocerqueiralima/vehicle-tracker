@@ -1,13 +1,11 @@
-package com.github.diogocerqueiralima.presentation.grpc;
+package com.github.diogocerqueiralima.presentation.grpc.services;
 
-import com.github.diogocerqueiralima.application.commands.LookupVehicleByIdCommand;
+import com.github.diogocerqueiralima.application.commands.LookupVehicleByDeviceIdCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleService;
-import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
-import com.github.diogocerqueiralima.presentation.context.InternalExecutionContext;
-import com.github.diogocerqueiralima.proto.Vehicle;
-import com.github.diogocerqueiralima.proto.VehicleId;
+import com.github.diogocerqueiralima.proto.DeviceId;
+import com.github.diogocerqueiralima.proto.VehicleResponse;
 import com.github.diogocerqueiralima.proto.VehicleServiceGrpc;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -30,36 +28,33 @@ public class VehicleGrpcService extends VehicleServiceGrpc.VehicleServiceImplBas
 
     /**
      *
-     * Gets a vehicle by its ID.
+     * Gets a vehicle by device id.
      *
-     * @param request the vehicle ID request
+     * @param request the device ID request
      * @param responseObserver the response observer to send the vehicle response
      */
     @Override
-    public void getById(VehicleId request, StreamObserver<Vehicle> responseObserver) {
+    public void getByDeviceId(DeviceId request, StreamObserver<VehicleResponse> responseObserver) {
 
         UUID id = UUID.fromString(request.getId());
-        LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(id);
-        ExecutionContext context = InternalExecutionContext.create();
+        LookupVehicleByDeviceIdCommand command = new LookupVehicleByDeviceIdCommand(id);
 
         try {
 
-            VehicleResult result = vehicleService.getById(command, context);
-            Vehicle response = Vehicle.newBuilder()
+            VehicleResult result = vehicleService.getByDeviceId(command);
+            VehicleResponse response = VehicleResponse.newBuilder()
                     .setId(result.id().toString())
-                    .setVin(result.vin())
-                    .setPlate(result.plate())
-                    .setModel(result.model())
-                    .setManufacturer(result.manufacturer())
-                    .setYear(result.year())
-                    .setOwnerId(result.ownerId().toString())
                     .build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
         } catch (VehicleNotFoundException e) {
-            StatusRuntimeException exception = new StatusRuntimeException(Status.NOT_FOUND.withDescription(e.getMessage()));
+
+            StatusRuntimeException exception = new StatusRuntimeException(
+                    Status.NOT_FOUND.withDescription(e.getMessage())
+            );
+
             responseObserver.onError(exception);
         }
 

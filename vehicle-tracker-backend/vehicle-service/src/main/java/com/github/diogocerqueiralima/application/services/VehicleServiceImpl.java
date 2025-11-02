@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.services;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.LookupVehicleByDeviceIdCommand;
 import com.github.diogocerqueiralima.application.commands.LookupVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
@@ -8,7 +9,7 @@ import com.github.diogocerqueiralima.application.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.model.Vehicle;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleService;
-import com.github.diogocerqueiralima.domain.ports.outbound.VehicleDataSource;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
 import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,25 +21,27 @@ import java.util.UUID;
 public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleMapper vehicleMapper;
-    private final VehicleDataSource vehicleDataSource;
+    private final VehiclePersistence vehiclePersistence;
 
-    public VehicleServiceImpl(@Qualifier("vm-application") VehicleMapper vehicleMapper, VehicleDataSource vehicleDataSource) {
+    public VehicleServiceImpl(
+            @Qualifier("vm-application") VehicleMapper vehicleMapper, VehiclePersistence vehiclePersistence
+    ) {
         this.vehicleMapper = vehicleMapper;
-        this.vehicleDataSource = vehicleDataSource;
+        this.vehiclePersistence = vehiclePersistence;
     }
 
     @Override
     public VehicleResult create(CreateVehicleCommand command) {
 
-        if (vehicleDataSource.existsByVin(command.vin())) {
+        if (vehiclePersistence.existsByVin(command.vin())) {
             throw new VehicleAlreadyExistsException("There is already a vehicle with the same VIN: " + command.vin());
         }
 
-        if (vehicleDataSource.existsByPlate(command.plate())) {
+        if (vehiclePersistence.existsByPlate(command.plate())) {
             throw new VehicleAlreadyExistsException("There is already a vehicle with the same plate: " + command.plate());
         }
 
-        Vehicle vehicle = vehicleDataSource.save(
+        Vehicle vehicle = vehiclePersistence.save(
                 new Vehicle(
                         command.vin(),
                         command.plate(),
@@ -59,9 +62,18 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
+    public VehicleResult getByDeviceId(LookupVehicleByDeviceIdCommand command) {
+
+        Vehicle vehicle = vehiclePersistence.findByDeviceId(command.deviceId())
+                .orElseThrow(() -> new VehicleNotFoundException("Vehicle with device ID " + command.deviceId() + " not found"));
+
+        return vehicleMapper.toResult(vehicle);
+    }
+
+    @Override
     public void deleteById(LookupVehicleByIdCommand command, ExecutionContext context) {
         Vehicle vehicle = getById(command.id(), context);
-        vehicleDataSource.delete(vehicle);
+        vehiclePersistence.delete(vehicle);
     }
 
     /**
@@ -75,7 +87,7 @@ public class VehicleServiceImpl implements VehicleService {
      */
     private Vehicle getById(UUID id, ExecutionContext context) {
 
-        Vehicle vehicle = vehicleDataSource.findById(id)
+        Vehicle vehicle = vehiclePersistence.findById(id)
                 .orElseThrow(() -> new VehicleNotFoundException(id));
 
         if (context.isUser()) {

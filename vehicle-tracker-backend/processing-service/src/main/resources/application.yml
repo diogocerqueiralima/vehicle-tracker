@@ -9,6 +9,7 @@ spring:
       channels:
         vehicle-service:
           address: vehicle-service:9090
+          negotiation-type: plaintext
 
 queues:
   location:

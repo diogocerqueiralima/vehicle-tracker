@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.ports.inbound;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.LookupVehicleByDeviceIdCommand;
 import com.github.diogocerqueiralima.application.commands.LookupVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
@@ -35,6 +36,16 @@ public interface VehicleService {
      * @throws VehicleNotFoundException if the vehicle is not found
      */
     VehicleResult getById(@Valid LookupVehicleByIdCommand command, ExecutionContext context);
+
+    /**
+     *
+     * Retrieves a vehicle by its associated device ID based on the provided command.
+     *
+     * @param command the command containing the device ID
+     * @return the result of the vehicle lookup
+     * @throws VehicleNotFoundException if the vehicle is not found
+     */
+    VehicleResult getByDeviceId(@Valid LookupVehicleByDeviceIdCommand command);
 
     /**
      *

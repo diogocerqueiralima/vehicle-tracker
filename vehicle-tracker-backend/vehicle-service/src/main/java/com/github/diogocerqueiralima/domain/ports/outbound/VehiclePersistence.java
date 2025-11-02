@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Port to interact with the vehicle data source.
  */
-public interface VehicleDataSource {
+public interface VehiclePersistence {
 
     /**
      *
@@ -21,12 +21,21 @@ public interface VehicleDataSource {
 
     /**
      *
-     * Gets a vehicle by its ID.
+     * Finds a vehicle by its ID.
      *
      * @param id the ID of the vehicle
      * @return an Optional containing the vehicle if found, or empty if not found
      */
     Optional<Vehicle> findById(UUID id);
+
+    /**
+     *
+     * Finds a vehicle by its associated device ID.
+     *
+     * @param deviceId the UUID of the device
+     * @return an Optional containing the Vehicle if found, or empty if not found
+     */
+    Optional<Vehicle> findByDeviceId(UUID deviceId);
 
     /**
      *

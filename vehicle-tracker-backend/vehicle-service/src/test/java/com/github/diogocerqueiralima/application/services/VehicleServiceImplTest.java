@@ -7,7 +7,7 @@ import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundExcep
 import com.github.diogocerqueiralima.application.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.model.Vehicle;
-import com.github.diogocerqueiralima.domain.ports.outbound.VehicleDataSource;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.presentation.context.InternalExecutionContext;
 import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class VehicleServiceImplTest {
 
     @Mock
-    private VehicleDataSource vehicleDataSource;
+    private VehiclePersistence vehiclePersistence;
 
     @Mock
     private VehicleMapper vehicleMapper;
@@ -63,7 +63,7 @@ class VehicleServiceImplTest {
                 UUID.randomUUID()
         );
 
-        when(vehicleDataSource.existsByVin(command.vin()))
+        when(vehiclePersistence.existsByVin(command.vin()))
                 .thenReturn(true);
 
 
@@ -82,10 +82,10 @@ class VehicleServiceImplTest {
                 UUID.randomUUID()
         );
 
-        when(vehicleDataSource.existsByVin(command.vin()))
+        when(vehiclePersistence.existsByVin(command.vin()))
                 .thenReturn(false);
 
-        when(vehicleDataSource.existsByPlate(command.plate()))
+        when(vehiclePersistence.existsByPlate(command.plate()))
                 .thenReturn(true);
 
         assertThrows(VehicleAlreadyExistsException.class, () -> vehicleService.create(command));
@@ -103,10 +103,10 @@ class VehicleServiceImplTest {
                 UUID.randomUUID()
         );
 
-        when(vehicleDataSource.existsByVin(command.vin()))
+        when(vehiclePersistence.existsByVin(command.vin()))
                 .thenReturn(false);
 
-        when(vehicleDataSource.existsByPlate(command.plate()))
+        when(vehiclePersistence.existsByPlate(command.plate()))
                 .thenReturn(false);
 
         Vehicle vehicle = new Vehicle(
@@ -119,7 +119,7 @@ class VehicleServiceImplTest {
                 command.ownerId()
         );
 
-        when(vehicleDataSource.save(any()))
+        when(vehiclePersistence.save(any()))
                 .thenReturn(vehicle);
 
         VehicleResult result = vehicleService.create(command);
@@ -138,11 +138,11 @@ class VehicleServiceImplTest {
 
         UUID vehicleId = UUID.randomUUID();
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.empty());
 
         assertThrows(VehicleNotFoundException.class, () -> {
-            vehicleService.getById(new LookupVehicleByIdCommand(vehicleId), InternalExecutionContext.create("system"));
+            vehicleService.getById(new LookupVehicleByIdCommand(vehicleId), InternalExecutionContext.create());
         });
     }
 
@@ -163,7 +163,7 @@ class VehicleServiceImplTest {
                 ownerId
         );
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
         assertThrows(VehicleNotFoundException.class, () -> {
@@ -187,7 +187,7 @@ class VehicleServiceImplTest {
                 ownerId
         );
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
         VehicleResult result = vehicleService.getById(
@@ -221,12 +221,12 @@ class VehicleServiceImplTest {
                 ownerId
         );
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
         VehicleResult result = vehicleService.getById(
                 new LookupVehicleByIdCommand(vehicleId),
-                InternalExecutionContext.create("system")
+                InternalExecutionContext.create()
         );
 
         assertNotNull(result);
@@ -244,12 +244,12 @@ class VehicleServiceImplTest {
 
         UUID vehicleId = UUID.randomUUID();
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.empty());
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
         assertThrows(VehicleNotFoundException.class, () -> {
-            vehicleService.deleteById(command, InternalExecutionContext.create("system"));
+            vehicleService.deleteById(command, InternalExecutionContext.create());
         });
 
     }
@@ -271,7 +271,7 @@ class VehicleServiceImplTest {
                 ownerId
         );
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
@@ -297,13 +297,13 @@ class VehicleServiceImplTest {
                 ownerId
         );
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
         vehicleService.deleteById(command, UserExecutionContext.create(ownerId));
 
-        verify(vehicleDataSource).delete(vehicle);
+        verify(vehiclePersistence).delete(vehicle);
     }
 
     @Test
@@ -322,13 +322,13 @@ class VehicleServiceImplTest {
                 ownerId
         );
 
-        when(vehicleDataSource.findById(vehicleId))
+        when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
-        vehicleService.deleteById(command, InternalExecutionContext.create("system"));
+        vehicleService.deleteById(command, InternalExecutionContext.create());
 
-        verify(vehicleDataSource).delete(vehicle);
+        verify(vehiclePersistence).delete(vehicle);
     }
 
 }

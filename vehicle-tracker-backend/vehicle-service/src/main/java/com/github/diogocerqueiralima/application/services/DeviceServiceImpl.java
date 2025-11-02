@@ -12,7 +12,7 @@ import com.github.diogocerqueiralima.domain.model.Device;
 import com.github.diogocerqueiralima.domain.model.Vehicle;
 import com.github.diogocerqueiralima.domain.ports.inbound.DeviceService;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleService;
-import com.github.diogocerqueiralima.domain.ports.outbound.DeviceDataSource;
+import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
 import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,16 +24,16 @@ import java.util.UUID;
 public class DeviceServiceImpl implements DeviceService {
 
     private final VehicleService vehicleService;
-    private final DeviceDataSource deviceDataSource;
+    private final DevicePersistence devicePersistence;
     private final DeviceMapper deviceMapper;
     private final VehicleMapper vehicleMapper;
 
     public DeviceServiceImpl(
-            VehicleService vehicleService, DeviceDataSource deviceDataSource,
+            VehicleService vehicleService, DevicePersistence devicePersistence,
             @Qualifier("dm-application") DeviceMapper deviceMapper, @Qualifier("vm-application") VehicleMapper vehicleMapper
     ) {
         this.vehicleService = vehicleService;
-        this.deviceDataSource = deviceDataSource;
+        this.devicePersistence = devicePersistence;
         this.deviceMapper = deviceMapper;
         this.vehicleMapper = vehicleMapper;
     }
@@ -50,7 +50,7 @@ public class DeviceServiceImpl implements DeviceService {
                 vehicle
         );
 
-        Device savedDevice = deviceDataSource.save(toSave);
+        Device savedDevice = devicePersistence.save(toSave);
 
         return deviceMapper.toResult(savedDevice);
     }
@@ -64,7 +64,7 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public void delete(LookupDeviceByIdCommand command, ExecutionContext context) {
         Device device = getDeviceById(command.id(), context);
-        deviceDataSource.delete(device);
+        devicePersistence.delete(device);
     }
 
     /**
@@ -78,7 +78,7 @@ public class DeviceServiceImpl implements DeviceService {
      */
     private Device getDeviceById(UUID id, ExecutionContext context) {
 
-        Device device = deviceDataSource.findById(id)
+        Device device = devicePersistence.findById(id)
                 .orElseThrow(() -> new DeviceNotFoundException(id));
 
         if (context.isUser()) {

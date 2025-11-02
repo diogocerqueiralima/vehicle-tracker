@@ -1,7 +1,7 @@
-package com.github.diogocerqueiralima.infrastructure.datasource;
+package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.model.Vehicle;
-import com.github.diogocerqueiralima.domain.ports.outbound.VehicleDataSource;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.VehicleEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.VehicleRepository;
@@ -12,12 +12,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class VehicleDataSourceImpl implements VehicleDataSource {
+public class VehiclePersistenceImpl implements VehiclePersistence {
 
     private final VehicleMapper vehicleMapper;
     private final VehicleRepository vehicleRepository;
 
-    public VehicleDataSourceImpl(@Qualifier("vm-infrastructure") VehicleMapper vehicleMapper, VehicleRepository vehicleRepository) {
+    public VehiclePersistenceImpl(@Qualifier("vm-infrastructure") VehicleMapper vehicleMapper, VehicleRepository vehicleRepository) {
         this.vehicleMapper = vehicleMapper;
         this.vehicleRepository = vehicleRepository;
     }
@@ -34,6 +34,12 @@ public class VehicleDataSourceImpl implements VehicleDataSource {
     @Override
     public Optional<Vehicle> findById(UUID id) {
         return vehicleRepository.findById(id)
+                .map(vehicleMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Vehicle> findByDeviceId(UUID deviceId) {
+        return vehicleRepository.findByDeviceId(deviceId)
                 .map(vehicleMapper::toDomain);
     }
 

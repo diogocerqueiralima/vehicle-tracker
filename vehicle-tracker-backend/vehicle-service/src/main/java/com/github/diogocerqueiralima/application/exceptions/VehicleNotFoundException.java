@@ -8,4 +8,8 @@ public class VehicleNotFoundException extends RuntimeException {
         super("Vehicle with ID " + id + " not found.");
     }
 
+    public VehicleNotFoundException(String message) {
+        super(message);
+    }
+
 }

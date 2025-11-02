@@ -9,8 +9,8 @@ import org.springframework.grpc.client.GrpcChannelFactory;
 public class GrpcConfig {
 
     @Bean
-    public VehicleServiceGrpc.VehicleServiceStub vehicleServiceStub(GrpcChannelFactory channels) {
-        return VehicleServiceGrpc.newStub(channels.createChannel("vehicle-service"));
+    public VehicleServiceGrpc.VehicleServiceBlockingStub vehicleServiceStub(GrpcChannelFactory channels) {
+        return VehicleServiceGrpc.newBlockingStub(channels.createChannel("vehicle-service"));
     }
 
 }

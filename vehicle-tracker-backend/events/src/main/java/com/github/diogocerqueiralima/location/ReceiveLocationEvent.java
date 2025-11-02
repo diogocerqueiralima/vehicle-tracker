@@ -22,8 +22,7 @@ public record ReceiveLocationEvent(
         private double course;
         private UUID deviceId;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         public Builder timestamp(Instant timestamp) {
             this.timestamp = timestamp;

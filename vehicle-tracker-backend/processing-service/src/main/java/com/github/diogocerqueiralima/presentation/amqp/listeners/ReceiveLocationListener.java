@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.presentation.amqp.listeners;
 
+import com.github.diogocerqueiralima.application.commands.LocationCommand;
 import com.github.diogocerqueiralima.domain.ports.inbound.LocationProcessingService;
 import com.github.diogocerqueiralima.location.ReceiveLocationEvent;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -16,7 +17,17 @@ public class ReceiveLocationListener {
 
     @RabbitListener(queues = "#{applicationConfig.locationQueueName}")
     public void onReceiveLocation(ReceiveLocationEvent event) {
-        locationProcessingService.process(event);
+        locationProcessingService.process(
+                new LocationCommand(
+                        event.timestamp(),
+                        event.latitude(),
+                        event.longitude(),
+                        event.altitude(),
+                        event.speed(),
+                        event.course(),
+                        event.deviceId()
+                )
+        );
     }
 
 }

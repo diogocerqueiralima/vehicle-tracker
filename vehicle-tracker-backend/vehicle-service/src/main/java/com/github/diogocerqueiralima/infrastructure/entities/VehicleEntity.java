@@ -30,6 +30,9 @@ public class VehicleEntity {
     @Column(nullable = false)
     private Integer year;
 
+    @OneToOne(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    private DeviceEntity device;
+
     @Column(nullable = false)
     private UUID ownerId;
 

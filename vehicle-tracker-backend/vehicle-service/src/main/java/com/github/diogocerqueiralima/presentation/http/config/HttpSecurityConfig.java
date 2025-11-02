@@ -12,10 +12,10 @@ import static com.github.diogocerqueiralima.presentation.http.Paths.VEHICLE_PATH
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class HttpSecurityConfig {
 
     @Bean
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain httpSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize

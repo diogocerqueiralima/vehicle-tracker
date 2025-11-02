@@ -8,20 +8,14 @@ option java_outer_classname = "VehicleProto";
 
 service VehicleService {
 
-  rpc getById(VehicleId) returns (Vehicle);
+  rpc getByDeviceId(DeviceId) returns (VehicleResponse);
 
 }
 
-message VehicleId {
+message DeviceId {
   string id = 1;
 }
 
-message Vehicle {
+message VehicleResponse {
   string id = 1;
-  string vin = 2;
-  string plate = 3;
-  string model = 4;
-  string manufacturer = 5;
-  int32 year = 6;
-  string ownerId = 7;
 }

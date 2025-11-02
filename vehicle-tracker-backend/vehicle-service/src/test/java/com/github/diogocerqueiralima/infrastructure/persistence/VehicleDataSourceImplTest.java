@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.infrastructure.datasource;
+package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.model.Vehicle;
 import com.github.diogocerqueiralima.infrastructure.entities.VehicleEntity;
@@ -26,7 +26,7 @@ class VehicleDataSourceImplTest {
     private VehicleRepository vehicleRepository;
 
     @InjectMocks
-    private VehicleDataSourceImpl vehicleDataSource;
+    private VehiclePersistenceImpl vehiclePersistence;
 
     @Test
     public void save_vehicle_should_succeed() {
@@ -66,7 +66,7 @@ class VehicleDataSourceImplTest {
         when(vehicleRepository.save(toSaveEntity)).thenReturn(savedEntity);
         when(vehicleMapper.toDomain(savedEntity)).thenReturn(expected);
 
-        Vehicle actual = vehicleDataSource.save(toSave);
+        Vehicle actual = vehiclePersistence.save(toSave);
 
         assertEquals(expected, actual);
         verify(vehicleMapper).toEntity(toSave);
@@ -101,7 +101,7 @@ class VehicleDataSourceImplTest {
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(foundEntity));
         when(vehicleMapper.toDomain(foundEntity)).thenReturn(expected);
 
-        Optional<Vehicle> actual = vehicleDataSource.findById(vehicleId);
+        Optional<Vehicle> actual = vehiclePersistence.findById(vehicleId);
 
         assertTrue(actual.isPresent());
         assertEquals(expected, actual.get());
@@ -116,7 +116,7 @@ class VehicleDataSourceImplTest {
 
         when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.empty());
 
-        Optional<Vehicle> actual = vehicleDataSource.findById(vehicleId);
+        Optional<Vehicle> actual = vehiclePersistence.findById(vehicleId);
 
         assertFalse(actual.isPresent());
         verify(vehicleRepository).findById(vehicleId);
@@ -147,7 +147,7 @@ class VehicleDataSourceImplTest {
 
         when(vehicleMapper.toEntity(vehicle)).thenReturn(entity);
 
-        vehicleDataSource.delete(vehicle);
+        vehiclePersistence.delete(vehicle);
 
         verify(vehicleMapper).toEntity(vehicle);
         verify(vehicleRepository).delete(entity);
@@ -160,7 +160,7 @@ class VehicleDataSourceImplTest {
 
         when(vehicleRepository.existsByVin(vin)).thenReturn(true);
 
-        boolean actual = vehicleDataSource.existsByVin(vin);
+        boolean actual = vehiclePersistence.existsByVin(vin);
 
         assertTrue(actual);
         verify(vehicleRepository).existsByVin(vin);
@@ -173,7 +173,7 @@ class VehicleDataSourceImplTest {
 
         when(vehicleRepository.existsByVin(vin)).thenReturn(false);
 
-        boolean actual = vehicleDataSource.existsByVin(vin);
+        boolean actual = vehiclePersistence.existsByVin(vin);
 
         assertFalse(actual);
         verify(vehicleRepository).existsByVin(vin);
@@ -186,7 +186,7 @@ class VehicleDataSourceImplTest {
 
         when(vehicleRepository.existsByPlate(plate)).thenReturn(true);
 
-        boolean actual = vehicleDataSource.existsByPlate(plate);
+        boolean actual = vehiclePersistence.existsByPlate(plate);
 
         assertTrue(actual);
         verify(vehicleRepository).existsByPlate(plate);
@@ -199,7 +199,7 @@ class VehicleDataSourceImplTest {
 
         when(vehicleRepository.existsByPlate(plate)).thenReturn(false);
 
-        boolean actual = vehicleDataSource.existsByPlate(plate);
+        boolean actual = vehiclePersistence.existsByPlate(plate);
 
         assertFalse(actual);
         verify(vehicleRepository).existsByPlate(plate);

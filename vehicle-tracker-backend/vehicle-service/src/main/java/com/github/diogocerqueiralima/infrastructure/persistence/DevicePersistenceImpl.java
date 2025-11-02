@@ -1,7 +1,7 @@
-package com.github.diogocerqueiralima.infrastructure.datasource;
+package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.model.Device;
-import com.github.diogocerqueiralima.domain.ports.outbound.DeviceDataSource;
+import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.DeviceMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.DeviceRepository;
@@ -12,12 +12,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class DeviceDataSourceImpl implements DeviceDataSource {
+public class DevicePersistenceImpl implements DevicePersistence {
 
     private final DeviceMapper deviceMapper;
     private final DeviceRepository deviceRepository;
 
-    public DeviceDataSourceImpl(
+    public DevicePersistenceImpl(
             @Qualifier("dm-infrastructure") DeviceMapper deviceMapper, DeviceRepository deviceRepository
     ) {
         this.deviceMapper = deviceMapper;

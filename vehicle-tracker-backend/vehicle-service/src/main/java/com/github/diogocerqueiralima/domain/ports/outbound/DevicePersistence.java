@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Port to interact with the device data source.
  */
-public interface DeviceDataSource {
+public interface DevicePersistence {
 
     /**
      *

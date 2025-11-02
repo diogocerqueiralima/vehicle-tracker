@@ -4,10 +4,20 @@ import com.github.diogocerqueiralima.infrastructure.entities.VehicleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<VehicleEntity, UUID> {
+
+    /**
+     *
+     * Finds a vehicle by its associated device ID.
+     *
+     * @param deviceId the UUID of the device
+     * @return an Optional containing the VehicleEntity if found, or empty if not found
+     */
+    Optional<VehicleEntity> findByDeviceId(UUID deviceId);
 
     /**
      *

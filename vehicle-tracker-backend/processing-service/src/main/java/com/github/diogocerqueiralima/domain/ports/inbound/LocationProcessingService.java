@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.domain.ports.inbound;
 
-import com.github.diogocerqueiralima.location.ReceiveLocationEvent;
+import com.github.diogocerqueiralima.application.commands.LocationCommand;
 
 /**
  * Port for processing location events.
@@ -9,10 +9,10 @@ public interface LocationProcessingService {
 
     /**
      *
-     * Processes a received location event.
+     * Process a location command.
      *
-     * @param event the location event to be processed
+     * @param command the location command to process
      */
-    void process(ReceiveLocationEvent event);
+    void process(LocationCommand command);
 
 }
