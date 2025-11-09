@@ -102,49 +102,70 @@ pb_ostream_t makeBufferOStream() {
  * we can use deep sleep to save power, and when the accelerometer detects movement, we can wake up the device.
  *
  */
-void setup() {
+#define SIM7600_TX 17  // pino TX do ESP32 para RX do SIM7600
+#define SIM7600_RX 16  // pino RX do ESP32 para TX do SIM7600
+#define SIM7600_BAUD 115200
+HardwareSerial simSerial(1); // Serial1
 
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("Console AT inicializada");
+
+    // Inicializa Serial1 para o módulo SIM7600
+    simSerial.begin(SIM7600_BAUD, SERIAL_8N1, SIM7600_RX, SIM7600_TX);
+
+    // Seu setup existente
     if (!client.init()) {
         Serial.println("Failed to initialize MicroControllerClient");
-        return;
+    } else {
+        Serial.println("MicroControllerClient initialized successfully");
     }
-
-    Serial.println("MicroControllerClient initialized successfully");
 
     if (!client.gps().enable(GPS_STANDALONE_MODE)) {
         Serial.println("Failed to enable GPS");
-        return;
+    } else {
+        Serial.println("GPS enabled successfully");
     }
-    
-    Serial.println("GPS enabled successfully");
 
-    initWifi();
-    initMqtt();
+    //initWifi();
+    //initMqtt();
 }
 
 void loop() {
-    
-    GPSInfo info = client.gps().getInfo();
-    
+    // Parte do envio de localização
+    /*GPSInfo info = client.gps().getInfo();
     if (info.valid) {
         size_t encoded_size;
-        
         if (encode_location(info, makeBufferOStream(), &encoded_size)) {
-
             if (mqttClient.publish(MQTT_TOPIC, payload_buffer, encoded_size)) {
                 Serial.print("Location sent, encoded size: ");
                 Serial.println(encoded_size);
             } else {
                 Serial.println("Failed to publish to MQTT");
             }
-
         } else {
             Serial.println("Failed to encode location");
         }
-
     } else {
         Serial.println("No valid GPS data available");
+    }*/
+
+    // Parte da console AT
+    // 1️⃣ Lê do monitor serial do computador e envia para SIM7600
+    if (Serial.available()) {
+        String cmd = Serial.readStringUntil('\n');
+        cmd += "\r\n"; // comandos AT geralmente precisam de CRLF
+        simSerial.print(cmd);
+        Serial.print("Enviado para SIM7600: ");
+        Serial.println(cmd);
     }
-    
-    delay(5000);
+
+    // 2️⃣ Lê respostas do SIM7600 e imprime no monitor serial
+    while (simSerial.available()) {
+        char c = simSerial.read();
+        Serial.write(c);
+    }
+
+    delay(100); // evita travar o loop
 }

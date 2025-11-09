@@ -1,7 +1,11 @@
 package com.github.diogocerqueiralima.application.services;
 
 import com.github.diogocerqueiralima.application.commands.LocationCommand;
+import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
+import com.github.diogocerqueiralima.domain.model.LocationSnapshot;
+import com.github.diogocerqueiralima.domain.model.Vehicle;
 import com.github.diogocerqueiralima.domain.ports.inbound.LocationProcessingService;
+import com.github.diogocerqueiralima.domain.ports.outbound.LocationSnapshotPersistence;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleGrpc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +19,13 @@ public class LocationProcessingServiceImpl implements LocationProcessingService 
     private static final Logger log = LoggerFactory.getLogger(LocationProcessingServiceImpl.class);
 
     private final VehicleGrpc vehicleGrpc;
+    private final LocationSnapshotPersistence locationSnapshotPersistence;
 
-    public LocationProcessingServiceImpl(VehicleGrpc vehicleGrpc) {
+    public LocationProcessingServiceImpl(
+            VehicleGrpc vehicleGrpc, LocationSnapshotPersistence locationSnapshotPersistence
+    ) {
         this.vehicleGrpc = vehicleGrpc;
+        this.locationSnapshotPersistence = locationSnapshotPersistence;
     }
 
     /**
@@ -32,8 +40,20 @@ public class LocationProcessingServiceImpl implements LocationProcessingService 
     public void process(LocationCommand command) {
 
         UUID deviceId = command.deviceId();
-        vehicleGrpc.findById(deviceId).ifPresent(System.out::println);
+        Vehicle vehicle = vehicleGrpc.findByDeviceId(deviceId)
+                .orElseThrow(() -> new VehicleNotFoundException(deviceId));
 
+        LocationSnapshot snapshot = new LocationSnapshot(
+                vehicle,
+                command.timestamp(),
+                command.latitude(),
+                command.longitude(),
+                command.altitude(),
+                command.speed(),
+                command.course()
+        );
+
+        locationSnapshotPersistence.save(snapshot);
         log.info("Received location event from device with id: {}", deviceId);
     }
 

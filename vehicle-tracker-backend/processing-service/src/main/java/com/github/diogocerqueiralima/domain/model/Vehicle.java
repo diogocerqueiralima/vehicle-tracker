@@ -10,4 +10,8 @@ public class Vehicle {
         this.id = id;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
 }

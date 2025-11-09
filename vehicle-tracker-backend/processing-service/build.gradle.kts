@@ -17,8 +17,10 @@ dependencies {
     implementation(project(":vehicle-service-contract"))
     implementation(libs.spring.boot.grpc)
     implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.amqp)
+    implementation(libs.postgresql)
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

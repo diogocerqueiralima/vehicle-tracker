@@ -79,7 +79,19 @@ services:
         condition: service_healthy
     networks:
       - network
- 
+  processing-service:
+    image: docker.io/library/processing-service:1.0.0
+    container_name: tracker_processing_service
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - network
+
 networks:
   network:
     driver: bridge
