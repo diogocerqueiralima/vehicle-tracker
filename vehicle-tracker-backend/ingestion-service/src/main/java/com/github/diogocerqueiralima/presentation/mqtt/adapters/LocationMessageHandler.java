@@ -8,9 +8,9 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import static com.github.diogocerqueiralima.proto.v1.location.LocationOuterClass.Location;
 
-import static schemas.v1.location.LocationOuterClass.*;
+import java.util.UUID;
 
 @Component
 public class LocationMessageHandler {
@@ -31,8 +31,6 @@ public class LocationMessageHandler {
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public MessageHandler handleLocationMessage() {
         return message -> {
-
-            System.out.println(message.getHeaders());
 
             try {
 

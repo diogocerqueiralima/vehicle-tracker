@@ -3,7 +3,7 @@
 // source: vehicle-tracker-schemas/Telemetry.proto
 // Protobuf Java Version: 4.32.1
 
-package schemas.v1.telemetry;
+package com.github.diogocerqueiralima.proto.v1.telemetry;
 
 @com.google.protobuf.Generated
 public final class Telemetry extends com.google.protobuf.GeneratedFile {
@@ -75,11 +75,11 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
      * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
      * @return The networkTelemetry.
      */
-    schemas.v1.telemetry.Telemetry.NetworkTelemetry getNetworkTelemetry();
+    Telemetry.NetworkTelemetry getNetworkTelemetry();
     /**
      * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
      */
-    schemas.v1.telemetry.Telemetry.NetworkTelemetryOrBuilder getNetworkTelemetryOrBuilder();
+    Telemetry.NetworkTelemetryOrBuilder getNetworkTelemetryOrBuilder();
   }
   /**
    * Protobuf type {@code schemas.v1.telemetry.DeviceTelemetry}
@@ -107,15 +107,15 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_descriptor;
+      return Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_fieldAccessorTable
+      return Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              schemas.v1.telemetry.Telemetry.DeviceTelemetry.class, schemas.v1.telemetry.Telemetry.DeviceTelemetry.Builder.class);
+              Telemetry.DeviceTelemetry.class, Telemetry.DeviceTelemetry.Builder.class);
     }
 
     private int bitField0_;
@@ -186,7 +186,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     }
 
     public static final int NETWORK_TELEMETRY_FIELD_NUMBER = 7;
-    private schemas.v1.telemetry.Telemetry.NetworkTelemetry networkTelemetry_;
+    private Telemetry.NetworkTelemetry networkTelemetry_;
     /**
      * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
      * @return Whether the networkTelemetry field is set.
@@ -200,15 +200,15 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
      * @return The networkTelemetry.
      */
     @java.lang.Override
-    public schemas.v1.telemetry.Telemetry.NetworkTelemetry getNetworkTelemetry() {
-      return networkTelemetry_ == null ? schemas.v1.telemetry.Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
+    public Telemetry.NetworkTelemetry getNetworkTelemetry() {
+      return networkTelemetry_ == null ? Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
     }
     /**
      * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
      */
     @java.lang.Override
-    public schemas.v1.telemetry.Telemetry.NetworkTelemetryOrBuilder getNetworkTelemetryOrBuilder() {
-      return networkTelemetry_ == null ? schemas.v1.telemetry.Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
+    public Telemetry.NetworkTelemetryOrBuilder getNetworkTelemetryOrBuilder() {
+      return networkTelemetry_ == null ? Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -293,10 +293,10 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof schemas.v1.telemetry.Telemetry.DeviceTelemetry)) {
+      if (!(obj instanceof Telemetry.DeviceTelemetry)) {
         return super.equals(obj);
       }
-      schemas.v1.telemetry.Telemetry.DeviceTelemetry other = (schemas.v1.telemetry.Telemetry.DeviceTelemetry) obj;
+      Telemetry.DeviceTelemetry other = (Telemetry.DeviceTelemetry) obj;
 
       if (getTimestamp()
           != other.getTimestamp()) return false;
@@ -357,44 +357,44 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       return hash;
     }
 
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(byte[] data)
+    public static Telemetry.DeviceTelemetry parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(java.io.InputStream input)
+    public static Telemetry.DeviceTelemetry parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -402,26 +402,26 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseDelimitedFrom(java.io.InputStream input)
+    public static Telemetry.DeviceTelemetry parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseDelimitedFrom(
+    public static Telemetry.DeviceTelemetry parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry parseFrom(
+    public static Telemetry.DeviceTelemetry parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -434,7 +434,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(schemas.v1.telemetry.Telemetry.DeviceTelemetry prototype) {
+    public static Builder newBuilder(Telemetry.DeviceTelemetry prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -455,18 +455,18 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:schemas.v1.telemetry.DeviceTelemetry)
-        schemas.v1.telemetry.Telemetry.DeviceTelemetryOrBuilder {
+        Telemetry.DeviceTelemetryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_descriptor;
+        return Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_fieldAccessorTable
+        return Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                schemas.v1.telemetry.Telemetry.DeviceTelemetry.class, schemas.v1.telemetry.Telemetry.DeviceTelemetry.Builder.class);
+                Telemetry.DeviceTelemetry.class, Telemetry.DeviceTelemetry.Builder.class);
       }
 
       // Construct using schemas.v1.telemetry.Telemetry.DeviceTelemetry.newBuilder()
@@ -506,17 +506,17 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_descriptor;
+        return Telemetry.internal_static_schemas_v1_telemetry_DeviceTelemetry_descriptor;
       }
 
       @java.lang.Override
-      public schemas.v1.telemetry.Telemetry.DeviceTelemetry getDefaultInstanceForType() {
-        return schemas.v1.telemetry.Telemetry.DeviceTelemetry.getDefaultInstance();
+      public Telemetry.DeviceTelemetry getDefaultInstanceForType() {
+        return Telemetry.DeviceTelemetry.getDefaultInstance();
       }
 
       @java.lang.Override
-      public schemas.v1.telemetry.Telemetry.DeviceTelemetry build() {
-        schemas.v1.telemetry.Telemetry.DeviceTelemetry result = buildPartial();
+      public Telemetry.DeviceTelemetry build() {
+        Telemetry.DeviceTelemetry result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -524,14 +524,14 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       }
 
       @java.lang.Override
-      public schemas.v1.telemetry.Telemetry.DeviceTelemetry buildPartial() {
-        schemas.v1.telemetry.Telemetry.DeviceTelemetry result = new schemas.v1.telemetry.Telemetry.DeviceTelemetry(this);
+      public Telemetry.DeviceTelemetry buildPartial() {
+        Telemetry.DeviceTelemetry result = new Telemetry.DeviceTelemetry(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(schemas.v1.telemetry.Telemetry.DeviceTelemetry result) {
+      private void buildPartial0(Telemetry.DeviceTelemetry result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.timestamp_ = timestamp_;
@@ -563,16 +563,16 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof schemas.v1.telemetry.Telemetry.DeviceTelemetry) {
-          return mergeFrom((schemas.v1.telemetry.Telemetry.DeviceTelemetry)other);
+        if (other instanceof Telemetry.DeviceTelemetry) {
+          return mergeFrom((Telemetry.DeviceTelemetry)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(schemas.v1.telemetry.Telemetry.DeviceTelemetry other) {
-        if (other == schemas.v1.telemetry.Telemetry.DeviceTelemetry.getDefaultInstance()) return this;
+      public Builder mergeFrom(Telemetry.DeviceTelemetry other) {
+        if (other == Telemetry.DeviceTelemetry.getDefaultInstance()) return this;
         if (other.getTimestamp() != 0L) {
           setTimestamp(other.getTimestamp());
         }
@@ -866,9 +866,9 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
         return this;
       }
 
-      private schemas.v1.telemetry.Telemetry.NetworkTelemetry networkTelemetry_;
+      private Telemetry.NetworkTelemetry networkTelemetry_;
       private com.google.protobuf.SingleFieldBuilder<
-          schemas.v1.telemetry.Telemetry.NetworkTelemetry, schemas.v1.telemetry.Telemetry.NetworkTelemetry.Builder, schemas.v1.telemetry.Telemetry.NetworkTelemetryOrBuilder> networkTelemetryBuilder_;
+          Telemetry.NetworkTelemetry, Telemetry.NetworkTelemetry.Builder, Telemetry.NetworkTelemetryOrBuilder> networkTelemetryBuilder_;
       /**
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        * @return Whether the networkTelemetry field is set.
@@ -880,9 +880,9 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        * @return The networkTelemetry.
        */
-      public schemas.v1.telemetry.Telemetry.NetworkTelemetry getNetworkTelemetry() {
+      public Telemetry.NetworkTelemetry getNetworkTelemetry() {
         if (networkTelemetryBuilder_ == null) {
-          return networkTelemetry_ == null ? schemas.v1.telemetry.Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
+          return networkTelemetry_ == null ? Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
         } else {
           return networkTelemetryBuilder_.getMessage();
         }
@@ -890,7 +890,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       /**
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        */
-      public Builder setNetworkTelemetry(schemas.v1.telemetry.Telemetry.NetworkTelemetry value) {
+      public Builder setNetworkTelemetry(Telemetry.NetworkTelemetry value) {
         if (networkTelemetryBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -907,7 +907,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        */
       public Builder setNetworkTelemetry(
-          schemas.v1.telemetry.Telemetry.NetworkTelemetry.Builder builderForValue) {
+          Telemetry.NetworkTelemetry.Builder builderForValue) {
         if (networkTelemetryBuilder_ == null) {
           networkTelemetry_ = builderForValue.build();
         } else {
@@ -920,11 +920,11 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       /**
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        */
-      public Builder mergeNetworkTelemetry(schemas.v1.telemetry.Telemetry.NetworkTelemetry value) {
+      public Builder mergeNetworkTelemetry(Telemetry.NetworkTelemetry value) {
         if (networkTelemetryBuilder_ == null) {
           if (((bitField0_ & 0x00000040) != 0) &&
             networkTelemetry_ != null &&
-            networkTelemetry_ != schemas.v1.telemetry.Telemetry.NetworkTelemetry.getDefaultInstance()) {
+            networkTelemetry_ != Telemetry.NetworkTelemetry.getDefaultInstance()) {
             getNetworkTelemetryBuilder().mergeFrom(value);
           } else {
             networkTelemetry_ = value;
@@ -954,7 +954,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       /**
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        */
-      public schemas.v1.telemetry.Telemetry.NetworkTelemetry.Builder getNetworkTelemetryBuilder() {
+      public Telemetry.NetworkTelemetry.Builder getNetworkTelemetryBuilder() {
         bitField0_ |= 0x00000040;
         onChanged();
         return internalGetNetworkTelemetryFieldBuilder().getBuilder();
@@ -962,23 +962,23 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       /**
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        */
-      public schemas.v1.telemetry.Telemetry.NetworkTelemetryOrBuilder getNetworkTelemetryOrBuilder() {
+      public Telemetry.NetworkTelemetryOrBuilder getNetworkTelemetryOrBuilder() {
         if (networkTelemetryBuilder_ != null) {
           return networkTelemetryBuilder_.getMessageOrBuilder();
         } else {
           return networkTelemetry_ == null ?
-              schemas.v1.telemetry.Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
+              Telemetry.NetworkTelemetry.getDefaultInstance() : networkTelemetry_;
         }
       }
       /**
        * <code>.schemas.v1.telemetry.NetworkTelemetry network_telemetry = 7;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          schemas.v1.telemetry.Telemetry.NetworkTelemetry, schemas.v1.telemetry.Telemetry.NetworkTelemetry.Builder, schemas.v1.telemetry.Telemetry.NetworkTelemetryOrBuilder> 
+          Telemetry.NetworkTelemetry, Telemetry.NetworkTelemetry.Builder, Telemetry.NetworkTelemetryOrBuilder>
           internalGetNetworkTelemetryFieldBuilder() {
         if (networkTelemetryBuilder_ == null) {
           networkTelemetryBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              schemas.v1.telemetry.Telemetry.NetworkTelemetry, schemas.v1.telemetry.Telemetry.NetworkTelemetry.Builder, schemas.v1.telemetry.Telemetry.NetworkTelemetryOrBuilder>(
+              Telemetry.NetworkTelemetry, Telemetry.NetworkTelemetry.Builder, Telemetry.NetworkTelemetryOrBuilder>(
                   getNetworkTelemetry(),
                   getParentForChildren(),
                   isClean());
@@ -991,12 +991,12 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     }
 
     // @@protoc_insertion_point(class_scope:schemas.v1.telemetry.DeviceTelemetry)
-    private static final schemas.v1.telemetry.Telemetry.DeviceTelemetry DEFAULT_INSTANCE;
+    private static final Telemetry.DeviceTelemetry DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new schemas.v1.telemetry.Telemetry.DeviceTelemetry();
+      DEFAULT_INSTANCE = new Telemetry.DeviceTelemetry();
     }
 
-    public static schemas.v1.telemetry.Telemetry.DeviceTelemetry getDefaultInstance() {
+    public static Telemetry.DeviceTelemetry getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1032,7 +1032,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     }
 
     @java.lang.Override
-    public schemas.v1.telemetry.Telemetry.DeviceTelemetry getDefaultInstanceForType() {
+    public Telemetry.DeviceTelemetry getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1126,15 +1126,15 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_descriptor;
+      return Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_fieldAccessorTable
+      return Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              schemas.v1.telemetry.Telemetry.NetworkTelemetry.class, schemas.v1.telemetry.Telemetry.NetworkTelemetry.Builder.class);
+              Telemetry.NetworkTelemetry.class, Telemetry.NetworkTelemetry.Builder.class);
     }
 
     public static final int NETWORK_TYPE_FIELD_NUMBER = 1;
@@ -1368,10 +1368,10 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof schemas.v1.telemetry.Telemetry.NetworkTelemetry)) {
+      if (!(obj instanceof Telemetry.NetworkTelemetry)) {
         return super.equals(obj);
       }
-      schemas.v1.telemetry.Telemetry.NetworkTelemetry other = (schemas.v1.telemetry.Telemetry.NetworkTelemetry) obj;
+      Telemetry.NetworkTelemetry other = (Telemetry.NetworkTelemetry) obj;
 
       if (!getNetworkType()
           .equals(other.getNetworkType())) return false;
@@ -1409,44 +1409,44 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       return hash;
     }
 
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(byte[] data)
+    public static Telemetry.NetworkTelemetry parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(java.io.InputStream input)
+    public static Telemetry.NetworkTelemetry parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1454,26 +1454,26 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseDelimitedFrom(java.io.InputStream input)
+    public static Telemetry.NetworkTelemetry parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseDelimitedFrom(
+    public static Telemetry.NetworkTelemetry parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry parseFrom(
+    public static Telemetry.NetworkTelemetry parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1486,7 +1486,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(schemas.v1.telemetry.Telemetry.NetworkTelemetry prototype) {
+    public static Builder newBuilder(Telemetry.NetworkTelemetry prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1507,18 +1507,18 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:schemas.v1.telemetry.NetworkTelemetry)
-        schemas.v1.telemetry.Telemetry.NetworkTelemetryOrBuilder {
+        Telemetry.NetworkTelemetryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_descriptor;
+        return Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_fieldAccessorTable
+        return Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                schemas.v1.telemetry.Telemetry.NetworkTelemetry.class, schemas.v1.telemetry.Telemetry.NetworkTelemetry.Builder.class);
+                Telemetry.NetworkTelemetry.class, Telemetry.NetworkTelemetry.Builder.class);
       }
 
       // Construct using schemas.v1.telemetry.Telemetry.NetworkTelemetry.newBuilder()
@@ -1546,17 +1546,17 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return schemas.v1.telemetry.Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_descriptor;
+        return Telemetry.internal_static_schemas_v1_telemetry_NetworkTelemetry_descriptor;
       }
 
       @java.lang.Override
-      public schemas.v1.telemetry.Telemetry.NetworkTelemetry getDefaultInstanceForType() {
-        return schemas.v1.telemetry.Telemetry.NetworkTelemetry.getDefaultInstance();
+      public Telemetry.NetworkTelemetry getDefaultInstanceForType() {
+        return Telemetry.NetworkTelemetry.getDefaultInstance();
       }
 
       @java.lang.Override
-      public schemas.v1.telemetry.Telemetry.NetworkTelemetry build() {
-        schemas.v1.telemetry.Telemetry.NetworkTelemetry result = buildPartial();
+      public Telemetry.NetworkTelemetry build() {
+        Telemetry.NetworkTelemetry result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1564,14 +1564,14 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
       }
 
       @java.lang.Override
-      public schemas.v1.telemetry.Telemetry.NetworkTelemetry buildPartial() {
-        schemas.v1.telemetry.Telemetry.NetworkTelemetry result = new schemas.v1.telemetry.Telemetry.NetworkTelemetry(this);
+      public Telemetry.NetworkTelemetry buildPartial() {
+        Telemetry.NetworkTelemetry result = new Telemetry.NetworkTelemetry(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(schemas.v1.telemetry.Telemetry.NetworkTelemetry result) {
+      private void buildPartial0(Telemetry.NetworkTelemetry result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.networkType_ = networkType_;
@@ -1592,16 +1592,16 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof schemas.v1.telemetry.Telemetry.NetworkTelemetry) {
-          return mergeFrom((schemas.v1.telemetry.Telemetry.NetworkTelemetry)other);
+        if (other instanceof Telemetry.NetworkTelemetry) {
+          return mergeFrom((Telemetry.NetworkTelemetry)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(schemas.v1.telemetry.Telemetry.NetworkTelemetry other) {
-        if (other == schemas.v1.telemetry.Telemetry.NetworkTelemetry.getDefaultInstance()) return this;
+      public Builder mergeFrom(Telemetry.NetworkTelemetry other) {
+        if (other == Telemetry.NetworkTelemetry.getDefaultInstance()) return this;
         if (!other.getNetworkType().isEmpty()) {
           networkType_ = other.networkType_;
           bitField0_ |= 0x00000001;
@@ -2017,12 +2017,12 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     }
 
     // @@protoc_insertion_point(class_scope:schemas.v1.telemetry.NetworkTelemetry)
-    private static final schemas.v1.telemetry.Telemetry.NetworkTelemetry DEFAULT_INSTANCE;
+    private static final Telemetry.NetworkTelemetry DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new schemas.v1.telemetry.Telemetry.NetworkTelemetry();
+      DEFAULT_INSTANCE = new Telemetry.NetworkTelemetry();
     }
 
-    public static schemas.v1.telemetry.Telemetry.NetworkTelemetry getDefaultInstance() {
+    public static Telemetry.NetworkTelemetry getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2058,7 +2058,7 @@ public final class Telemetry extends com.google.protobuf.GeneratedFile {
     }
 
     @java.lang.Override
-    public schemas.v1.telemetry.Telemetry.NetworkTelemetry getDefaultInstanceForType() {
+    public Telemetry.NetworkTelemetry getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 

@@ -14,6 +14,7 @@ repositories {
 dependencies {
 
     implementation(project(":events"))
+    implementation(project(":schema"))
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.amqp)

@@ -14,7 +14,7 @@ repositories {
 dependencies {
 
     implementation(project(":events"))
-    implementation(project(":vehicle-service-contract"))
+    implementation(project(":schema"))
     implementation(libs.spring.boot.grpc)
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.data.jpa)

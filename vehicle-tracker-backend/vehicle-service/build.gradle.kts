@@ -13,7 +13,7 @@ repositories {
 
 dependencies {
 
-    implementation(project(":vehicle-service-contract"))
+    implementation(project(":schema"))
     implementation(libs.spring.boot.grpc)
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.web)

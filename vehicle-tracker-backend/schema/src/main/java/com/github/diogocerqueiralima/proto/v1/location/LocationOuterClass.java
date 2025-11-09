@@ -3,7 +3,7 @@
 // source: vehicle-tracker-schemas/Location.proto
 // Protobuf Java Version: 4.32.1
 
-package schemas.v1.location;
+package com.github.diogocerqueiralima.proto.v1.location;
 
 @com.google.protobuf.Generated
 public final class LocationOuterClass extends com.google.protobuf.GeneratedFile {
@@ -152,15 +152,15 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return schemas.v1.location.LocationOuterClass.internal_static_schemas_v1_location_Location_descriptor;
+      return LocationOuterClass.internal_static_schemas_v1_location_Location_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return schemas.v1.location.LocationOuterClass.internal_static_schemas_v1_location_Location_fieldAccessorTable
+      return LocationOuterClass.internal_static_schemas_v1_location_Location_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              schemas.v1.location.LocationOuterClass.Location.class, schemas.v1.location.LocationOuterClass.Location.Builder.class);
+              LocationOuterClass.Location.class, LocationOuterClass.Location.Builder.class);
     }
 
     public static final int TIME_FIELD_NUMBER = 1;
@@ -520,10 +520,10 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof schemas.v1.location.LocationOuterClass.Location)) {
+      if (!(obj instanceof LocationOuterClass.Location)) {
         return super.equals(obj);
       }
-      schemas.v1.location.LocationOuterClass.Location other = (schemas.v1.location.LocationOuterClass.Location) obj;
+      LocationOuterClass.Location other = (LocationOuterClass.Location) obj;
 
       if (!getTime()
           .equals(other.getTime())) return false;
@@ -583,44 +583,44 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
       return hash;
     }
 
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(byte[] data)
+    public static LocationOuterClass.Location parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(java.io.InputStream input)
+    public static LocationOuterClass.Location parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -628,26 +628,26 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static schemas.v1.location.LocationOuterClass.Location parseDelimitedFrom(java.io.InputStream input)
+    public static LocationOuterClass.Location parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static schemas.v1.location.LocationOuterClass.Location parseDelimitedFrom(
+    public static LocationOuterClass.Location parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessage
           .parseWithIOException(PARSER, input);
     }
-    public static schemas.v1.location.LocationOuterClass.Location parseFrom(
+    public static LocationOuterClass.Location parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -660,7 +660,7 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(schemas.v1.location.LocationOuterClass.Location prototype) {
+    public static Builder newBuilder(LocationOuterClass.Location prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -681,18 +681,18 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:schemas.v1.location.Location)
-        schemas.v1.location.LocationOuterClass.LocationOrBuilder {
+        LocationOuterClass.LocationOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return schemas.v1.location.LocationOuterClass.internal_static_schemas_v1_location_Location_descriptor;
+        return LocationOuterClass.internal_static_schemas_v1_location_Location_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return schemas.v1.location.LocationOuterClass.internal_static_schemas_v1_location_Location_fieldAccessorTable
+        return LocationOuterClass.internal_static_schemas_v1_location_Location_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                schemas.v1.location.LocationOuterClass.Location.class, schemas.v1.location.LocationOuterClass.Location.Builder.class);
+                LocationOuterClass.Location.class, LocationOuterClass.Location.Builder.class);
       }
 
       // Construct using schemas.v1.location.LocationOuterClass.Location.newBuilder()
@@ -724,17 +724,17 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return schemas.v1.location.LocationOuterClass.internal_static_schemas_v1_location_Location_descriptor;
+        return LocationOuterClass.internal_static_schemas_v1_location_Location_descriptor;
       }
 
       @java.lang.Override
-      public schemas.v1.location.LocationOuterClass.Location getDefaultInstanceForType() {
-        return schemas.v1.location.LocationOuterClass.Location.getDefaultInstance();
+      public LocationOuterClass.Location getDefaultInstanceForType() {
+        return LocationOuterClass.Location.getDefaultInstance();
       }
 
       @java.lang.Override
-      public schemas.v1.location.LocationOuterClass.Location build() {
-        schemas.v1.location.LocationOuterClass.Location result = buildPartial();
+      public LocationOuterClass.Location build() {
+        LocationOuterClass.Location result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -742,14 +742,14 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
       }
 
       @java.lang.Override
-      public schemas.v1.location.LocationOuterClass.Location buildPartial() {
-        schemas.v1.location.LocationOuterClass.Location result = new schemas.v1.location.LocationOuterClass.Location(this);
+      public LocationOuterClass.Location buildPartial() {
+        LocationOuterClass.Location result = new LocationOuterClass.Location(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(schemas.v1.location.LocationOuterClass.Location result) {
+      private void buildPartial0(LocationOuterClass.Location result) {
         int from_bitField0_ = bitField0_;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           result.time_ = time_;
@@ -782,16 +782,16 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
 
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof schemas.v1.location.LocationOuterClass.Location) {
-          return mergeFrom((schemas.v1.location.LocationOuterClass.Location)other);
+        if (other instanceof LocationOuterClass.Location) {
+          return mergeFrom((LocationOuterClass.Location)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(schemas.v1.location.LocationOuterClass.Location other) {
-        if (other == schemas.v1.location.LocationOuterClass.Location.getDefaultInstance()) return this;
+      public Builder mergeFrom(LocationOuterClass.Location other) {
+        if (other == LocationOuterClass.Location.getDefaultInstance()) return this;
         if (!other.getTime().isEmpty()) {
           time_ = other.time_;
           bitField0_ |= 0x00000001;
@@ -1451,12 +1451,12 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
     }
 
     // @@protoc_insertion_point(class_scope:schemas.v1.location.Location)
-    private static final schemas.v1.location.LocationOuterClass.Location DEFAULT_INSTANCE;
+    private static final LocationOuterClass.Location DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new schemas.v1.location.LocationOuterClass.Location();
+      DEFAULT_INSTANCE = new LocationOuterClass.Location();
     }
 
-    public static schemas.v1.location.LocationOuterClass.Location getDefaultInstance() {
+    public static LocationOuterClass.Location getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1492,7 +1492,7 @@ public final class LocationOuterClass extends com.google.protobuf.GeneratedFile 
     }
 
     @java.lang.Override
-    public schemas.v1.location.LocationOuterClass.Location getDefaultInstanceForType() {
+    public LocationOuterClass.Location getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
