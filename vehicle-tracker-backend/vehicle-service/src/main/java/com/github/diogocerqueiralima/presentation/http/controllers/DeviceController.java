@@ -3,7 +3,7 @@ package com.github.diogocerqueiralima.presentation.http.controllers;
 import com.github.diogocerqueiralima.application.commands.CreateDeviceCommand;
 import com.github.diogocerqueiralima.application.commands.LookupDeviceByIdCommand;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
-import com.github.diogocerqueiralima.domain.ports.inbound.DeviceService;
+import com.github.diogocerqueiralima.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
 import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
@@ -26,11 +26,11 @@ import static com.github.diogocerqueiralima.presentation.http.Paths.DEVICE_PATH;
 public class DeviceController {
 
     private final DeviceMapper deviceMapper;
-    private final DeviceService deviceService;
+    private final DeviceUseCase deviceUseCase;
 
-    public DeviceController(@Qualifier("dm-presentation") DeviceMapper deviceMapper, DeviceService deviceService) {
+    public DeviceController(@Qualifier("dm-presentation") DeviceMapper deviceMapper, DeviceUseCase deviceUseCase) {
         this.deviceMapper = deviceMapper;
-        this.deviceService = deviceService;
+        this.deviceUseCase = deviceUseCase;
     }
 
     /**
@@ -50,7 +50,7 @@ public class DeviceController {
         CreateDeviceCommand command = new CreateDeviceCommand(
                 dto.imei(), dto.serialNumber(), dto.manufacturer(), dto.vehicleId()
         );
-        DeviceResult result = deviceService.create(command, executionContext);
+        DeviceResult result = deviceUseCase.create(command, executionContext);
         DeviceDTO resultDTO = deviceMapper.toDTO(result);
 
         return ResponseEntity
@@ -71,7 +71,7 @@ public class DeviceController {
 
         ExecutionContext executionContext = UserExecutionContext.fromJwt(jwt);
         LookupDeviceByIdCommand command = new LookupDeviceByIdCommand(id);
-        DeviceResult result = deviceService.getById(command, executionContext);
+        DeviceResult result = deviceUseCase.getById(command, executionContext);
         DeviceDTO resultDTO = deviceMapper.toDTO(result);
 
         return ResponseEntity
@@ -93,7 +93,7 @@ public class DeviceController {
         ExecutionContext executionContext = UserExecutionContext.fromJwt(jwt);
         LookupDeviceByIdCommand command = new LookupDeviceByIdCommand(id);
 
-        deviceService.delete(command, executionContext);
+        deviceUseCase.delete(command, executionContext);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

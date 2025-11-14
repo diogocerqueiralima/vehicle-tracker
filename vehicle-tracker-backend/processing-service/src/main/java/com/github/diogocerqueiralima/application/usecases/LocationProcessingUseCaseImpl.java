@@ -1,10 +1,10 @@
-package com.github.diogocerqueiralima.application.services;
+package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.LocationCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.domain.model.LocationSnapshot;
 import com.github.diogocerqueiralima.domain.model.Vehicle;
-import com.github.diogocerqueiralima.domain.ports.inbound.LocationProcessingService;
+import com.github.diogocerqueiralima.domain.ports.inbound.LocationProcessingUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.LocationSnapshotPersistence;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleGrpc;
 import org.slf4j.Logger;
@@ -14,14 +14,14 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class LocationProcessingServiceImpl implements LocationProcessingService {
+public class LocationProcessingUseCaseImpl implements LocationProcessingUseCase {
 
-    private static final Logger log = LoggerFactory.getLogger(LocationProcessingServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(LocationProcessingUseCaseImpl.class);
 
     private final VehicleGrpc vehicleGrpc;
     private final LocationSnapshotPersistence locationSnapshotPersistence;
 
-    public LocationProcessingServiceImpl(
+    public LocationProcessingUseCaseImpl(
             VehicleGrpc vehicleGrpc, LocationSnapshotPersistence locationSnapshotPersistence
     ) {
         this.vehicleGrpc = vehicleGrpc;

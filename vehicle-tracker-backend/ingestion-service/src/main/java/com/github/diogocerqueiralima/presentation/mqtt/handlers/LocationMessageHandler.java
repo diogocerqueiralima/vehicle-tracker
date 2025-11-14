@@ -1,7 +1,7 @@
-package com.github.diogocerqueiralima.presentation.mqtt.adapters;
+package com.github.diogocerqueiralima.presentation.mqtt.handlers;
 
 import com.github.diogocerqueiralima.application.commands.ReceiveLocationCommand;
-import com.github.diogocerqueiralima.domain.ports.inbound.LocationService;
+import com.github.diogocerqueiralima.domain.ports.inbound.LocationUseCase;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -15,10 +15,10 @@ import java.util.UUID;
 @Component
 public class LocationMessageHandler {
 
-    private final LocationService locationService;
+    private final LocationUseCase locationUseCase;
 
-    public LocationMessageHandler(LocationService locationService) {
-        this.locationService = locationService;
+    public LocationMessageHandler(LocationUseCase locationUseCase) {
+        this.locationUseCase = locationUseCase;
     }
 
     /**
@@ -48,7 +48,7 @@ public class LocationMessageHandler {
                         UUID.randomUUID()
                 );
 
-                locationService.receive(command);
+                locationUseCase.receive(command);
 
             } catch (InvalidProtocolBufferException e) {
                 throw new RuntimeException(e);

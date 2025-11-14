@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.application.services;
+package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.LookupVehicleByIdCommand;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class VehicleServiceImplTest {
+class VehicleUseCaseImplTest {
 
     @Mock
     private VehiclePersistence vehiclePersistence;
@@ -33,7 +33,7 @@ class VehicleServiceImplTest {
     private VehicleMapper vehicleMapper;
 
     @InjectMocks
-    private VehicleServiceImpl vehicleService;
+    private VehicleUseCaseImpl vehicleUseCase;
 
     @BeforeEach
     public void setup() {
@@ -67,7 +67,7 @@ class VehicleServiceImplTest {
                 .thenReturn(true);
 
 
-        assertThrows(VehicleAlreadyExistsException.class, () -> vehicleService.create(command));
+        assertThrows(VehicleAlreadyExistsException.class, () -> vehicleUseCase.create(command));
     }
 
     @Test
@@ -88,7 +88,7 @@ class VehicleServiceImplTest {
         when(vehiclePersistence.existsByPlate(command.plate()))
                 .thenReturn(true);
 
-        assertThrows(VehicleAlreadyExistsException.class, () -> vehicleService.create(command));
+        assertThrows(VehicleAlreadyExistsException.class, () -> vehicleUseCase.create(command));
     }
 
     @Test
@@ -122,7 +122,7 @@ class VehicleServiceImplTest {
         when(vehiclePersistence.save(any()))
                 .thenReturn(vehicle);
 
-        VehicleResult result = vehicleService.create(command);
+        VehicleResult result = vehicleUseCase.create(command);
 
         assertNotNull(result);
         assertEquals(command.vin(), result.vin());
@@ -142,7 +142,7 @@ class VehicleServiceImplTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(VehicleNotFoundException.class, () -> {
-            vehicleService.getById(new LookupVehicleByIdCommand(vehicleId), InternalExecutionContext.create());
+            vehicleUseCase.getById(new LookupVehicleByIdCommand(vehicleId), InternalExecutionContext.create());
         });
     }
 
@@ -167,7 +167,7 @@ class VehicleServiceImplTest {
                 .thenReturn(Optional.of(vehicle));
 
         assertThrows(VehicleNotFoundException.class, () -> {
-            vehicleService.getById(new LookupVehicleByIdCommand(vehicleId), UserExecutionContext.create(otherUserId));
+            vehicleUseCase.getById(new LookupVehicleByIdCommand(vehicleId), UserExecutionContext.create(otherUserId));
         });
     }
 
@@ -190,7 +190,7 @@ class VehicleServiceImplTest {
         when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
-        VehicleResult result = vehicleService.getById(
+        VehicleResult result = vehicleUseCase.getById(
                 new LookupVehicleByIdCommand(vehicleId),
                 UserExecutionContext.create(ownerId)
         );
@@ -224,7 +224,7 @@ class VehicleServiceImplTest {
         when(vehiclePersistence.findById(vehicleId))
                 .thenReturn(Optional.of(vehicle));
 
-        VehicleResult result = vehicleService.getById(
+        VehicleResult result = vehicleUseCase.getById(
                 new LookupVehicleByIdCommand(vehicleId),
                 InternalExecutionContext.create()
         );
@@ -249,7 +249,7 @@ class VehicleServiceImplTest {
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
         assertThrows(VehicleNotFoundException.class, () -> {
-            vehicleService.deleteById(command, InternalExecutionContext.create());
+            vehicleUseCase.deleteById(command, InternalExecutionContext.create());
         });
 
     }
@@ -276,7 +276,7 @@ class VehicleServiceImplTest {
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
         assertThrows(VehicleNotFoundException.class, () -> {
-            vehicleService.deleteById(command, UserExecutionContext.create(otherUserId));
+            vehicleUseCase.deleteById(command, UserExecutionContext.create(otherUserId));
         });
 
     }
@@ -301,7 +301,7 @@ class VehicleServiceImplTest {
                 .thenReturn(Optional.of(vehicle));
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
-        vehicleService.deleteById(command, UserExecutionContext.create(ownerId));
+        vehicleUseCase.deleteById(command, UserExecutionContext.create(ownerId));
 
         verify(vehiclePersistence).delete(vehicle);
     }
@@ -326,7 +326,7 @@ class VehicleServiceImplTest {
                 .thenReturn(Optional.of(vehicle));
 
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(vehicleId);
-        vehicleService.deleteById(command, InternalExecutionContext.create());
+        vehicleUseCase.deleteById(command, InternalExecutionContext.create());
 
         verify(vehiclePersistence).delete(vehicle);
     }

@@ -3,7 +3,7 @@ package com.github.diogocerqueiralima.presentation.http.controllers;
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.LookupVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
-import com.github.diogocerqueiralima.domain.ports.inbound.VehicleService;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
 import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
@@ -29,11 +29,11 @@ import static com.github.diogocerqueiralima.presentation.http.Paths.*;
 public class VehicleController {
 
     private final VehicleMapper vehicleMapper;
-    private final VehicleService vehicleService;
+    private final VehicleUseCase vehicleUseCase;
 
-    public VehicleController(@Qualifier("vm-presentation") VehicleMapper vehicleMapper, VehicleService vehicleService) {
+    public VehicleController(@Qualifier("vm-presentation") VehicleMapper vehicleMapper, VehicleUseCase vehicleUseCase) {
         this.vehicleMapper = vehicleMapper;
-        this.vehicleService = vehicleService;
+        this.vehicleUseCase = vehicleUseCase;
     }
 
     /**
@@ -49,7 +49,7 @@ public class VehicleController {
             @RequestBody CreateVehicleDTO dto, @AuthenticationPrincipal Jwt jwt
     ) {
 
-        VehicleResult result = vehicleService.create(
+        VehicleResult result = vehicleUseCase.create(
                 new CreateVehicleCommand(
                         dto.vin(),
                         dto.plate(),
@@ -80,7 +80,7 @@ public class VehicleController {
 
         ExecutionContext context = UserExecutionContext.fromJwt(jwt);
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(id);
-        VehicleResult result = vehicleService.getById(command, context);
+        VehicleResult result = vehicleUseCase.getById(command, context);
         VehicleDTO resultDTO = vehicleMapper.toDTO(result);
 
         return ResponseEntity
@@ -101,7 +101,7 @@ public class VehicleController {
 
         ExecutionContext context = UserExecutionContext.fromJwt(jwt);
         LookupVehicleByIdCommand command = new LookupVehicleByIdCommand(id);
-        vehicleService.deleteById(command, context);
+        vehicleUseCase.deleteById(command, context);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

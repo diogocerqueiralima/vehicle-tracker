@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.application.services;
+package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.LookupVehicleByDeviceIdCommand;
@@ -8,7 +8,7 @@ import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundExcep
 import com.github.diogocerqueiralima.application.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.model.Vehicle;
-import com.github.diogocerqueiralima.domain.ports.inbound.VehicleService;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.presentation.context.ExecutionContext;
 import com.github.diogocerqueiralima.presentation.context.UserExecutionContext;
@@ -18,12 +18,12 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class VehicleServiceImpl implements VehicleService {
+public class VehicleUseCaseImpl implements VehicleUseCase {
 
     private final VehicleMapper vehicleMapper;
     private final VehiclePersistence vehiclePersistence;
 
-    public VehicleServiceImpl(
+    public VehicleUseCaseImpl(
             @Qualifier("vm-application") VehicleMapper vehicleMapper, VehiclePersistence vehiclePersistence
     ) {
         this.vehicleMapper = vehicleMapper;

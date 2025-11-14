@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-public interface LocationService {
+public interface LocationUseCase {
 
     /**
      * Receives a location command and forwards it for further handling.

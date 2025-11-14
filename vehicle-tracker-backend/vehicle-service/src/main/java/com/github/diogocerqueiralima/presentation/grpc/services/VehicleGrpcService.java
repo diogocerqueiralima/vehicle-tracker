@@ -3,7 +3,7 @@ package com.github.diogocerqueiralima.presentation.grpc.services;
 import com.github.diogocerqueiralima.application.commands.LookupVehicleByDeviceIdCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
-import com.github.diogocerqueiralima.domain.ports.inbound.VehicleService;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.proto.DeviceId;
 import com.github.diogocerqueiralima.proto.VehicleResponse;
 import com.github.diogocerqueiralima.proto.VehicleServiceGrpc;
@@ -20,9 +20,9 @@ import java.util.UUID;
 @GrpcService
 public class VehicleGrpcService extends VehicleServiceGrpc.VehicleServiceImplBase {
 
-    private final VehicleService vehicleService;
+    private final VehicleUseCase vehicleService;
 
-    public VehicleGrpcService(VehicleService vehicleService) {
+    public VehicleGrpcService(VehicleUseCase vehicleService) {
         this.vehicleService = vehicleService;
     }
 

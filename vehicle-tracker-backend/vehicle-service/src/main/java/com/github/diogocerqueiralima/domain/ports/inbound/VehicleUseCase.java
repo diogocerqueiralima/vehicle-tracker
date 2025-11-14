@@ -14,7 +14,7 @@ import org.springframework.validation.annotation.Validated;
  * Service interface for vehicle-related operations.
  */
 @Validated
-public interface VehicleService {
+public interface VehicleUseCase {
 
     /**
      *

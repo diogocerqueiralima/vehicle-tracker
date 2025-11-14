@@ -1,8 +1,8 @@
-package com.github.diogocerqueiralima.application.services;
+package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.ReceiveLocationCommand;
 import com.github.diogocerqueiralima.domain.model.Location;
-import com.github.diogocerqueiralima.domain.ports.inbound.LocationService;
+import com.github.diogocerqueiralima.domain.ports.inbound.LocationUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.LocationPublisher;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +12,11 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Service
-public class LocationServiceImpl implements LocationService {
+public class LocationUseCaseImpl implements LocationUseCase {
 
     private final LocationPublisher locationPublisher;
 
-    public LocationServiceImpl(LocationPublisher locationPublisher) {
+    public LocationUseCaseImpl(LocationPublisher locationPublisher) {
         this.locationPublisher = locationPublisher;
     }
 

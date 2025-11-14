@@ -9,7 +9,7 @@ import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundExcept
 /**
  * Service interface for managing devices.
  */
-public interface DeviceService {
+public interface DeviceUseCase {
 
     /**
      *

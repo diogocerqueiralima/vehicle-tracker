@@ -5,7 +5,7 @@ import com.github.diogocerqueiralima.application.commands.LocationCommand;
 /**
  * Port for processing location events.
  */
-public interface LocationProcessingService {
+public interface LocationProcessingUseCase {
 
     /**
      *
