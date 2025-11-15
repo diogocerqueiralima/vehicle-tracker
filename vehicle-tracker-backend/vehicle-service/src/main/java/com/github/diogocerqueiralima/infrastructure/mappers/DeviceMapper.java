@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.infrastructure.mappers;
 
 import com.github.diogocerqueiralima.domain.model.Device;
 import com.github.diogocerqueiralima.infrastructure.entities.DeviceEntity;
+import com.github.diogocerqueiralima.infrastructure.entities.VehicleEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -16,13 +17,15 @@ public class DeviceMapper {
 
     public DeviceEntity toEntity(Device device) {
 
+        VehicleEntity vehicleEntity = vehicleMapper.toEntity(device.getVehicle());
         DeviceEntity deviceEntity = new DeviceEntity();
 
+        vehicleEntity.setDevice(deviceEntity);
         deviceEntity.setId(device.getId());
         deviceEntity.setImei(device.getImei());
         deviceEntity.setSerialNumber(device.getSerialNumber());
         deviceEntity.setManufacturer(device.getManufacturer());
-        deviceEntity.setVehicle(vehicleMapper.toEntity(device.getVehicle()));
+        deviceEntity.setVehicle(vehicleEntity);
 
         return deviceEntity;
     }

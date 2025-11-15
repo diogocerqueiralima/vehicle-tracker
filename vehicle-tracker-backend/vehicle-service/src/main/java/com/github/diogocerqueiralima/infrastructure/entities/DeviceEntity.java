@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "devices")
+@Table(name = "devices", schema = "vehicle_tracker_schema")
 public class DeviceEntity {
 
     @Id
@@ -24,7 +24,7 @@ public class DeviceEntity {
     @Column(nullable = false)
     private String manufacturer;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id", nullable = false)
     private VehicleEntity vehicle;
 

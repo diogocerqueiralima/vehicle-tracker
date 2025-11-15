@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "vehicles")
+@Table(name = "vehicles", schema = "vehicle_tracker_schema")
 public class VehicleEntity {
 
     @Id
@@ -88,6 +88,10 @@ public class VehicleEntity {
 
     public void setYear(Integer year) {
         this.year = year;
+    }
+
+    public void setDevice(DeviceEntity device) {
+        this.device = device;
     }
 
     public UUID getOwnerId() {
