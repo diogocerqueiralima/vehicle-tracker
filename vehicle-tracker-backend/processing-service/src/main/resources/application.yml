@@ -17,7 +17,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 queues:
   location:
     name: ${LOCATION_QUEUE_NAME}

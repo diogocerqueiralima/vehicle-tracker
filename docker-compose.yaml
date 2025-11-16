@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgis/postgis
+    image: timescale/timescaledb-ha:pg18.1-ts2.23.0-all
     container_name: tracker_postgres
     environment:
       POSTGRES_DB: ${POSTGRESQL_DATABASE}

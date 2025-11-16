@@ -4,11 +4,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.locationtech.jts.geom.Point;
 
 import java.util.UUID;
 
 @Entity
-@Table(name = "location_snapshots")
+@Table(name = "locations_snapshots", schema = "vehicle_tracker_schema")
 public class LocationSnapshotEntity {
 
     @Id
@@ -17,14 +18,8 @@ public class LocationSnapshotEntity {
     @Column(name = "vehicle_id", nullable = false)
     private UUID vehicleId;
 
-    @Column(nullable = false)
-    private double latitude;
-
-    @Column(nullable = false)
-    private double longitude;
-
-    @Column(nullable = false)
-    private double altitude;
+    @Column(nullable = false, columnDefinition = "geometry(Point, 4326)")
+    private Point point;
 
     @Column(nullable = false)
     private double speed;
@@ -40,16 +35,8 @@ public class LocationSnapshotEntity {
         this.vehicleId = vehicleId;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
-    public void setAltitude(double altitude) {
-        this.altitude = altitude;
+    public void setPoint(Point point) {
+        this.point = point;
     }
 
     public void setSpeed(double speed) {

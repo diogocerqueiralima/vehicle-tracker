@@ -1,12 +1,12 @@
 [versions]
-spring-boot = "3.5.6"
+spring-boot = "3.5.7"
 spring-dependency-management = "1.1.7"
 paho-client-mqttv3 = "1.2.5"
 protobuf = "4.32.1"
 jackson = "2.20.0"
 postgresql = "42.7.8"
 grpc = "1.76.0"
-hibernate-spatial = "7.1.8.Final"
+hibernate = "6.6.29.Final"
 
 [libraries]
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
@@ -27,7 +27,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
 grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
 grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
-hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial", version.ref = "hibernate-spatial" }
+hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial", version.ref = "hibernate" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
