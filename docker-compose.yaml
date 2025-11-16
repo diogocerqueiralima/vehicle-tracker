@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres
+    image: postgis/postgis
     container_name: tracker_postgres
     environment:
       POSTGRES_DB: ${POSTGRESQL_DATABASE}
@@ -16,7 +16,7 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KC_DB_URL: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+      KC_DB_URL: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?currentSchema=${KEYCLOAK_SCHEMA}
       KC_DB_USERNAME: ${POSTGRESQL_USERNAME}
       KC_DB_PASSWORD: ${POSTGRESQL_PASSWORD}
       KC_DB: postgres
