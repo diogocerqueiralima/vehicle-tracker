@@ -17,9 +17,7 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            VehicleTrackerMobileTheme() {
-                HomeScreen()
-            }
+            HomeScreen()
         }
     }
 }

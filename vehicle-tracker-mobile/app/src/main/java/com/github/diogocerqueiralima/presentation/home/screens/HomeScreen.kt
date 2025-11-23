@@ -13,8 +13,10 @@ import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileT
 @Composable
 fun HomeScreen() {
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        HomeView(modifier = Modifier.padding(innerPadding))
+    VehicleTrackerMobileTheme() {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            HomeView(modifier = Modifier.padding(innerPadding))
+        }
     }
 
 }
