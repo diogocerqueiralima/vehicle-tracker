@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import com.github.diogocerqueiralima.presentation.home.screens.HomeScreen
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
 class HomeActivity : ComponentActivity() {
@@ -16,10 +17,8 @@ class HomeActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            VehicleTrackerMobileTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Text(text = "Hello World!", modifier = Modifier.padding(innerPadding))
-                }
+            VehicleTrackerMobileTheme() {
+                HomeScreen()
             }
         }
     }
