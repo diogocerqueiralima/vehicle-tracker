@@ -1,3 +1,5 @@
-.pio
-src/secrets.h
-.vscode/**
+build/
+sdkconfig
+sdkconfig.old
+main/secrets/**
+managed_components/**
