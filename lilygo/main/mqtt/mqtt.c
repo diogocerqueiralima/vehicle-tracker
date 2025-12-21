@@ -38,3 +38,14 @@ esp_mqtt_client_handle_t mqtt_start(void) {
     ESP_LOGE("MQTT", "Failed to start MQTT client: %s", esp_err_to_name(err));
     return NULL;
 }
+
+void mqtt_publish_data(esp_mqtt_client_handle_t client, const char *topic, const char *data) {
+
+    int msg_id = esp_mqtt_client_publish(client, topic, data, 0, 1, 1);
+    if (msg_id != -1) {
+        ESP_LOGI("MQTT", "Published data to topic %s, msg_id=%d", topic, msg_id);
+    } else {
+        ESP_LOGE("MQTT", "Failed to publish data to topic %s", topic);
+    }
+
+}

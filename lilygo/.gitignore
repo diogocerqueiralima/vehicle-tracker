@@ -3,3 +3,4 @@ sdkconfig
 sdkconfig.old
 main/secrets/**
 managed_components/**
+.cache

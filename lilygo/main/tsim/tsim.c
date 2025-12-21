@@ -1,8 +1,10 @@
 #include "tsim.h"
-#include "../mqtt/mqtt.h"
 
 static const char *TAG = "TSIM";
 
+/**
+ * @brief Power on the TSIM modem using the PWRKEY pin.
+ */
 static void power_on() {
 
     ESP_LOGI(TAG, "Powering modem...");
@@ -18,30 +20,7 @@ static void power_on() {
     ESP_LOGI(TAG, "Power sequence finished.");
 }
 
-static void ppp_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
-
-    if (event_id == IP_EVENT_PPP_GOT_IP) {
-
-        ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
-
-        ESP_LOGI(TAG, "PPP CONNECTED");
-        ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&event->ip_info.ip));
-        
-        esp_mqtt_client_handle_t mqtt_client = mqtt_start();
-        if (mqtt_client == NULL) {
-            ESP_LOGE(TAG, "Failed to start MQTT client");
-            return;
-        }
-
-    }
-
-    if (event_id == IP_EVENT_PPP_LOST_IP) {
-        ESP_LOGW(TAG, "PPP LOST IP");
-    }
-    
-}
-
-bool tsim_init() {
+int tsim_init(esp_modem_dce_t **modem, ppp_event_handler_t handler) {
 
     power_on();
 
@@ -54,7 +33,7 @@ bool tsim_init() {
     ESP_ERROR_CHECK(esp_event_handler_register(
         IP_EVENT,
         ESP_EVENT_ANY_ID,
-        &ppp_event_handler,
+        handler,
         NULL
     ));
 
@@ -67,32 +46,115 @@ bool tsim_init() {
     
     esp_modem_dce_config_t dce_config = ESP_MODEM_DCE_DEFAULT_CONFIG("internet");
 
-    ESP_LOGI(TAG, "Creating modem instance...");
-    esp_modem_dce_t *modem = esp_modem_new(&dte_config, &dce_config, ppp_netif);
-    if (!modem) {
-        ESP_LOGE(TAG, "Failed to create modem");
-        return false;
+    *modem = esp_modem_new_dev(ESP_MODEM_DCE_SIM7600, &dte_config, &dce_config, ppp_netif);
+    if (*modem == NULL) {
+        return CREATE_MODEM_ERROR;
     }
 
     esp_err_t ret;
 
-    ret = esp_modem_set_mode(modem, ESP_MODEM_MODE_COMMAND);
+    ret = esp_modem_set_mode(*modem, ESP_MODEM_MODE_COMMAND);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set modem mode: %s", esp_err_to_name(ret));
-        return false;
+        return SET_MODEM_COMMAND_MODE_ERROR;
     }
 
-    ret = esp_modem_sync(modem);
+    ret = esp_modem_sync(*modem);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to sync modem: %s", esp_err_to_name(ret));
-        return false;
+        return SYNC_MODEM_ERROR;
     }
 
+    ret = esp_modem_at(*modem, "ATE0", NULL, 1000);
+    if (ret != ESP_OK) {
+        return DISABLE_ECHO_ERROR;
+    }
+
+    ret = esp_modem_at_raw(*modem, "AT+CTZU=1\r", NULL, "OK", "ERROR", 1000);
+    if (ret != ESP_OK) {
+        return UPDATE_TIME_AND_TIMEZONE_ERROR;
+    }
+
+    ret = esp_modem_at_raw(*modem, "AT+CREG=2\r", NULL, "OK", "ERROR", 1000);
+    if (ret != ESP_OK) {
+        return UPDATE_TIME_AND_TIMEZONE_ERROR;
+    }
+
+    ret = esp_modem_at_raw(*modem, "AT+CEREG=2\r", NULL, "OK", "ERROR", 1000);
+    if (ret != ESP_OK) {
+        return UPDATE_TIME_AND_TIMEZONE_ERROR;
+    }
+
+    ret = esp_modem_at_raw(*modem, "AT+CNTP=\"pool.ntp.org\",0\r", NULL, "OK", "ERROR", 1000);
+    if (ret != ESP_OK) {
+        return SET_NTP_SERVER_ERROR;
+    }
+
+    ret = esp_modem_at_raw(*modem, "AT+CNTP\r", NULL, "+CNTP: 0", "ERROR", 1000);
+    if (ret != ESP_OK) {
+        return UPDATE_NTP_ERROR;
+    }
+
+    return TSIM_SUCCESS;
+}
+
+int tsim_set_data_mode(esp_modem_dce_t *modem) {
+
+    esp_err_t ret;
+    
     ret = esp_modem_set_mode(modem, ESP_MODEM_MODE_DATA);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set modem to DATA mode: %s", esp_err_to_name(ret));
-        return false;
+        return SET_MODEM_DATA_MODE_ERROR;
     }
+    
+    return TSIM_SUCCESS;
+}
 
-    return true;
+int tsim_pause_data_mode(esp_modem_dce_t *modem) {
+
+    esp_err_t ret;
+
+    ret = esp_modem_pause_net(modem, true);
+    if (ret != ESP_OK) {
+        return PAUSE_NETWORK_ERROR;
+    }
+    
+    return TSIM_SUCCESS;
+}
+
+int tsim_resume_data_mode(esp_modem_dce_t *modem) {
+
+    esp_err_t ret;
+
+    ret = esp_modem_pause_net(modem, false);
+    if (ret != ESP_OK) {
+        return RESUME_NETWORK_ERROR;
+    }
+    
+    return TSIM_SUCCESS;
+}
+
+char *tsim_get_error_message(int code) {
+    switch (code) {
+        case TSIM_SUCCESS:
+            return "Success";
+        case CREATE_MODEM_ERROR:
+            return "Failed to create modem instance";
+        case SET_MODEM_COMMAND_MODE_ERROR:
+            return "Failed to set modem to command mode";
+        case SYNC_MODEM_ERROR:
+            return "Failed to synchronize with modem";
+        case DISABLE_ECHO_ERROR:
+            return "Failed to disable echo on modem";
+        case PAUSE_NETWORK_ERROR:
+            return "Failed to pause network";
+        case RESUME_NETWORK_ERROR:
+            return "Failed to resume network";
+        case UPDATE_TIME_AND_TIMEZONE_ERROR:
+            return "Failed to update time and timezone settings";
+        case SET_NTP_SERVER_ERROR:
+            return "Failed to set NTP server";
+        case UPDATE_NTP_ERROR:
+            return "Failed to update NTP time";
+        default:
+            return "Unknown error code";
+    }
 }
