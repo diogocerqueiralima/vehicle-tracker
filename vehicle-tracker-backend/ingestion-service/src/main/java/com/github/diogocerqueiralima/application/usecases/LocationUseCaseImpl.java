@@ -24,8 +24,8 @@ public class LocationUseCaseImpl implements LocationUseCase {
     public void receive(ReceiveLocationCommand command) {
 
         Instant timestamp = nmeaToInstant(command.date(), command.time());
-        double latitude = convertNMEACoordinateToDecimal(command.latitude(), command.latitudeDirection());
-        double longitude = convertNMEACoordinateToDecimal(command.longitude(), command.longitudeDirection());
+        double latitude = nmeaCoordinateToDecimal(command.latitude(), command.latitudeDirection());
+        double longitude = nmeaCoordinateToDecimal(command.longitude(), command.longitudeDirection());
         double altitude = command.altitude();
         double speed = command.speed() * (1852.0 / 3600000.0); // Convert from knots to m/s
         double course = command.course();
@@ -73,7 +73,7 @@ public class LocationUseCaseImpl implements LocationUseCase {
      * @param direction the direction character ('N', 'S', 'E', 'W')
      * @return the coordinate in decimal degrees
      */
-    private double convertNMEACoordinateToDecimal(String coordinate, String direction) {
+    private double nmeaCoordinateToDecimal(String coordinate, String direction) {
 
         int degreeLength = (direction.equals("N") || direction.equals("S")) ? 2 : 3;
 

@@ -54,7 +54,7 @@ public class LocationProcessingUseCaseImpl implements LocationProcessingUseCase 
         );
 
         locationSnapshotPersistence.save(snapshot);
-        log.info("Received location event from device with id: {}", deviceId);
+        log.info("Saved location snapshot for vehicle id: {}", vehicle.getId());
     }
 
 }

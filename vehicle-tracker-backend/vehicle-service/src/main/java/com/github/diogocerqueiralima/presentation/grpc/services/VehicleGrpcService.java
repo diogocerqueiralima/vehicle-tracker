@@ -20,10 +20,10 @@ import java.util.UUID;
 @GrpcService
 public class VehicleGrpcService extends VehicleServiceGrpc.VehicleServiceImplBase {
 
-    private final VehicleUseCase vehicleService;
+    private final VehicleUseCase vehicleUseCase;
 
-    public VehicleGrpcService(VehicleUseCase vehicleService) {
-        this.vehicleService = vehicleService;
+    public VehicleGrpcService(VehicleUseCase vehicleUseCase) {
+        this.vehicleUseCase = vehicleUseCase;
     }
 
     /**
@@ -41,7 +41,7 @@ public class VehicleGrpcService extends VehicleServiceGrpc.VehicleServiceImplBas
 
         try {
 
-            VehicleResult result = vehicleService.getByDeviceId(command);
+            VehicleResult result = vehicleUseCase.getByDeviceId(command);
             VehicleResponse response = VehicleResponse.newBuilder()
                     .setId(result.id().toString())
                     .build();
