@@ -7,11 +7,6 @@ int gps_init(esp_modem_dce_t *modem) {
     char response[128];
     esp_err_t ret;
 
-    int error_code = gps_disable(modem);
-    if (error_code != GPS_SUCCESS) {
-        return error_code;
-    }
-
     ret = esp_modem_at_raw(modem, "AT+CGPSURL=\"supl.google.com:7275\"\r", response, "OK", "ERROR", 1000);
     if (ret != ESP_OK) {
         return GPS_SET_SUPL_URL_ERROR;
@@ -37,14 +32,10 @@ int gps_init(esp_modem_dce_t *modem) {
         return GPS_GET_ASSIST_DATA_ERROR;
     }
 
-    esp_modem_at_raw(modem, "AT+CGPSPMD=773\r", response, "OK", "ERROR", 1000);
-    ESP_LOGI(TAG, "CGPSPMD response: %s", response);
-
-    esp_modem_at_raw(modem, "AT+CGPSPMD?\r", response, "OK", "ERROR", 1000);
-    ESP_LOGI(TAG, "CGPSPMD response: %s", response);
-
-    ret = esp_modem_at_raw(modem, "AT+CGPSXTRADATA?\r", response, "OK", "ERROR", 1000);
-    ESP_LOGI(TAG, "XTRA data status: %s", response);
+    ret = esp_modem_at_raw(modem, "AT+CGPSPMD=773\r", response, "OK", "ERROR", 1000);
+    if (ret != ESP_OK) {
+        return GPS_CONFIGURE_POSITION_MODE_ERROR;
+    }
 
     return GPS_SUCCESS;
 }
@@ -53,7 +44,7 @@ int gps_enable(esp_modem_dce_t *modem) {
 
     esp_err_t ret;
 
-    ret = esp_modem_at_raw(modem, "AT+CGPS=1,3\r", NULL, "OK", "ERROR", 1000);
+    ret = esp_modem_at_raw(modem, "AT+CGPS=1,2\r", NULL, "OK", "ERROR", 1000);
     if (ret != ESP_OK) {
         return GPS_ENABLE_ERROR;
     }
@@ -105,8 +96,6 @@ int gps_get_data(gps_data_t *data, esp_modem_dce_t *modem) {
     if (ret != ESP_OK) {
         return GPS_GET_DATA_ERROR;
     }
-
-    ESP_LOGI(TAG, "CGNSSINFO response: %s", response);
 
     char *line = strtok(response, "\r\n");
     if (line == NULL || strstr(line, "+CGNSSINFO: ,,,,,,,,,,,,,,,") != NULL) {
@@ -161,6 +150,8 @@ char *gps_get_error_message(int code) {
             return "Failed to get GPS data";
         case GPS_FIX_NOT_READY:
             return "GPS fix not ready";
+        case GPS_CONFIGURE_POSITION_MODE_ERROR:
+            return "Failed to configure GPS position mode";
         default:
             return "Unknown error";
     }

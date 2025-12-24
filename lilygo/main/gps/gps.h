@@ -10,16 +10,17 @@
 
 #include "../utils/at.h"
 
-#define GPS_SUCCESS                 0
-#define GPS_SET_SUPL_URL_ERROR      1
-#define GPS_SET_XTRA_FUNCTION_ERROR 2
-#define GPS_SET_SSL_ERROR           3
-#define GPS_GET_ASSIST_DATA_ERROR   4
-#define GPS_ENABLE_ERROR            5
-#define GPS_DISABLE_ERROR           6
-#define GPS_GET_MODE_ERROR          7
-#define GPS_GET_DATA_ERROR          8
-#define GPS_FIX_NOT_READY           9
+#define GPS_SUCCESS                         0
+#define GPS_SET_SUPL_URL_ERROR              1
+#define GPS_SET_XTRA_FUNCTION_ERROR         2
+#define GPS_SET_SSL_ERROR                   3
+#define GPS_GET_ASSIST_DATA_ERROR           4
+#define GPS_ENABLE_ERROR                    5
+#define GPS_DISABLE_ERROR                   6
+#define GPS_GET_MODE_ERROR                  7
+#define GPS_GET_DATA_ERROR                  8
+#define GPS_FIX_NOT_READY                   9
+#define GPS_CONFIGURE_POSITION_MODE_ERROR   10
 
 /**
  * @brief GPS data structure.

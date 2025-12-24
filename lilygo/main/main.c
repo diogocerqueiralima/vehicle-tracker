@@ -4,6 +4,8 @@
 #include "mqtt/mqtt.h"
 #include "esp_log.h"
 
+#define BOARD_LED   12
+
 static const char *TAG = "MAIN";
 
 esp_modem_dce_t *modem = NULL;
@@ -24,8 +26,14 @@ void gps_task(void *arg) {
         tsim_pause_data_mode(modem);
         int result = gps_get_data(data, modem);
         if (result != GPS_SUCCESS) {
+
             free(data);
             ESP_LOGW("GPS", "%s", gps_get_error_message(result));
+
+            gpio_set_level(BOARD_LED, 0); // Turn off LED to indicate no GPS fix
+            vTaskDelay(pdMS_TO_TICKS(500));
+            gpio_set_level(BOARD_LED, 1); // Turn on LED
+
             continue;
         }
         tsim_resume_data_mode(modem);
@@ -69,12 +77,10 @@ void gps_task(void *arg) {
                                     1,
                                     1);
 
-            free(data);
             ESP_LOGI("GPS", "Published GPS data to MQTT: %s", mqtt_payload);
-        } else {
-            ESP_LOGW("GPS", "GPS data not ready yet");
         }
 
+        free(data);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -162,6 +168,10 @@ void app_main() {
         ESP_LOGE(TAG, "%s", tsim_get_error_message(result));
         return;
     }
+
+    gpio_reset_pin(BOARD_LED);
+    gpio_set_direction(BOARD_LED, GPIO_MODE_OUTPUT);
+    gpio_set_level(BOARD_LED, 1); // Turn on LED to indicate system is running
     
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));

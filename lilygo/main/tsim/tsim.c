@@ -54,9 +54,6 @@ int tsim_init(esp_modem_dce_t **modem, ppp_event_handler_t handler) {
     esp_err_t ret;
 
     ret = esp_modem_set_mode(*modem, ESP_MODEM_MODE_COMMAND);
-    if (ret != ESP_OK) {
-        return SET_MODEM_COMMAND_MODE_ERROR;
-    }
 
     ret = esp_modem_sync(*modem);
     if (ret != ESP_OK) {
@@ -69,16 +66,6 @@ int tsim_init(esp_modem_dce_t **modem, ppp_event_handler_t handler) {
     }
 
     ret = esp_modem_at_raw(*modem, "AT+CTZU=1\r", NULL, "OK", "ERROR", 1000);
-    if (ret != ESP_OK) {
-        return UPDATE_TIME_AND_TIMEZONE_ERROR;
-    }
-
-    ret = esp_modem_at_raw(*modem, "AT+CREG=2\r", NULL, "OK", "ERROR", 1000);
-    if (ret != ESP_OK) {
-        return UPDATE_TIME_AND_TIMEZONE_ERROR;
-    }
-
-    ret = esp_modem_at_raw(*modem, "AT+CEREG=2\r", NULL, "OK", "ERROR", 1000);
     if (ret != ESP_OK) {
         return UPDATE_TIME_AND_TIMEZONE_ERROR;
     }
