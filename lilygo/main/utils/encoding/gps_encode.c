@@ -10,7 +10,7 @@ bool string_callback(pb_ostream_t *stream, const pb_field_t *field, void * const
 
 uint8_t *gps_encode_location(gps_data_t *data, size_t *bytes_written) {
 
-    Location location = schemas_v1_location_Location_init_zero;
+    Location location = location_Location_init_zero;
 
     location.date.funcs.encode = &string_callback;
     location.date.arg = &data->date;

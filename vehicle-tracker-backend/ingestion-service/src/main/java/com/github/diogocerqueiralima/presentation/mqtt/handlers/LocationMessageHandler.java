@@ -11,9 +11,9 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
-import static com.github.diogocerqueiralima.proto.v1.location.LocationOuterClass.Location;
-
 import java.util.UUID;
+
+import static location.LocationOuterClass.Location;
 
 @Component
 public class LocationMessageHandler {

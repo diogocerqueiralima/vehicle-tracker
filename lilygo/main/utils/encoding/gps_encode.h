@@ -7,7 +7,7 @@
 #include "gps/gps.h"
 #include "generated/vehicle-tracker-schemas/Location.pb.h"
 
-typedef schemas_v1_location_Location Location;
+typedef location_Location Location;
 
 /**
  * 
