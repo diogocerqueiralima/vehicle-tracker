@@ -12,7 +12,7 @@
 #include "esp_netif.h"
 #include "esp_system.h"
 
-#include "../utils/at.h"
+#include "utils/at.h"
 
 #define PWRKEY_PIN  4
 #define TX_PIN      27

@@ -2,6 +2,7 @@
 #include "tsim/tsim.h"
 #include "gps/gps.h"
 #include "mqtt/mqtt.h"
+#include "utils/encoding/gps_encode.h"
 #include "esp_log.h"
 
 #define BOARD_LED   12
@@ -25,6 +26,8 @@ void gps_task(void *arg) {
 
         tsim_pause_data_mode(modem);
         int result = gps_get_data(data, modem);
+        tsim_resume_data_mode(modem);
+
         if (result != GPS_SUCCESS) {
 
             free(data);
@@ -36,53 +39,21 @@ void gps_task(void *arg) {
 
             continue;
         }
-        tsim_resume_data_mode(modem);
 
-        if (data) {
+        size_t bytes;
+        uint8_t *mqtt_payload = gps_encode_location(data, &bytes);
 
-            char mqtt_payload[256];
-
-            char date_str[7];      // DDMMYY + null
-            char utc_str[16];      // hhmmss.sss as string
-            snprintf(date_str, sizeof(date_str), "%06lu", data->date);
-            snprintf(utc_str, sizeof(utc_str), "%.3f", data->timeUTC);
-
-            snprintf(mqtt_payload, sizeof(mqtt_payload),
-                "{"
-                    "\"lat\":\"%s\","
-                    "\"ns\":\"%c\","
-                    "\"lon\":\"%s\","
-                    "\"ew\":\"%c\","
-                    "\"date\":\"%s\","
-                    "\"utc\":\"%s\","
-                    "\"alt\":%.2f,"
-                    "\"speed\":%.2f,"
-                    "\"course\":%.2f"
-                "}",
-                data->latitude,
-                data->latHemisphere,
-                data->longitude,
-                data->lonHemisphere,
-                date_str,
-                utc_str,
-                data->altitude,
-                data->speed,
-                data->heading
-            );
-
-            esp_mqtt_client_publish(mqtt_client,
-                                    "carro/gps",
-                                    mqtt_payload,
-                                    0,
-                                    1,
-                                    1);
-
-            ESP_LOGI("GPS", "Published GPS data to MQTT: %s", mqtt_payload);
+        if (mqtt_payload != NULL) {
+            esp_mqtt_client_publish(mqtt_client, "carro/gps", (char *) mqtt_payload, bytes, 1, 1);
+            free(mqtt_payload);
+        } else {
+            ESP_LOGE("GPS", "Failed to encode GPS data.");
         }
 
         free(data);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+
 }
 
 static void ppp_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {

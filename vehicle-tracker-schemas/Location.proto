@@ -13,5 +13,14 @@ message Location {
   float altitude = 7;
   float speed = 8;
   float heading = 9;
+  uint32 mode = 10;
+  uint32 satellite_type = 11;
+  uint32 fix_status = 12;
+  uint32 satellites_used = 13;
+  double time_utc = 14;
+  uint32 raw_date = 15;
+  float hdop = 16;
+  float pdop = 17;
+  float vdop = 18;
 
 }

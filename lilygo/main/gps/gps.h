@@ -8,7 +8,7 @@
 #include "esp_modem_api.h"
 #include "esp_log.h"
 
-#include "../utils/at.h"
+#include "utils/at.h"
 
 #define GPS_SUCCESS                         0
 #define GPS_SET_SUPL_URL_ERROR              1

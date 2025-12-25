@@ -16,3 +16,4 @@ dependencies:
   #   public: true
   espressif/esp_modem: ^2.0.0
   espressif/mqtt: '*'
+  nikas-belogolov/nanopb: ^0.4.9
