@@ -50,7 +50,6 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - 15672:15672
-      - 1883:1883
     networks:
       - network
   ingestion-service:

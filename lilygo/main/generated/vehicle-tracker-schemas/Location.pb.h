@@ -9,14 +9,21 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
+/* Enum definitions */
+typedef enum _location_Hemisphere {
+    location_Hemisphere_UNDEFINED = 0,
+    location_Hemisphere_NORTH = 1,
+    location_Hemisphere_SOUTH = 2,
+    location_Hemisphere_EAST = 3,
+    location_Hemisphere_WEST = 4
+} location_Hemisphere;
+
 /* Struct definitions */
 typedef struct _location_Location {
-    pb_callback_t time;
-    pb_callback_t date;
     pb_callback_t latitude;
-    pb_callback_t latitude_hemisphere;
+    location_Hemisphere latitude_hemisphere;
     pb_callback_t longitude;
-    pb_callback_t longitude_hemisphere;
+    location_Hemisphere longitude_hemisphere;
     float altitude;
     float speed;
     float heading;
@@ -24,8 +31,8 @@ typedef struct _location_Location {
     uint32_t satellite_type;
     uint32_t fix_status;
     uint32_t satellites_used;
-    double time_utc;
-    uint32_t raw_date;
+    double time;
+    uint32_t date;
     float hdop;
     float pdop;
     float vdop;
@@ -36,13 +43,20 @@ typedef struct _location_Location {
 extern "C" {
 #endif
 
+/* Helper constants for enums */
+#define _location_Hemisphere_MIN location_Hemisphere_UNDEFINED
+#define _location_Hemisphere_MAX location_Hemisphere_WEST
+#define _location_Hemisphere_ARRAYSIZE ((location_Hemisphere)(location_Hemisphere_WEST+1))
+
+#define location_Location_latitude_hemisphere_ENUMTYPE location_Hemisphere
+#define location_Location_longitude_hemisphere_ENUMTYPE location_Hemisphere
+
+
 /* Initializer values for message structs */
-#define location_Location_init_default           {{{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define location_Location_init_zero              {{{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define location_Location_init_default           {{{NULL}, NULL}, _location_Hemisphere_MIN, {{NULL}, NULL}, _location_Hemisphere_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define location_Location_init_zero              {{{NULL}, NULL}, _location_Hemisphere_MIN, {{NULL}, NULL}, _location_Hemisphere_MIN, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define location_Location_time_tag               1
-#define location_Location_date_tag               2
 #define location_Location_latitude_tag           3
 #define location_Location_latitude_hemisphere_tag 4
 #define location_Location_longitude_tag          5
@@ -54,20 +68,18 @@ extern "C" {
 #define location_Location_satellite_type_tag     11
 #define location_Location_fix_status_tag         12
 #define location_Location_satellites_used_tag    13
-#define location_Location_time_utc_tag           14
-#define location_Location_raw_date_tag           15
+#define location_Location_time_tag               14
+#define location_Location_date_tag               15
 #define location_Location_hdop_tag               16
 #define location_Location_pdop_tag               17
 #define location_Location_vdop_tag               18
 
 /* Struct field encoding specification for nanopb */
 #define location_Location_FIELDLIST(X, a) \
-X(a, CALLBACK, SINGULAR, STRING,   time,              1) \
-X(a, CALLBACK, SINGULAR, STRING,   date,              2) \
 X(a, CALLBACK, SINGULAR, STRING,   latitude,          3) \
-X(a, CALLBACK, SINGULAR, STRING,   latitude_hemisphere,   4) \
+X(a, STATIC,   SINGULAR, UENUM,    latitude_hemisphere,   4) \
 X(a, CALLBACK, SINGULAR, STRING,   longitude,         5) \
-X(a, CALLBACK, SINGULAR, STRING,   longitude_hemisphere,   6) \
+X(a, STATIC,   SINGULAR, UENUM,    longitude_hemisphere,   6) \
 X(a, STATIC,   SINGULAR, FLOAT,    altitude,          7) \
 X(a, STATIC,   SINGULAR, FLOAT,    speed,             8) \
 X(a, STATIC,   SINGULAR, FLOAT,    heading,           9) \
@@ -75,8 +87,8 @@ X(a, STATIC,   SINGULAR, UINT32,   mode,             10) \
 X(a, STATIC,   SINGULAR, UINT32,   satellite_type,   11) \
 X(a, STATIC,   SINGULAR, UINT32,   fix_status,       12) \
 X(a, STATIC,   SINGULAR, UINT32,   satellites_used,  13) \
-X(a, STATIC,   SINGULAR, DOUBLE,   time_utc,         14) \
-X(a, STATIC,   SINGULAR, UINT32,   raw_date,         15) \
+X(a, STATIC,   SINGULAR, DOUBLE,   time,             14) \
+X(a, STATIC,   SINGULAR, UINT32,   date,             15) \
 X(a, STATIC,   SINGULAR, FLOAT,    hdop,             16) \
 X(a, STATIC,   SINGULAR, FLOAT,    pdop,             17) \
 X(a, STATIC,   SINGULAR, FLOAT,    vdop,             18)

@@ -4,7 +4,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
@@ -44,6 +44,7 @@ public class MQTTConfig {
         options.setServerURIs(new String[]{mqttUrl});
         options.setUserName(mqttUsername);
         options.setPassword(mqttPassword.toCharArray());
+        options.setAutomaticReconnect(true);
 
         factory.setConnectionOptions(options);
 
@@ -58,7 +59,7 @@ public class MQTTConfig {
      */
     @Bean
     public MessageChannel mqttInputChannel() {
-        return new DirectChannel();
+        return new PublishSubscribeChannel();
     }
 
     /**

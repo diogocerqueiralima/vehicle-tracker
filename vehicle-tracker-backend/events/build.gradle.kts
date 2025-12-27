@@ -16,7 +16,6 @@ dependencies {
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
-    implementation(libs.jackson.datatype)
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

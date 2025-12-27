@@ -4,12 +4,10 @@ package location;
 
 message Location {
 
-  string time = 1;
-  string date = 2;
   string latitude = 3;
-  string latitude_hemisphere = 4;
+  Hemisphere latitude_hemisphere = 4;
   string longitude = 5;
-  string longitude_hemisphere = 6;
+  Hemisphere longitude_hemisphere = 6;
   float altitude = 7;
   float speed = 8;
   float heading = 9;
@@ -17,10 +15,18 @@ message Location {
   uint32 satellite_type = 11;
   uint32 fix_status = 12;
   uint32 satellites_used = 13;
-  double time_utc = 14;
-  uint32 raw_date = 15;
+  double time = 14;
+  uint32 date = 15;
   float hdop = 16;
   float pdop = 17;
   float vdop = 18;
 
+}
+
+enum Hemisphere {
+  UNDEFINED = 0;
+  NORTH = 1;
+  SOUTH = 2;
+  EAST = 3;
+  WEST = 4;
 }

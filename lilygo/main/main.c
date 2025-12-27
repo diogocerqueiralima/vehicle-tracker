@@ -44,7 +44,7 @@ void gps_task(void *arg) {
         uint8_t *mqtt_payload = gps_encode_location(data, &bytes);
 
         if (mqtt_payload != NULL) {
-            esp_mqtt_client_publish(mqtt_client, "carro/gps", (char *) mqtt_payload, bytes, 1, 1);
+            esp_mqtt_client_publish(mqtt_client, "carro/gps", (const char *) mqtt_payload, bytes, 0, 0);
             free(mqtt_payload);
         } else {
             ESP_LOGE("GPS", "Failed to encode GPS data.");
@@ -79,7 +79,6 @@ static void ppp_event_handler(void *arg, esp_event_base_t event_base, int32_t ev
     }
 
 }
-
 void app_main() {
     
     ESP_LOGI(TAG, "Starting application...");

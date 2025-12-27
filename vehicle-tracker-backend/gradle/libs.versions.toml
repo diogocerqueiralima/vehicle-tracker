@@ -2,8 +2,8 @@
 spring-boot = "4.0.1"
 spring-dependency-management = "1.1.7"
 paho-client-mqttv3 = "1.2.5"
-protobuf = "4.32.1"
-jackson = "2.20.0"
+protobuf = "4.33.2"
+jackson = "3.0.3"
 postgresql = "42.7.8"
 grpc = "1.76.0"
 hibernate = "6.6.29.Final"
@@ -19,9 +19,8 @@ spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-star
 spring-boot-grpc = { module = "org.springframework.grpc:spring-grpc-spring-boot-starter" }
 paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho-client-mqttv3" }
 protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
-jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
-jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-core = { module = "tools.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
@@ -32,4 +31,4 @@ hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial", version.re
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
-protobuf-plugin = { id = "com.google.protobuf", version = "0.9.5" }
+protobuf-plugin = { id = "com.google.protobuf", version = "0.9.6" }

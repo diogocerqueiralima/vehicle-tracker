@@ -15,6 +15,8 @@ import java.util.UUID;
 
 import static location.LocationOuterClass.Location;
 
+import location.LocationOuterClass;
+
 @Component
 public class LocationMessageHandler {
 
@@ -46,9 +48,9 @@ public class LocationMessageHandler {
                         location.getTime(),
                         location.getDate(),
                         location.getLatitude(),
-                        location.getLatitudeHemisphere(),
+                        getHemisphereChar(location.getLatitudeHemisphere()),
                         location.getLongitude(),
-                        location.getLongitudeHemisphere(),
+                        getHemisphereChar(location.getLongitudeHemisphere()),
                         location.getAltitude(),
                         location.getSpeed(),
                         location.getHeading(),
@@ -58,10 +60,14 @@ public class LocationMessageHandler {
                 locationUseCase.receive(command);
 
             } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException(e);
+                log.error("Failed to parse location message", e);
             }
 
         };
+    }
+
+    private String getHemisphereChar(LocationOuterClass.Hemisphere hemisphere ) {
+        return hemisphere.toString().charAt(0) + "";
     }
 
 }

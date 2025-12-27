@@ -22,8 +22,8 @@ import java.util.UUID;
  * @param deviceId  unique identifier of the device
  */
 public record ReceiveLocationCommand(
-        @NotBlank String time,
-        @NotBlank String date,
+        @NotNull Double time,
+        @NotNull Integer date,
         @NotBlank String latitude,
         @NotBlank @Size(min = 1, max = 1) String latitudeDirection,
         @NotBlank String longitude,

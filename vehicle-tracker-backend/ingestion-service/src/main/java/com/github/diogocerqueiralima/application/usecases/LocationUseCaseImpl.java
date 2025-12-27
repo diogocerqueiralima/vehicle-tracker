@@ -44,21 +44,17 @@ public class LocationUseCaseImpl implements LocationUseCase {
      * @param time the time in NMEA format (HHMMSS[.sss])
      * @return the corresponding Instant
      */
-    private Instant nmeaToInstant(String date, String time) {
+    private Instant nmeaToInstant(int date, double time) {
 
-        int hour = Integer.parseInt(time.substring(0, 2));
-        int minute = Integer.parseInt(time.substring(2, 4));
-        int second = Integer.parseInt(time.substring(4, 6));
+        int hour = (int) (time / 10000);
+        int minute = (int) ((time % 10000) / 100);
+        int second = (int) (time % 100);
 
-        int nano = 0;
-        if (time.contains(".")) {
-            String fractionalPart = time.split("\\.")[1];
-            nano = (int) (Double.parseDouble("0." + fractionalPart) * 1_000_000_000);
-        }
+        int nano = (int) ((time - Math.floor(time)) * 1_000_000_000);
 
-        int day = Integer.parseInt(date.substring(0, 2));
-        int month = Integer.parseInt(date.substring(2, 4));
-        int year = Integer.parseInt(date.substring(4, 6)) + 2000;
+        int day = date / 10000;
+        int month = (date % 10000) / 100;
+        int year = (date % 100) + 2000;
 
         LocalDateTime localDateTime = LocalDateTime.of(year, month, day, hour, minute, second, nano);
 
