@@ -15,7 +15,7 @@ jobs:
     - name: Login to registry
       uses: docker/login-action@v3
       with:
-        registry: "${{ secrets.HARBOR_URL }}"
+        registry: registry.mytracker.pt
         username: "${{ secrets.HARBOR_USERNAME }}"
         password: "${{ secrets.HARBOR_PASSWORD }}"
     - name: Build the Docker image
