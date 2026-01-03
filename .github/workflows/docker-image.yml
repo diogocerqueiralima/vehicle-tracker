@@ -5,7 +5,6 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -15,15 +14,15 @@ jobs:
     - name: Login to registry
       uses: docker/login-action@v3
       with:
-        registry: registry.mytracker.pt
+        registry: "${{ secrets.HARBOR_URL }}"
         username: "${{ secrets.HARBOR_USERNAME }}"
         password: "${{ secrets.HARBOR_PASSWORD }}"
-    - name: Publish ingestion-service image
+    - name: Push ingestion-service image
       working-directory: vehicle-tracker-backend/ingestion-service/container
       run: ./buildContainer.sh
-    - name: Publish processing-service image
+    - name: Push processing-service image
       working-directory: vehicle-tracker-backend/processing-service/container
       run: ./buildContainer.sh
-    - name: Publish vehicle-service image
+    - name: Push vehicle-service image
       working-directory: vehicle-tracker-backend/vehicle-service/container
       run: ./buildContainer.sh
