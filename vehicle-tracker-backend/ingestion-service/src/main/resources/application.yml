@@ -13,6 +13,6 @@ queues:
 
 mqtt:
   url: ${MQTT_URL}
-  username: ${MQTT_USERNAME}
-  password: ${MQTT_PASSWORD}
   topic: ${MQTT_TOPIC}
+  certificate: ${MQTT_CERTIFICATE_PATH}
+  certificate-password: ${MQTT_CERTIFICATE_PASSWORD}
