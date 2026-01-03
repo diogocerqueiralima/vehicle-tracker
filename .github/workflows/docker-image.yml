@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,4 +13,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: ./vehicle-tracker-backend/ingestion-service/container/buildContainer.sh
+      working-directory: vehicle-tracker-backend/ingestion-service/container
+      run: ./buildContainer.sh
