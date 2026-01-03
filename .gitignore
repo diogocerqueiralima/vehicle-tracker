@@ -1,3 +1,4 @@
 .env
 server.key
 server.pem
+ingestion.p12

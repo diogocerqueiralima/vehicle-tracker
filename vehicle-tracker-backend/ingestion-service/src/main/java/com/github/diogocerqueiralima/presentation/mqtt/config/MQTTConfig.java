@@ -12,7 +12,19 @@ import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannel
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.UUID;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  *
@@ -26,24 +38,39 @@ public class MQTTConfig {
     @Value("${mqtt.url}")
     private String mqttUrl;
 
-    @Value("${mqtt.username}")
-    private String mqttUsername;
+    @Value("${mqtt.certificate}")
+    private String certificate;
 
-    @Value("${mqtt.password}")
-    private String mqttPassword;
+    @Value("${mqtt.certificate-password}")
+    private String certificatePassword;
 
     @Value("${mqtt.topic}")
     private String mqttTopic;
 
     @Bean
-    public MqttPahoClientFactory mqttClientFactory() {
+    public MqttPahoClientFactory mqttClientFactory() throws Exception {
 
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
 
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        try (FileInputStream fis = new FileInputStream(certificate)) {
+            keyStore.load(fis, certificatePassword.toCharArray());
+        }
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, certificatePassword.toCharArray());
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(keyStore);
+
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+        options.setSocketFactory(sslSocketFactory);
         options.setServerURIs(new String[]{mqttUrl});
-        options.setUserName(mqttUsername);
-        options.setPassword(mqttPassword.toCharArray());
         options.setAutomaticReconnect(true);
 
         factory.setConnectionOptions(options);
