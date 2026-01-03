@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres
+    image: timescale/timescaledb-ha:pg18.1-ts2.23.0-all
     container_name: tracker_postgres
     environment:
       POSTGRES_DB: ${POSTGRESQL_DATABASE}
@@ -16,11 +16,10 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KC_DB_URL: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}
+      KC_DB_URL: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?currentSchema=${KEYCLOAK_SCHEMA}
       KC_DB_USERNAME: ${POSTGRESQL_USERNAME}
       KC_DB_PASSWORD: ${POSTGRESQL_PASSWORD}
       KC_DB: postgres
-      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KC_HEALTH_ENABLED: true
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
@@ -51,7 +50,6 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - 15672:15672
-      - 1883:1883
     networks:
       - network
   ingestion-service:
@@ -71,6 +69,8 @@ services:
     container_name: tracker_vehicle_service
     env_file:
       - .env
+    ports:
+      - 8080:8080
     depends_on:
       postgres:
         condition: service_started
@@ -78,7 +78,19 @@ services:
         condition: service_healthy
     networks:
       - network
- 
+  processing-service:
+    image: docker.io/library/processing-service:1.0.0
+    container_name: tracker_processing_service
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - network
+
 networks:
   network:
     driver: bridge

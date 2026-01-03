@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package schemas.v1.telemetry;
+package telemetry;
 
 message DeviceTelemetry {
 

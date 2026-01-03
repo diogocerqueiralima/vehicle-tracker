@@ -1,0 +1,43 @@
+dependencies:
+  espressif/esp_modem:
+    component_hash: 07b6ca85dc0c1edbcd76f650005c74067001db138db6bfa106bf05567adca4af
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.0.0
+  espressif/mqtt:
+    component_hash: ffdad5659706b4dc14bc63f8eb73ef765efa015bf7e9adf71c813d52a2dc9342
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.0
+  idf:
+    source:
+      type: idf
+    version: 6.1.0
+  nikas-belogolov/nanopb:
+    component_hash: 6ab5c72064ab6a748ad72528f007f87c7a090a893eb22fa9af5b6f112259b8c9
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.4.10
+direct_dependencies:
+- espressif/esp_modem
+- espressif/mqtt
+- idf
+- nikas-belogolov/nanopb
+manifest_hash: 8ee9dff6aeabd884557d01a2e87f5dc94464bbd8116c353694e5dc1ae57b6891
+target: esp32
+version: 2.0.0

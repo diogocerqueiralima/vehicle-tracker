@@ -1,0 +1,23 @@
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+  grpc:
+    client:
+      channels:
+        vehicle-service:
+          address: vehicle-service:9090
+          negotiation-type: plaintext
+  datasource:
+    url: "jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}"
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+queues:
+  location:
+    name: ${LOCATION_QUEUE_NAME}

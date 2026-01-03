@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "devices")
+@Table(name = "devices", schema = "vehicle_tracker_schema")
 public class DeviceEntity {
 
     @Id
@@ -24,13 +24,7 @@ public class DeviceEntity {
     @Column(nullable = false)
     private String manufacturer;
 
-    @Column(nullable = false)
-    private Instant installedAt;
-
-    @Column(nullable = false)
-    private Instant lastSeen;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id", nullable = false)
     private VehicleEntity vehicle;
 
@@ -39,5 +33,45 @@ public class DeviceEntity {
 
     @UpdateTimestamp
     private Instant updatedAt;
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getImei() {
+        return imei;
+    }
+
+    public void setImei(String imei) {
+        this.imei = imei;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
+    }
+
+    public VehicleEntity getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(VehicleEntity vehicle) {
+        this.vehicle = vehicle;
+    }
 
 }

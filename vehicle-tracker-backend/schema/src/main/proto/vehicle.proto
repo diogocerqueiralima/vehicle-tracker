@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package vehicle.tracker;
+
+option java_multiple_files = true;
+option java_package = "com.github.diogocerqueiralima.proto";
+option java_outer_classname = "VehicleProto";
+
+service VehicleService {
+
+  rpc getByDeviceId(DeviceId) returns (VehicleResponse);
+
+}
+
+message DeviceId {
+  string id = 1;
+}
+
+message VehicleResponse {
+  string id = 1;
+}

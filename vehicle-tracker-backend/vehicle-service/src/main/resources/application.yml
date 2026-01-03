@@ -11,9 +11,9 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}
+          jwk-set-uri: http://keycloak:8080/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
