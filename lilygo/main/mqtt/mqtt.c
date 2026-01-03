@@ -15,10 +15,10 @@ esp_mqtt_client_handle_t mqtt_start(void) {
             }
         },
         .credentials = {
-            .username = MQTT_USERNAME,
             .client_id = MQTT_CLIENT_ID,
             .authentication = {
-                .password = MQTT_PASSWORD
+                .certificate = MY_CERTIFICATE,
+                .key = MY_PRIVATE_KEY
             }
         },
         .session = {
