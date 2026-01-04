@@ -20,7 +20,6 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.oauth2.resource.server)
-    implementation(libs.spring.boot.starter.security)
     implementation(libs.postgresql)
 
     testImplementation(libs.spring.boot.starter.test)
@@ -29,7 +28,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-extra["springGrpcVersion"] = "0.12.0"
+extra["springGrpcVersion"] = "1.0.0"
 
 dependencyManagement {
     imports {
