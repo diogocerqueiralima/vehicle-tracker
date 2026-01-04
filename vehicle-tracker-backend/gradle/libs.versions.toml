@@ -17,7 +17,6 @@ spring-boot-starter-validation = { module = "org.springframework.boot:spring-boo
 spring-integration-mqtt = { module = "org.springframework.integration:spring-integration-mqtt" }
 spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-starter-amqp" }
 spring-boot-grpc = { module = "org.springframework.grpc:spring-grpc-spring-boot-starter" }
-spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho-client-mqttv3" }
 protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 jackson-core = { module = "tools.jackson.core:jackson-core", version.ref = "jackson" }
