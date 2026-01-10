@@ -11,11 +11,15 @@ import com.github.diogocerqueiralima.presentation.home.views.HomeView
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onClickJoinPlatform: () -> Unit) {
 
     VehicleTrackerMobileTheme() {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            HomeView(modifier = Modifier.padding(innerPadding))
+            HomeView(
+                modifier = Modifier
+                    .padding(innerPadding),
+                onClickJoinPlatform = onClickJoinPlatform
+            )
         }
     }
 
@@ -24,5 +28,5 @@ fun HomeScreen() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen {}
 }

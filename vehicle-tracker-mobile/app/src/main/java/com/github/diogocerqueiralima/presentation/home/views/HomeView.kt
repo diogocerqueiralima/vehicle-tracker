@@ -13,11 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +34,10 @@ import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
 @Composable
-fun HomeView(modifier: Modifier = Modifier) {
+fun HomeView(
+    modifier: Modifier = Modifier,
+    onClickJoinPlatform: () -> Unit
+) {
 
     Box(
         modifier = modifier
@@ -96,7 +99,7 @@ fun HomeView(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.bodyLarge
                 )
 
-                Button(
+                TextButton(
                     modifier = Modifier
                         .fillMaxWidth(),
                     contentPadding = PaddingValues(
@@ -109,7 +112,7 @@ fun HomeView(modifier: Modifier = Modifier) {
                         disabledContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
                     ),
                     shape = RoundedCornerShape(20),
-                    onClick = {}
+                    onClick = onClickJoinPlatform
                 ) {
 
                     Row(
@@ -149,6 +152,6 @@ fun HomeView(modifier: Modifier = Modifier) {
 @Composable
 fun HomeViewPreview() {
     VehicleTrackerMobileTheme() {
-        HomeView()
+        HomeView {}
     }
 }
