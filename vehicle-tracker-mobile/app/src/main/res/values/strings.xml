@@ -3,4 +3,12 @@
     <string name="welcome_message_title">Rastreie os seus carros em tempo real</string>
     <string name="welcome_message_subtitle">Monitorize a localização dos seus veículos com facilidade e eficiência.</string>
     <string name="get_started_button_label">Entrar na plataforma</string>
+    <string name="authentication_idle_title">Estamos a autenticar...</string>
+    <string name="authentication_idle_subtitle">Por favor, aguarde enquanto verificamos as suas credenciais.</string>
+    <string name="authentication_redirect_title">Estamos a finalizar...</string>
+    <string name="authentication_redirect_subtitle">Aguarde apenas mais um momento.</string>
+    <string name="authentication_success_title">Autenticado!</string>
+    <string name="authentication_success_subtitle">A sua conta foi autenticada com sucesso. A redirecioná-lo para a aplicação...</string>
+    <string name="authentication_error_title">Erro de autenticação</string>
+    <string name="authentication_error_subtitle">Ocorreu um erro ao tentar autenticar a sua conta. Por favor, tente novamente.</string>
 </resources>

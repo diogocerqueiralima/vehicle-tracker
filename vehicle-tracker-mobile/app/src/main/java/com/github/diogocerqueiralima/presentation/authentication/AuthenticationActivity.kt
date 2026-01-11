@@ -4,12 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.browser.customtabs.CustomTabsIntent
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.services.TokenService
 import com.github.diogocerqueiralima.infrastructure.http.TokenHttpClient
+import com.github.diogocerqueiralima.presentation.authentication.screens.AuthenticationScreen
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModelFactory
 
@@ -30,6 +32,10 @@ class AuthenticationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        setContent {
+            AuthenticationScreen(viewModel)
+        }
 
         viewModel.startAuthentication { uri ->
             val intent = CustomTabsIntent.Builder().build()
