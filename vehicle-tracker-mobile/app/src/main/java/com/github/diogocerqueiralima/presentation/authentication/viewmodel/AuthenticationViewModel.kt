@@ -6,13 +6,16 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.github.diogocerqueiralima.BuildConfig
+import com.github.diogocerqueiralima.domain.services.TokenService
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationState.Authenticating
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationState.Error
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationState.Idle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.UUID
@@ -31,7 +34,8 @@ sealed interface AuthenticationState {
 }
 
 class AuthenticationViewModel(
-    initialState: AuthenticationState = Idle
+    initialState: AuthenticationState = Idle,
+    val tokenService: TokenService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(initialState)
@@ -110,7 +114,10 @@ class AuthenticationViewModel(
 
         val codeVerifier = currentState.codeVerifier
 
-        // Proceed to exchange the authorization code for tokens
+        viewModelScope.launch {
+            tokenService.getTokenAndSave(authorizationCode = code, codeVerifier = codeVerifier)
+        }
+
     }
 
     /**
@@ -146,10 +153,10 @@ class AuthenticationViewModel(
 }
 
 @Suppress("UNCHECKED_CAST")
-class AuthenticationViewModelFactory : ViewModelProvider.Factory {
+class AuthenticationViewModelFactory(val tokenService: TokenService) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return AuthenticationViewModel() as T
+        return AuthenticationViewModel(tokenService = tokenService) as T
     }
 
 }

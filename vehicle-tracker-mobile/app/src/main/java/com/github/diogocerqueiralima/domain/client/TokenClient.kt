@@ -5,7 +5,6 @@ interface TokenClient {
     suspend fun exchangeAuthorizationCodeForToken(
         authorizationCode: String,
         codeVerifier: String,
-        redirectUri: String
     ): String
 
 }

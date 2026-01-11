@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -28,6 +29,7 @@ android {
         buildConfigField("String", "AUTHORIZATION_URI", "\"https://auth.mytracker.pt/realms/vehicle-tracker/protocol/openid-connect/auth\"")
         buildConfigField("String", "CLIENT_ID", "\"tracker\"")
         buildConfigField("String", "REDIRECT_URI", "\"mytracker://oauth/callback\"")
+        buildConfigField("String", "TOKEN_URI", "\"https://auth.mytracker.pt/realms/vehicle-tracker/protocol/openid-connect/token\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,6 +63,9 @@ dependencies {
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.kotlin.serialization)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
