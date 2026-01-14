@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TokenDTO(
+data class ExchangeAuthorizationCodeResponseDTO(
     @SerialName("access_token") val accessToken: String,
     @SerialName("expires_in") val expiresIn: Long,
     @SerialName("refresh_expires_in") val refreshExpiresIn: Long,
