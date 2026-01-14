@@ -61,6 +61,7 @@ kotlin {
 
 dependencies {
 
+    implementation(libs.datastore)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
