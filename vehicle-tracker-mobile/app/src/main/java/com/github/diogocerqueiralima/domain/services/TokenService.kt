@@ -12,7 +12,7 @@ class TokenService(private val client: TokenClient) {
      */
     suspend fun getTokenAndSave(authorizationCode: String, codeVerifier: String) {
 
-        val token = client.exchangeAuthorizationCodeForToken(authorizationCode, codeVerifier)
+        val dto = client.exchangeAuthorizationCodeForToken(authorizationCode, codeVerifier)
 
     }
 

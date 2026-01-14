@@ -17,12 +17,14 @@ import io.ktor.http.Parameters
 import io.ktor.http.append
 import io.ktor.http.headers
 
+const val TAG = "TOKEN_HTTP_CLIENT"
+
 class TokenHttpClient(private val client: HttpClient) : TokenClient {
 
     override suspend fun exchangeAuthorizationCodeForToken(
         authorizationCode: String,
         codeVerifier: String,
-    ): String {
+    ): TokenDTO {
 
         val response = client.post(urlString = BuildConfig.TOKEN_URI) {
 
@@ -45,10 +47,9 @@ class TokenHttpClient(private val client: HttpClient) : TokenClient {
 
         }
 
-        val dto = response.bodyAsText()
+        val dto = response.body<TokenDTO>()
 
-        Log.d("TOKEN_HTTP_CLIENT", "Response DTO: $dto")
-
+        Log.d(TAG, "Received token DTO: $dto")
         return dto
     }
 
