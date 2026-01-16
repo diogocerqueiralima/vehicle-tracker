@@ -8,6 +8,9 @@ import com.github.diogocerqueiralima.infrastructure.entities.RefreshTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.UserSessionEntity
 import kotlin.time.Instant
 
+/**
+ * Maps a UserSession domain model to a UserSessionEntity for persistence.
+ */
 fun UserSession.toEntity(): UserSessionEntity =
     UserSessionEntity(
         accessToken = AccessTokenEntity(
@@ -27,7 +30,9 @@ fun UserSession.toEntity(): UserSessionEntity =
         )
     )
 
-
+/**
+ * Maps a UserSessionEntity to a UserSession domain model.
+ */
 fun UserSessionEntity.toDomain(): UserSession =
     UserSession(
         accessToken = Token.AccessToken(

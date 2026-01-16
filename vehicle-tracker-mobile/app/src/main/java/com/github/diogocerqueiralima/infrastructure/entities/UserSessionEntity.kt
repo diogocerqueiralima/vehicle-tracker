@@ -1,7 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.entities
 
 import kotlinx.serialization.Serializable
-import kotlin.time.Instant
 
 @Serializable
 data class AccessTokenEntity(
