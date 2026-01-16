@@ -116,6 +116,7 @@ class AuthenticationViewModel(
 
         viewModelScope.launch {
             authenticationService.exchangeAuthorizationCode(authorizationCode = code, codeVerifier = codeVerifier)
+            _state.value = AuthenticationState.Authenticated
         }
 
     }

@@ -17,6 +17,9 @@ import io.ktor.http.headers
 
 const val TAG = "TOKEN_HTTP_CLIENT"
 
+/**
+ * Implementation of [AuthenticationClient] using Ktor HTTP client.
+ */
 class AuthenticationHttpClient(private val client: HttpClient) : AuthenticationClient {
 
     override suspend fun exchangeAuthorizationCode(

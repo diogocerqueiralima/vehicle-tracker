@@ -11,6 +11,8 @@ import androidx.browser.customtabs.CustomTabsIntent
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.services.AuthenticationService
 import com.github.diogocerqueiralima.infrastructure.http.AuthenticationHttpClient
+import com.github.diogocerqueiralima.infrastructure.repositories.KeyRepositoryImpl
+import com.github.diogocerqueiralima.infrastructure.repositories.UserSessionRepositoryImpl
 import com.github.diogocerqueiralima.presentation.authentication.screens.AuthenticationScreen
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModelFactory
@@ -24,8 +26,13 @@ class AuthenticationActivity : ComponentActivity() {
 
             val dependenciesContainer = application as DependenciesContainer
             val client = AuthenticationHttpClient(dependenciesContainer.httpClient)
+            val dataStore = dependenciesContainer.dataStore
+            val keyStore = dependenciesContainer.keyStore
+            val keyRepository = KeyRepositoryImpl(keyStore)
+            val userSessionRepository = UserSessionRepositoryImpl(dataStore, keyRepository)
+            val authenticationService = AuthenticationService(client, userSessionRepository)
 
-            AuthenticationViewModelFactory(authenticationService = AuthenticationService(client))
+            AuthenticationViewModelFactory(authenticationService)
         }
     )
 
