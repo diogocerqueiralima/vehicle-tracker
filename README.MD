@@ -30,7 +30,7 @@ In folder `docs` you can find more detailed documentation about the architecture
 - **Frontend**: Kotlin with Jetpack Compose for Android
 - **Database**: PostgreSQL with TimescaleDB and PostGIS extensions
 - **Messaging**: RabbitMQ
-- **Containerization**: Docker (local and cloud deployment
+- **Containerization**: Docker (local and cloud deployment)
 
 ## Features
 - Real-time vehicle tracking
