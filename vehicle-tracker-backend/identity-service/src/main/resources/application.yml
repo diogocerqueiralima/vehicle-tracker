@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: "identity-service"
+
+keystore:
+  pkcs11:
+    config: ${PKCS11_CONFIG_PATH}
+    pin: ${PKCS11_PIN}
