@@ -1,7 +1,7 @@
 # VEHICLE TRACKER
 
 Vehicle Tracker is a comprehensive application designed to monitor and manage vehicle locations in real-time.
-It provides features such as live tracking, route history, geofencing, and alerts for unauthorized movements and more.
+It provides features such as live tracking, route history, geofencing, alerts for unauthorized movements and more.
 
 ## The Main Goal
 
