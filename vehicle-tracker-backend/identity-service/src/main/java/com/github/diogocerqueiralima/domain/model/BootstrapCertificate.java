@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.model;
 
 import com.github.diogocerqueiralima.domain.exceptions.BootstrapCertificateUsedException;
+import com.github.diogocerqueiralima.domain.exceptions.CertificateRevokedException;
 
 import java.time.Instant;
 
@@ -20,10 +21,13 @@ public class BootstrapCertificate extends Certificate {
      * @param subject the entity to which the certificate is issued
      * @param issuedAt the timestamp when the certificate was issued
      * @param expiresAt the timestamp when the certificate will expire
+     * @param revoked the status indicating whether the bootstrap certificate has been revoked
      * @param used the status indicating whether the bootstrap certificate has been used
      */
-    public BootstrapCertificate(String serialNumber, String subject, Instant issuedAt, Instant expiresAt, boolean used) {
-        super(serialNumber, subject, issuedAt, expiresAt, false);
+    public BootstrapCertificate(
+            String serialNumber, String subject, Instant issuedAt, Instant expiresAt, boolean revoked, boolean used
+    ) {
+        super(serialNumber, subject, issuedAt, expiresAt, revoked);
         this.used = used;
     }
 
@@ -36,7 +40,7 @@ public class BootstrapCertificate extends Certificate {
      * @param expiresAfter the duration in nanoseconds after which the certificate will expire from the issuedAt time
      */
     public BootstrapCertificate(String serialNumber, String subject, long expiresAfter) {
-        this(serialNumber, subject, Instant.now(), Instant.now().plusNanos(expiresAfter), false);
+        this(serialNumber, subject, Instant.now(), Instant.now().plusNanos(expiresAfter), false, false);
     }
 
     /**
@@ -45,8 +49,13 @@ public class BootstrapCertificate extends Certificate {
      *
      * @return a new BootstrapCertificate instance with used status set to true
      * @throws BootstrapCertificateUsedException if the certificate is already marked as used
+     * @throws CertificateRevokedException if the certificate is revoked
      */
     public BootstrapCertificate markAsUsed() {
+
+        if (this.isRevoked()) {
+            throw new CertificateRevokedException(this);
+        }
 
         if (this.used) {
             throw new BootstrapCertificateUsedException(this);
@@ -57,6 +66,7 @@ public class BootstrapCertificate extends Certificate {
                 this.getSubject(),
                 this.getIssuedAt(),
                 this.getExpiresAt(),
+                this.isRevoked(),
                 true
         );
     }
