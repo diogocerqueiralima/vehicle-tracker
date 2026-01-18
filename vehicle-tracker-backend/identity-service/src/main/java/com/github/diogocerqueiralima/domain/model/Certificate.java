@@ -4,6 +4,10 @@ import com.github.diogocerqueiralima.domain.exceptions.CertificateRevokedExcepti
 
 import java.time.Instant;
 
+/**
+ * Represents a digital certificate with essential attributes such as serial number,
+ * subject, issuance and expiration timestamps, and revocation status.
+ */
 public class Certificate {
 
     private final String serialNumber;
@@ -15,7 +19,6 @@ public class Certificate {
     /**
      *
      * Instantiates a new Certificate.
-     * This represents a digital certificate with its essential attributes.
      *
      * @param serialNumber the unique identifier for the certificate
      * @param subject the entity to which the certificate is issued
@@ -33,13 +36,13 @@ public class Certificate {
 
     /**
      *
-     * Instantiates a new Certificate with automatic issuedAt and expiresAt calculation.
+     * Instantiates a new Certificate with automatic issuedAt, expiresAt calculation and not revoked.
      *
      * @param serialNumber the unique identifier for the certificate
      * @param subject the entity to which the certificate is issued
      * @param expiresAfter the duration in nanoseconds after which the certificate will expire from the issuedAt time
      */
-    public Certificate(String serialNumber, String subject, Long expiresAfter) {
+    public Certificate(String serialNumber, String subject, long expiresAfter) {
         this(serialNumber, subject, Instant.now(), Instant.now().plusNanos(expiresAfter), false);
     }
 
@@ -63,14 +66,20 @@ public class Certificate {
         return serialNumber;
     }
 
-    /**
-     *
-     * Checks if the certificate is revoked.
-     *
-     * @return true if the certificate is revoked, false otherwise
-     */
+    public String getSubject() {
+        return subject;
+    }
+
+    public Instant getIssuedAt() {
+        return issuedAt;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
+    }
+
     public boolean isRevoked() {
-        return this.revoked;
+        return revoked;
     }
 
 }
