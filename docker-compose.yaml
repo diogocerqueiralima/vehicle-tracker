@@ -66,6 +66,22 @@ services:
       - network
     volumes:
       - "./:/app"
+  identity-service:
+    image: identity-service
+    container_name: tracker_identity_service
+    depends_on:
+      postgres:
+        condition: service_started
+    env_file:
+      - .env
+    networks:
+      - network
+    volumes:
+      - "./vehicle-tracker-backend/tpm:/app/tpm"
+      - "/home/diogolima/.tpm2_pkcs11:/root/.tpm2_pkcs11"
+    devices:
+      - /dev/tpmrm0:/dev/tpmrm0
+      - /dev/tpm0:/dev/tpm0
   vehicle-service:
     image: docker.io/library/vehicle-service:1.0.0
     container_name: tracker_vehicle_service

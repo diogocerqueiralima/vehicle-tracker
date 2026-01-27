@@ -1,8 +1,31 @@
 spring:
   application:
     name: "identity-service"
+  datasource:
+    url: "jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}"
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://keycloak:8080/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
 
 keystore:
   pkcs11:
     config: ${PKCS11_CONFIG_PATH}
     pin: ${PKCS11_PIN}
+  key:
+    alias: ${KEY_ALIAS}
+    password: ${KEY_PASSWORD}
+  certificate:
+    alias: ${CERTIFICATE_ALIAS}
+
+ca:
+  issuer: "IDENTITY-SERVICE"
+  validity:
+    days: 30

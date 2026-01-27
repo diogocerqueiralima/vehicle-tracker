@@ -26,6 +26,14 @@ CREATE TABLE IF NOT EXISTS "vehicle_tracker_schema".devices (
     FOREIGN KEY (vehicle_id) REFERENCES "vehicle_tracker_schema".vehicles(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS "vehicle_tracker_schema".certificates (
+    serial_number VARCHAR(255) PRIMARY KEY,
+    subject VARCHAR(255) NOT NULL,
+    issued_at TIMESTAMPTZ NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked BOOLEAN NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "vehicle_tracker_schema".locations_snapshots (
     id UUID NOT NULL,
     vehicle_id UUID NOT NULL,

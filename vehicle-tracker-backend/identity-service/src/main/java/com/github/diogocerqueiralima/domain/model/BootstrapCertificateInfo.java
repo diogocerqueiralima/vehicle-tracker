@@ -9,7 +9,7 @@ import java.time.Instant;
  * Represents a bootstrap certificate with an additional attribute to track its usage status.
  * This certificate is only intended for one-time use during the bootstrap process.
  */
-public class BootstrapCertificate extends Certificate {
+public class BootstrapCertificateInfo extends CertificateInfo {
 
     private final boolean used;
 
@@ -24,7 +24,7 @@ public class BootstrapCertificate extends Certificate {
      * @param revoked the status indicating whether the bootstrap certificate has been revoked
      * @param used the status indicating whether the bootstrap certificate has been used
      */
-    public BootstrapCertificate(
+    public BootstrapCertificateInfo(
             String serialNumber, String subject, Instant issuedAt, Instant expiresAt, boolean revoked, boolean used
     ) {
         super(serialNumber, subject, issuedAt, expiresAt, revoked);
@@ -39,7 +39,7 @@ public class BootstrapCertificate extends Certificate {
      * @param subject the entity to which the certificate is issued
      * @param expiresAfter the duration in nanoseconds after which the certificate will expire from the issuedAt time
      */
-    public BootstrapCertificate(String serialNumber, String subject, long expiresAfter) {
+    public BootstrapCertificateInfo(String serialNumber, String subject, long expiresAfter) {
         this(serialNumber, subject, Instant.now(), Instant.now().plusNanos(expiresAfter), false, false);
     }
 
@@ -51,7 +51,7 @@ public class BootstrapCertificate extends Certificate {
      * @throws BootstrapCertificateUsedException if the certificate is already marked as used
      * @throws CertificateRevokedException if the certificate is revoked
      */
-    public BootstrapCertificate markAsUsed() {
+    public BootstrapCertificateInfo markAsUsed() {
 
         if (this.isRevoked()) {
             throw new CertificateRevokedException(this);
@@ -61,7 +61,7 @@ public class BootstrapCertificate extends Certificate {
             throw new BootstrapCertificateUsedException(this);
         }
 
-        return new BootstrapCertificate(
+        return new BootstrapCertificateInfo(
                 this.getSerialNumber(),
                 this.getSubject(),
                 this.getIssuedAt(),
