@@ -4,6 +4,7 @@ import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
 import com.github.diogocerqueiralima.domain.model.Certificate;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateSigner;
 import com.github.diogocerqueiralima.infrastructure.config.CertificateAuthorityConfig;
+import com.github.diogocerqueiralima.infrastructure.exceptions.*;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -49,11 +50,11 @@ public class HardwareCertificateSigner implements CertificateSigner {
     /**
      *
      * {@inheritDoc}
-     *
+     * <p>
      * This method uses the CA's private key stored in a trusted module platform (TPM) to sign the certificate.
      */
     @Override
-    public Optional<Certificate> sign(CertificateSigningRequest request) {
+    public Certificate sign(CertificateSigningRequest request) {
 
         // 1. Parse the PKCS#10 request (PEM format)
 
@@ -66,13 +67,14 @@ public class HardwareCertificateSigner implements CertificateSigner {
 
             if (!(obj instanceof PKCS10CertificationRequest pkcs10Request)) {
                 log.error("Invalid PKCS#10 certification request");
-                return Optional.empty();
+                throw new InvalidCertificateSigningRequestException();
             }
 
             // 2. Verify the signature of the PKCS#10 request
 
             if (!verifySignature(pkcs10Request)) {
-                return Optional.empty();
+                log.error("Invalid signature in the certificate signing request");
+                throw new InvalidSignatureException();
             }
 
             // 3. Extract information from the PKCS#10 request
@@ -80,7 +82,8 @@ public class HardwareCertificateSigner implements CertificateSigner {
             Optional<String> commonNameOpt = extractCommonName(pkcs10Request.getSubject());
 
             if (commonNameOpt.isEmpty()) {
-                return Optional.empty();
+                log.error("Common Name (CN) not found in the certificate signing request");
+                throw new InvalidCommonNameException();
             }
 
             PrivateKey privateKey = keyPair.getPrivate();
@@ -136,11 +139,10 @@ public class HardwareCertificateSigner implements CertificateSigner {
             // 8. Return the signed certificate
 
             log.info("Certificate signed successfully for CN={}", commonName);
-            return Optional.of(new Certificate(pemBytes));
+            return new Certificate(pemBytes);
 
-        } catch (Exception e) {
-            log.error("Error signing certificate", e);
-            return Optional.empty();
+        }  catch (OperatorCreationException | IOException e) {
+            throw new CouldNotSignCertificateException();
         }
 
     }
@@ -151,17 +153,24 @@ public class HardwareCertificateSigner implements CertificateSigner {
      *
      * @param holder the X509CertificateHolder to convert
      * @return the PEM-encoded byte array of the certificate
-     * @throws IOException if an I/O error occurs during conversion
      */
-    private byte[] convertToPem(X509CertificateHolder holder) throws IOException {
+    private byte[] convertToPem(X509CertificateHolder holder) {
 
-        StringWriter sw = new StringWriter();
+        try {
 
-        try (JcaPEMWriter pemWriter = new JcaPEMWriter(sw)) {
-            pemWriter.writeObject(holder);
+            StringWriter sw = new StringWriter();
+
+            try (JcaPEMWriter pemWriter = new JcaPEMWriter(sw)) {
+                pemWriter.writeObject(holder);
+            }
+
+            return sw.toString().getBytes(StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+            log.error("Error converting certificate to PEM format", e);
+            throw new CouldNotConvertCertificateToPEMException();
         }
 
-        return sw.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     /**
@@ -197,21 +206,24 @@ public class HardwareCertificateSigner implements CertificateSigner {
      *
      * @param pkcs10Request the PKCS#10 certification request to verify
      * @return true if the signature is valid, false otherwise
-     * @throws NoSuchAlgorithmException if the algorithm used for signature verification is not available
-     * @throws InvalidKeyException if the public key in the request is invalid
-     * @throws OperatorCreationException if there is an error creating the content verifier
-     * @throws PKCSException if there is an error processing the PKCS#10 request
      */
-    private boolean verifySignature(PKCS10CertificationRequest pkcs10Request)
-            throws NoSuchAlgorithmException, InvalidKeyException, OperatorCreationException, PKCSException {
+    private boolean verifySignature(PKCS10CertificationRequest pkcs10Request)  {
 
-        JcaPKCS10CertificationRequest jcaCR = new JcaPKCS10CertificationRequest(pkcs10Request);
+        try {
 
-        return jcaCR.isSignatureValid(
-                new JcaContentVerifierProviderBuilder()
-                        .setProvider("BC")
-                        .build(jcaCR.getPublicKey())
-        );
+            JcaPKCS10CertificationRequest jcaCR = new JcaPKCS10CertificationRequest(pkcs10Request);
+
+            return jcaCR.isSignatureValid(
+                    new JcaContentVerifierProviderBuilder()
+                            .setProvider("BC")
+                            .build(jcaCR.getPublicKey())
+            );
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | OperatorCreationException | PKCSException e) {
+            log.error("Error verifying PKCS#10 signature", e);
+            throw new SignatureVerificationException();
+        }
+
     }
 
 }

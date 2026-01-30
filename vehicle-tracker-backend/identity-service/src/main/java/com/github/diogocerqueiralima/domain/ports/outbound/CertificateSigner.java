@@ -3,8 +3,6 @@ package com.github.diogocerqueiralima.domain.ports.outbound;
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
 import com.github.diogocerqueiralima.domain.model.Certificate;
 
-import java.util.Optional;
-
 /**
  * Port to interact with the certificate signer implementation.
  */
@@ -19,6 +17,6 @@ public interface CertificateSigner {
      * @param request the certificate signing request to be signed
      * @return the signed certificate response if the signing is successful, otherwise an empty Optional
      */
-    Optional<Certificate> sign(CertificateSigningRequest request);
+    Certificate sign(CertificateSigningRequest request);
 
 }

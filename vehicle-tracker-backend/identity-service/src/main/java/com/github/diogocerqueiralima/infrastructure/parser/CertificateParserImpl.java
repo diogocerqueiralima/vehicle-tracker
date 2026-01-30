@@ -3,6 +3,7 @@ package com.github.diogocerqueiralima.infrastructure.parser;
 import com.github.diogocerqueiralima.domain.model.Certificate;
 import com.github.diogocerqueiralima.domain.model.CertificateInfo;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateParser;
+import com.github.diogocerqueiralima.infrastructure.exceptions.InvalidCertificateException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public class CertificateParserImpl implements CertificateParser {
 
             if (!(obj instanceof X509CertificateHolder holder)) {
                 log.error("Invalid X.509 certificate: {}", obj.getClass().getName());
-                return Optional.empty();
+                throw new InvalidCertificateException();
             }
 
             return Optional.of(
