@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.application.exceptions;
+package com.github.diogocerqueiralima.infrastructure.exceptions;
 
 public class CertificateCouldNotBeParsedException extends RuntimeException {
 

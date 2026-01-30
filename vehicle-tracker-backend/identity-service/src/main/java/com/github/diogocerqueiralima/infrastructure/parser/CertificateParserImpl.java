@@ -3,6 +3,7 @@ package com.github.diogocerqueiralima.infrastructure.parser;
 import com.github.diogocerqueiralima.domain.model.Certificate;
 import com.github.diogocerqueiralima.domain.model.CertificateInfo;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateParser;
+import com.github.diogocerqueiralima.infrastructure.exceptions.CertificateCouldNotBeParsedException;
 import com.github.diogocerqueiralima.infrastructure.exceptions.InvalidCertificateException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
@@ -14,7 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Optional;
 
 @Component
 public class CertificateParserImpl implements CertificateParser {
@@ -22,7 +22,7 @@ public class CertificateParserImpl implements CertificateParser {
     private static final Logger log = LoggerFactory.getLogger(CertificateParserImpl.class);
 
     @Override
-    public Optional<CertificateInfo> parse(Certificate certificate) {
+    public CertificateInfo parse(Certificate certificate) {
 
         try(
                 Reader reader = new InputStreamReader(new ByteArrayInputStream(certificate.getData()));
@@ -36,19 +36,17 @@ public class CertificateParserImpl implements CertificateParser {
                 throw new InvalidCertificateException();
             }
 
-            return Optional.of(
-                    new CertificateInfo(
-                        holder.getSerialNumber().toString(),
-                        holder.getSubject().toString(),
-                        holder.getNotBefore().toInstant(),
-                        holder.getNotAfter().toInstant(),
-                        false
-                    )
+            return new CertificateInfo(
+                    holder.getSerialNumber().toString(),
+                    holder.getSubject().toString(),
+                    holder.getNotBefore().toInstant(),
+                    holder.getNotAfter().toInstant(),
+                    false
             );
 
         } catch (IOException e) {
             log.error("Error parsing certificate", e);
-            return Optional.empty();
+            throw new CertificateCouldNotBeParsedException();
         }
 
     }

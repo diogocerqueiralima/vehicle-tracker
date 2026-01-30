@@ -1,7 +1,6 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
-import com.github.diogocerqueiralima.application.exceptions.CertificateCouldNotBeParsedException;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.domain.model.CertificateInfo;
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
@@ -41,10 +40,7 @@ public class CertificateUseCaseImpl implements CertificateUseCase {
 
         // 2. Parse and persist certificate info
 
-        CertificateInfo certificateInfo = certificateParser
-                .parse(certificate)
-                .map(certificateInfoPersistence::save)
-                .orElseThrow(CertificateCouldNotBeParsedException::new);
+        CertificateInfo certificateInfo = certificateInfoPersistence.save(certificateParser.parse(certificate));
 
         // 3. Build and return the result
 

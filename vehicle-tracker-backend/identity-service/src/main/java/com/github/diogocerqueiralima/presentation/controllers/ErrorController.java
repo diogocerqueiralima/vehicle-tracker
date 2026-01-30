@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.presentation.controllers;
 
-import com.github.diogocerqueiralima.application.exceptions.CertificateCouldNotBeParsedException;
+import com.github.diogocerqueiralima.infrastructure.exceptions.CertificateCouldNotBeParsedException;
 import com.github.diogocerqueiralima.infrastructure.exceptions.*;
 import com.github.diogocerqueiralima.presentation.dto.ApiResponseDTO;
 import org.springframework.http.ResponseEntity;
