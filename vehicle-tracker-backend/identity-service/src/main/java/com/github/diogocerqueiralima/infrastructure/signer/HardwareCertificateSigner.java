@@ -24,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -134,13 +131,7 @@ public class HardwareCertificateSigner implements CertificateSigner {
 
             // 7. Convert the certificate to PEM format
 
-            StringWriter sw = new StringWriter();
-
-            try (JcaPEMWriter pemWriter = new JcaPEMWriter(sw)) {
-                pemWriter.writeObject(holder);
-            }
-
-            byte[] pemBytes = sw.toString().getBytes(StandardCharsets.UTF_8);
+            byte[] pemBytes = convertToPem(holder);
 
             // 8. Return the signed certificate
 
@@ -152,6 +143,25 @@ public class HardwareCertificateSigner implements CertificateSigner {
             return Optional.empty();
         }
 
+    }
+
+    /**
+     *
+     * Converts an X509CertificateHolder to PEM format.
+     *
+     * @param holder the X509CertificateHolder to convert
+     * @return the PEM-encoded byte array of the certificate
+     * @throws IOException if an I/O error occurs during conversion
+     */
+    private byte[] convertToPem(X509CertificateHolder holder) throws IOException {
+
+        StringWriter sw = new StringWriter();
+
+        try (JcaPEMWriter pemWriter = new JcaPEMWriter(sw)) {
+            pemWriter.writeObject(holder);
+        }
+
+        return sw.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     /**
