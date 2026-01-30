@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -131,10 +132,20 @@ public class HardwareCertificateSigner implements CertificateSigner {
 
             X509CertificateHolder holder = certBuilder.build(signer);
 
-            // 7. Return the signed certificate
+            // 7. Convert the certificate to PEM format
+
+            StringWriter sw = new StringWriter();
+
+            try (JcaPEMWriter pemWriter = new JcaPEMWriter(sw)) {
+                pemWriter.writeObject(holder);
+            }
+
+            byte[] pemBytes = sw.toString().getBytes(StandardCharsets.UTF_8);
+
+            // 8. Return the signed certificate
 
             log.info("Certificate signed successfully for CN={}", commonName);
-            return Optional.of(new Certificate(holder.getEncoded()));
+            return Optional.of(new Certificate(pemBytes));
 
         } catch (Exception e) {
             log.error("Error signing certificate", e);

@@ -1,7 +1,9 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
-import com.github.diogocerqueiralima.application.exceptions.CertificateNotSignedException;
+import com.github.diogocerqueiralima.application.exceptions.CertificateCouldNotBeParsedException;
+import com.github.diogocerqueiralima.application.exceptions.CertificateCouldNotBeSignedException;
+import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.domain.model.CertificateInfo;
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
 import com.github.diogocerqueiralima.domain.model.Certificate;
@@ -13,12 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-
 @Service
 public class CertificateUseCaseImpl implements CertificateUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(CertificateUseCaseImpl.class);
+
     private final CertificateSigner certificateSigner;
     private final CertificateParser certificateParser;
     private final CertificateInfoPersistence certificateInfoPersistence;
@@ -32,13 +33,37 @@ public class CertificateUseCaseImpl implements CertificateUseCase {
     }
 
     @Override
-    public void sign(CertificateSigningRequestCommand command) {
+    public CertificateSigningRequestResult sign(CertificateSigningRequestCommand command) {
+
+        // 1. Sign certificate
 
         CertificateSigningRequest request = new CertificateSigningRequest(command.value());
-        Certificate certificate = certificateSigner.sign(request).orElseThrow(CertificateNotSignedException::new);
-        CertificateInfo certificateInfo = certificateInfoPersistence.save(certificateParser.parse(certificate));
+        Certificate certificate = certificateSigner.sign(request).orElseThrow(CertificateCouldNotBeSignedException::new);
 
-        // build result
+        // 2. Parse and persist certificate info
+
+        CertificateInfo certificateInfo = certificateParser
+                .parse(certificate)
+                .map(certificateInfoPersistence::save)
+                .orElseThrow(CertificateCouldNotBeParsedException::new);
+
+        // 3. Build and return the result
+
+        CertificateSigningRequestResult result = new CertificateSigningRequestResult(
+                certificateInfo.getSerialNumber(),
+                certificateInfo.getSubject(),
+                certificateInfo.getIssuedAt(),
+                certificateInfo.getExpiresAt(),
+                certificateInfo.isRevoked(),
+                certificate.getData()
+        );
+
+        log.info(
+                "Certificate parsed successfully: Serial Number - {}, Subject - {}",
+                result.serialNumber(), result.subject()
+        );
+
+        return result;
     }
 
 }
