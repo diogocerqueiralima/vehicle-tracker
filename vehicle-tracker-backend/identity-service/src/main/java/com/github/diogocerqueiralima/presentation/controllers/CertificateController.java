@@ -25,8 +25,7 @@ public class CertificateController {
     public ResponseEntity<Void> certificateSigningRequest(@RequestParam("csr") MultipartFile csr) throws IOException {
 
         CertificateSigningRequestCommand command = new CertificateSigningRequestCommand(csr.getBytes());
-
-
+        certificateUseCase.sign(command);
 
         return ResponseEntity.ok().build();
     }

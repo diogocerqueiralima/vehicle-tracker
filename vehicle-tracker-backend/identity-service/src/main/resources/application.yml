@@ -13,7 +13,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://keycloak:8080/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+          jwk-set-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
 
 keystore:
   pkcs11:
@@ -26,6 +26,6 @@ keystore:
     alias: ${CERTIFICATE_ALIAS}
 
 ca:
-  issuer: "IDENTITY-SERVICE"
+  issuer: "CN=Vehicle Tracker CA, O=MyTracker, C=PT"
   validity:
     days: 30

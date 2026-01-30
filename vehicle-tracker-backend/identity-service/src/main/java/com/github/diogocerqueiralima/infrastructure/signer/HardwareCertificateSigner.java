@@ -11,6 +11,8 @@ import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -18,8 +20,14 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.*;
 import java.time.Instant;
@@ -31,6 +39,7 @@ import java.util.Optional;
 @Component
 public class HardwareCertificateSigner implements CertificateSigner {
 
+    private static final Logger log = LoggerFactory.getLogger(HardwareCertificateSigner.class);
     private final KeyPair keyPair;
     private final CertificateAuthorityConfig caConfig;
 
@@ -43,18 +52,32 @@ public class HardwareCertificateSigner implements CertificateSigner {
      *
      * {@inheritDoc}
      *
-     * This method uses the CA's private key stored in a hardware security module (HSM) to sign the certificate.
+     * This method uses the CA's private key stored in a trusted module platform (TPM) to sign the certificate.
      */
     @Override
     public Optional<Certificate> sign(CertificateSigningRequest request) {
 
-        try {
+        // 1. Parse the PKCS#10 request (PEM format)
 
-            PKCS10CertificationRequest pkcs10Request = new PKCS10CertificationRequest(request.getData());
+        try(
+                Reader reader = new InputStreamReader(new ByteArrayInputStream(request.getData()));
+                PEMParser pemParser = new PEMParser(reader)
+        ) {
+
+            Object obj = pemParser.readObject();
+
+            if (!(obj instanceof PKCS10CertificationRequest pkcs10Request)) {
+                log.error("Invalid PKCS#10 certification request");
+                return Optional.empty();
+            }
+
+            // 2. Verify the signature of the PKCS#10 request
 
             if (!verifySignature(pkcs10Request)) {
                 return Optional.empty();
             }
+
+            // 3. Extract information from the PKCS#10 request
 
             Optional<String> commonNameOpt = extractCommonName(pkcs10Request.getSubject());
 
@@ -69,6 +92,8 @@ public class HardwareCertificateSigner implements CertificateSigner {
             Instant notBefore = Instant.now();
             Instant notAfter = notBefore.plus(caConfig.getValidityDays(), ChronoUnit.DAYS);
 
+            // 4. Build the X.509 certificate
+
             X509v3CertificateBuilder certBuilder =
                     new JcaX509v3CertificateBuilder(
                             new X500Name(caConfig.getIssuer()),
@@ -78,6 +103,8 @@ public class HardwareCertificateSigner implements CertificateSigner {
                             pkcs10Request.getSubject(),
                             pkcs10Request.getSubjectPublicKeyInfo()
                     );
+
+            // 5. Add extensions to the certificate
 
             certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
             certBuilder.addExtension(
@@ -97,15 +124,20 @@ public class HardwareCertificateSigner implements CertificateSigner {
                     Extension.authorityKeyIdentifier, false, new AuthorityKeyIdentifier(publicKey.getEncoded())
             );
 
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA")
-                    .setProvider("BC")
+            // 6. Sign the certificate using the CA's private key
+
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256withECDSA")
                     .build(privateKey);
 
             X509CertificateHolder holder = certBuilder.build(signer);
 
+            // 7. Return the signed certificate
+
+            log.info("Certificate signed successfully for CN={}", commonName);
             return Optional.of(new Certificate(holder.getEncoded()));
 
         } catch (Exception e) {
+            log.error("Error signing certificate", e);
             return Optional.empty();
         }
 

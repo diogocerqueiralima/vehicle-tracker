@@ -38,8 +38,6 @@ public class CertificateUseCaseImpl implements CertificateUseCase {
         Certificate certificate = certificateSigner.sign(request).orElseThrow(CertificateNotSignedException::new);
         CertificateInfo certificateInfo = certificateInfoPersistence.save(certificateParser.parse(certificate));
 
-        log.info(new String(certificate.getData(), StandardCharsets.UTF_8));
-
         // build result
     }
 

@@ -15,6 +15,9 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) {
         return http
                 .csrf(Customizer.withDefaults())
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().authenticated()
+                )
                 .oauth2ResourceServer(oauth ->
                         oauth.jwt(Customizer.withDefaults())
                 )
