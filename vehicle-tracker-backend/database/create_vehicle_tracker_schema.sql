@@ -34,6 +34,14 @@ CREATE TABLE IF NOT EXISTS "vehicle_tracker_schema".certificates (
     revoked BOOLEAN NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS "vehicle_tracker_schema".bootstrap_certificates (
+    serial_number VARCHAR(255) PRIMARY KEY,
+    used BOOLEAN NOT NULL,
+    CONSTRAINT FK_serial_number
+        FOREIGN KEY (serial_number)
+        REFERENCES "vehicle_tracker_schema".certificates(serial_number) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS "vehicle_tracker_schema".locations_snapshots (
     id UUID NOT NULL,
     vehicle_id UUID NOT NULL,

@@ -6,10 +6,10 @@ import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * Interface defining the contract for certificate-related use cases.
+ * Interface defining the contract for boostrap certificate-related use cases.
  */
 @Validated
-public interface CertificateUseCase {
+public interface BootstrapCertificateUseCase {
 
     /**
      *

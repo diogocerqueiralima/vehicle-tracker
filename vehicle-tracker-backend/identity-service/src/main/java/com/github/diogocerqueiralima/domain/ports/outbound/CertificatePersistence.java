@@ -1,19 +1,19 @@
 package com.github.diogocerqueiralima.domain.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.model.CertificateInfo;
+import com.github.diogocerqueiralima.domain.model.Certificate;
 
 /**
  * Port to interact with the certificate data source.
  */
-public interface CertificateInfoPersistence {
+public interface CertificatePersistence {
 
     /**
      *
      * Saves a certificate to the data source.
      *
-     * @param certificateInfo the certificate to be saved
+     * @param certificate the certificate to be saved
      * @return the saved certificate
      */
-    CertificateInfo save(CertificateInfo certificateInfo);
+    Certificate save(Certificate certificate);
 
 }

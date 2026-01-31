@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.parser;
 
-import com.github.diogocerqueiralima.domain.model.Certificate;
+import com.github.diogocerqueiralima.domain.model.IssuedCertificate;
 import com.github.diogocerqueiralima.domain.model.CertificateInfo;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateParser;
 import com.github.diogocerqueiralima.infrastructure.exceptions.CertificateCouldNotBeParsedException;
@@ -22,10 +22,10 @@ public class CertificateParserImpl implements CertificateParser {
     private static final Logger log = LoggerFactory.getLogger(CertificateParserImpl.class);
 
     @Override
-    public CertificateInfo parse(Certificate certificate) {
+    public CertificateInfo parse(IssuedCertificate issuedCertificate) {
 
         try(
-                Reader reader = new InputStreamReader(new ByteArrayInputStream(certificate.getData()));
+                Reader reader = new InputStreamReader(new ByteArrayInputStream(issuedCertificate.getData()));
                 PEMParser pemParser = new PEMParser(reader)
         ) {
 
@@ -40,8 +40,7 @@ public class CertificateParserImpl implements CertificateParser {
                     holder.getSerialNumber().toString(),
                     holder.getSubject().toString(),
                     holder.getNotBefore().toInstant(),
-                    holder.getNotAfter().toInstant(),
-                    false
+                    holder.getNotAfter().toInstant()
             );
 
         } catch (IOException e) {

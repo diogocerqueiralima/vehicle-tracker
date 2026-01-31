@@ -1,24 +1,36 @@
 package com.github.diogocerqueiralima.domain.model;
 
-/**
- * Represents a Certificate signed by a Certificate Authority (CA).
- */
+import com.github.diogocerqueiralima.domain.exceptions.CertificateRevokedException;
+
 public class Certificate {
 
-    private final byte[] data;
+    private final CertificateInfo info;
+    private final boolean revoked;
 
-    /**
-     *
-     * Initializes a new Certificate with the given data.
-     *
-     * @param data the byte array representing the certificate data
-     */
-    public Certificate(byte[] data) {
-        this.data = data;
+    public Certificate(CertificateInfo info, boolean revoked) {
+        this.info = info;
+        this.revoked = revoked;
     }
 
-    public byte[] getData() {
-        return data;
+    public Certificate(CertificateInfo info) {
+        this(info, false);
+    }
+
+    public Certificate revoke() {
+
+        if (this.revoked) {
+            throw new CertificateRevokedException(this.info);
+        }
+
+        return new Certificate(this.info, true);
+    }
+
+    public CertificateInfo getInfo() {
+        return info;
+    }
+
+    public boolean isRevoked() {
+        return revoked;
     }
 
 }

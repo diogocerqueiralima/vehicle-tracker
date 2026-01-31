@@ -9,7 +9,13 @@ public class ApplicationURIs {
     private ApplicationURIs() {}
 
     // Certificate-related URIs
-    public final static String CERTIFICATE_BASE_URI = "/certificates",
+    public final static String
+            CERTIFICATE_BASE_URI = "/certificates",
             CERTIFICATE_SIGNING_REQUEST_URI = CERTIFICATE_BASE_URI + "/sign";
+
+    // Bootstrap certificate-related URIs
+    public final static String
+            BOOTSTRAP_CERTIFICATE_BASE_URI = "/certificates/bootstrap",
+            BOOTSTRAP_CERTIFICATE_SIGNING_REQUEST_URI = BOOTSTRAP_CERTIFICATE_BASE_URI + "/sign";
 
 }

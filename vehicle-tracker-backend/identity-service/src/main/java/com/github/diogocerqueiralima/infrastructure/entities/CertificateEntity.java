@@ -1,15 +1,13 @@
 package com.github.diogocerqueiralima.infrastructure.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "certificates", schema = "vehicle_tracker_schema")
-public class CertificateInfoEntity {
+@Inheritance(strategy = InheritanceType.JOINED)
+public class CertificateEntity {
 
     @Id
     @Column(name = "serial_number")

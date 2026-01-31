@@ -2,7 +2,7 @@ package com.github.diogocerqueiralima.presentation.controllers;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
-import com.github.diogocerqueiralima.domain.ports.inbound.CertificateUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.BootstrapCertificateUseCase;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -15,24 +15,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.*;
+import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.BOOTSTRAP_CERTIFICATE_SIGNING_REQUEST_URI;
 
 @RestController
-public class CertificateController {
+public class BootstrapCertificateController {
 
     private static final String CERTIFICATE_FILENAME = "certificate.pem";
 
-    private final CertificateUseCase certificateUseCase;
+    private final BootstrapCertificateUseCase bootstrapCertificateUseCase;
 
-    public CertificateController(CertificateUseCase certificateUseCase) {
-        this.certificateUseCase = certificateUseCase;
+    public BootstrapCertificateController(BootstrapCertificateUseCase bootstrapCertificateUseCase) {
+        this.bootstrapCertificateUseCase = bootstrapCertificateUseCase;
     }
 
-    @PostMapping(CERTIFICATE_SIGNING_REQUEST_URI)
+    @PostMapping(BOOTSTRAP_CERTIFICATE_SIGNING_REQUEST_URI)
     public ResponseEntity<Resource> certificateSigningRequest(@RequestParam("csr") MultipartFile csr) throws IOException {
 
         CertificateSigningRequestCommand command = new CertificateSigningRequestCommand(csr.getBytes());
-        CertificateSigningRequestResult result = certificateUseCase.sign(command);
+        CertificateSigningRequestResult result = bootstrapCertificateUseCase.sign(command);
         Resource resource = new ByteArrayResource(result.data());
 
         return ResponseEntity.ok()

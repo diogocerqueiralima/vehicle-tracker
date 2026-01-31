@@ -1,7 +1,5 @@
 package com.github.diogocerqueiralima.domain.model;
 
-import com.github.diogocerqueiralima.domain.exceptions.CertificateRevokedException;
-
 import java.time.Instant;
 
 /**
@@ -14,7 +12,6 @@ public class CertificateInfo {
     private final String subject;
     private final Instant issuedAt;
     private final Instant expiresAt;
-    private final boolean revoked;
 
     /**
      *
@@ -24,14 +21,12 @@ public class CertificateInfo {
      * @param subject the entity to which the certificate is issued
      * @param issuedAt the timestamp when the certificate was issued
      * @param expiresAt the timestamp when the certificate will expire
-     * @param revoked the status indicating whether the certificate has been revoked
      */
-    public CertificateInfo(String serialNumber, String subject, Instant issuedAt, Instant expiresAt, boolean revoked) {
+    public CertificateInfo(String serialNumber, String subject, Instant issuedAt, Instant expiresAt) {
         this.serialNumber = serialNumber;
         this.subject = subject;
         this.issuedAt = issuedAt;
         this.expiresAt = expiresAt;
-        this.revoked = revoked;
     }
 
     /**
@@ -43,23 +38,7 @@ public class CertificateInfo {
      * @param expiresAfter the duration in nanoseconds after which the certificate will expire from the issuedAt time
      */
     public CertificateInfo(String serialNumber, String subject, long expiresAfter) {
-        this(serialNumber, subject, Instant.now(), Instant.now().plusNanos(expiresAfter), false);
-    }
-
-    /**
-     *
-     * Revokes the certificate by returning a new instance with the revoked status set to true.
-     *
-     * @return a new Certificate instance with revoked status set to true
-     * @throws CertificateRevokedException if the certificate is already revoked
-     */
-    public CertificateInfo revoke() {
-
-        if (this.revoked) {
-            throw new CertificateRevokedException(this);
-        }
-
-        return new CertificateInfo(this.serialNumber, this.subject, this.issuedAt, this.expiresAt, true);
+        this(serialNumber, subject, Instant.now(), Instant.now().plusNanos(expiresAfter));
     }
 
     public String getSerialNumber() {
@@ -78,8 +57,5 @@ public class CertificateInfo {
         return expiresAt;
     }
 
-    public boolean isRevoked() {
-        return revoked;
-    }
 
 }

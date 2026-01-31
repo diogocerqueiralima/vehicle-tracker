@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.signer;
 
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
-import com.github.diogocerqueiralima.domain.model.Certificate;
+import com.github.diogocerqueiralima.domain.model.IssuedCertificate;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateSigner;
 import com.github.diogocerqueiralima.infrastructure.config.CertificateAuthorityConfig;
 import com.github.diogocerqueiralima.infrastructure.exceptions.*;
@@ -54,7 +54,7 @@ public class HardwareCertificateSigner implements CertificateSigner {
      * This method uses the CA's private key stored in a trusted module platform (TPM) to sign the certificate.
      */
     @Override
-    public Certificate sign(CertificateSigningRequest request) {
+    public IssuedCertificate sign(CertificateSigningRequest request) {
 
         // 1. Parse the PKCS#10 request (PEM format)
 
@@ -139,7 +139,7 @@ public class HardwareCertificateSigner implements CertificateSigner {
             // 8. Return the signed certificate
 
             log.info("Certificate signed successfully for CN={}", commonName);
-            return new Certificate(pemBytes);
+            return new IssuedCertificate(pemBytes);
 
         }  catch (OperatorCreationException | IOException e) {
             throw new CouldNotSignCertificateException();
