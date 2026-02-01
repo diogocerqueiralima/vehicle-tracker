@@ -1,6 +1,8 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
+import com.github.diogocerqueiralima.application.commands.MarkBootstrapCertificateAsUsedCommand;
+import com.github.diogocerqueiralima.application.exceptions.CertificateNotFoundException;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.application.services.CertificateService;
 import com.github.diogocerqueiralima.domain.model.BootstrapCertificate;
@@ -28,6 +30,17 @@ public class BootstrapCertificateUseCaseImpl implements BootstrapCertificateUseC
                 bootstrapCertificatePersistence::save,
                 info -> new BootstrapCertificate(info, false, false)
         );
+    }
+
+    @Override
+    public void markAsUsed(MarkBootstrapCertificateAsUsedCommand command) {
+
+        BootstrapCertificate certificate = bootstrapCertificatePersistence
+                .getById(command.serialNumber())
+                .map(BootstrapCertificate::markAsUsed)
+                .orElseThrow(() -> new CertificateNotFoundException(command.serialNumber()));
+
+        bootstrapCertificatePersistence.save(certificate);
     }
 
 }

@@ -18,6 +18,7 @@ import java.util.function.Function;
 public class CertificateService {
 
     private static final Logger log = LoggerFactory.getLogger(CertificateService.class);
+
     private final CertificateSigner certificateSigner;
     private final CertificateParser certificateParser;
 
