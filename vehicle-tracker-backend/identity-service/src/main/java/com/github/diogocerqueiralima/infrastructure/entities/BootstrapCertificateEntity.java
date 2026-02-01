@@ -6,7 +6,7 @@ import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "bootstrap_certificates", schema = "vehicle_tracker_schema")
+@Table(name = "bootstrap_certificates")
 @PrimaryKeyJoinColumn(name = "serial_number")
 public class BootstrapCertificateEntity extends CertificateEntity {
 

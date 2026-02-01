@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "certificates", schema = "vehicle_tracker_schema")
+@Table(name = "certificates")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class CertificateEntity {
 
