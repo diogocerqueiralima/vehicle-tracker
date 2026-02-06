@@ -37,7 +37,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${roboto.className} antialiased`}>
+      <body className={`${roboto.className} antialiased flex`}>
         <Header items={items} />
         {children}
       </body>
