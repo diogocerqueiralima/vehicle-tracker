@@ -7,6 +7,8 @@ import com.github.diogocerqueiralima.infrastructure.mappers.CertificateMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.CertificateRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class CertificatePersistenceImpl implements CertificatePersistence {
 
@@ -28,4 +30,12 @@ public class CertificatePersistenceImpl implements CertificatePersistence {
 
         return certificateMapper.toDomain(savedEntity);
     }
+
+    @Override
+    public Optional<Certificate> getBySerialNumber(String serialNumber) {
+        return certificateRepository
+                .findById(serialNumber)
+                .map(certificateMapper::toDomain);
+    }
+
 }

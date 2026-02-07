@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.presentation.controllers;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
+import com.github.diogocerqueiralima.application.commands.LookupCertificateBySerialNumberCommand;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.domain.ports.inbound.BootstrapCertificateUseCase;
 import org.springframework.core.io.ByteArrayResource;
@@ -8,6 +9,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.BOOTSTRAP_CERTIFICATE_SIGNING_REQUEST_URI;
+import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.*;
 
 @RestController
 public class BootstrapCertificateController {
@@ -43,6 +45,12 @@ public class BootstrapCertificateController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(resource.contentLength())
                 .body(resource);
+    }
+
+    @PostMapping(BOOTSTRAP_CERTIFICATE_REVOKE_URI)
+    public ResponseEntity<Void> revoke(@PathVariable String serialNumber) {
+        bootstrapCertificateUseCase.revoke(new LookupCertificateBySerialNumberCommand(serialNumber));
+        return ResponseEntity.ok().build();
     }
 
 }

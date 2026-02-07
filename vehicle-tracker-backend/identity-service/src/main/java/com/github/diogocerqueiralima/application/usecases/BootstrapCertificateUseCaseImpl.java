@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
+import com.github.diogocerqueiralima.application.commands.LookupCertificateBySerialNumberCommand;
 import com.github.diogocerqueiralima.application.commands.MarkBootstrapCertificateAsUsedCommand;
 import com.github.diogocerqueiralima.application.exceptions.CertificateNotFoundException;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
@@ -36,11 +37,22 @@ public class BootstrapCertificateUseCaseImpl implements BootstrapCertificateUseC
     public void markAsUsed(MarkBootstrapCertificateAsUsedCommand command) {
 
         BootstrapCertificate certificate = bootstrapCertificatePersistence
-                .getById(command.serialNumber())
+                .getBySerialNumber(command.serialNumber())
                 .map(BootstrapCertificate::markAsUsed)
                 .orElseThrow(() -> new CertificateNotFoundException(command.serialNumber()));
 
         bootstrapCertificatePersistence.save(certificate);
+    }
+
+    @Override
+    public void revoke(LookupCertificateBySerialNumberCommand command) {
+
+        certificateService.revoke(
+                command,
+                bootstrapCertificatePersistence::getBySerialNumber,
+                bootstrapCertificatePersistence::save
+        );
+
     }
 
 }

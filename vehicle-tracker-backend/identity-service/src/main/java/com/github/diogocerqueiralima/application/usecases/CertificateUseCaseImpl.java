@@ -1,6 +1,8 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
+import com.github.diogocerqueiralima.application.commands.LookupCertificateBySerialNumberCommand;
+import com.github.diogocerqueiralima.application.exceptions.CertificateNotFoundException;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.application.services.CertificateService;
 import com.github.diogocerqueiralima.domain.model.Certificate;
@@ -33,6 +35,17 @@ public class CertificateUseCaseImpl implements CertificateUseCase {
                 certificatePersistence::save,
                 info -> new Certificate(info, false)
         );
+    }
+
+    @Override
+    public void revoke(LookupCertificateBySerialNumberCommand command) {
+
+        certificateService.revoke(
+                command,
+                certificatePersistence::getBySerialNumber,
+                certificatePersistence::save
+        );
+
     }
 
 }

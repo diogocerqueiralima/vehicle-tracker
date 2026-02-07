@@ -72,9 +72,7 @@ public class CertificateFilter extends OncePerRequestFilter {
 
                 // 2. Attempt to mark bootstrap certificate as used
 
-                bootstrapCertificateUseCase.markAsUsed(
-                        new MarkBootstrapCertificateAsUsedCommand(serialNumber)
-                );
+                bootstrapCertificateUseCase.markAsUsed(new MarkBootstrapCertificateAsUsedCommand(serialNumber));
 
             } catch (CertificateNotFoundException e) {
 

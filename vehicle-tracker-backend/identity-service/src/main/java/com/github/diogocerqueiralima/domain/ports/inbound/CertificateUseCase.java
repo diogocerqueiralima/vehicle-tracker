@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.ports.inbound;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
+import com.github.diogocerqueiralima.application.commands.LookupCertificateBySerialNumberCommand;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
@@ -19,5 +20,13 @@ public interface CertificateUseCase {
      * @return the result of the certificate signing request, including the signed certificate data
      */
     CertificateSigningRequestResult sign(@Valid CertificateSigningRequestCommand command);
+
+    /**
+     *
+     * Revokes a certificate based on its serial number.
+     *
+     * @param command the command containing the serial number of the certificate to be revoked
+     */
+    void revoke(@Valid LookupCertificateBySerialNumberCommand command);
 
 }

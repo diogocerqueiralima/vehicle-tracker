@@ -25,6 +25,6 @@ public interface BootstrapCertificatePersistence {
      * @param serialNumber the serial number of the certificate
      * @return an Optional containing the found certificate, or empty if not found
      */
-    Optional<BootstrapCertificate> getById(String serialNumber);
+    Optional<BootstrapCertificate> getBySerialNumber(String serialNumber);
 
 }

@@ -32,7 +32,7 @@ public class BootstrapCertificatePersistenceImpl implements BootstrapCertificate
     }
 
     @Override
-    public Optional<BootstrapCertificate> getById(String serialNumber) {
+    public Optional<BootstrapCertificate> getBySerialNumber(String serialNumber) {
         return certificateRepository
                 .findById(serialNumber)
                 .map(bootstrapCertificateMapper::toDomain);
