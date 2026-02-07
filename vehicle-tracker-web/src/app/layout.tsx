@@ -5,6 +5,7 @@ import {Roboto} from "next/font/google";
 import Header from "@/components/Header";
 import {IoMdHome, IoMdWarning} from "react-icons/io";
 import {PiCertificateFill} from "react-icons/pi";
+import AuthenticationProvider from "@/context/AuthenticationContext";
 
 export const metadata: Metadata = {
   title: "MyTracker",
@@ -40,8 +41,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.className} antialiased flex`}>
-        <Header items={items} />
-        {children}
+        <AuthenticationProvider>
+            <Header items={items} />
+            {children}
+        </AuthenticationProvider>
       </body>
     </html>
   );

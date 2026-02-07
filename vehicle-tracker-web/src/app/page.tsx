@@ -1,8 +1,11 @@
+"use client"
+
 import Card, {ChangeType, Indicator} from "@/components/Card";
 import {MdOnDeviceTraining, MdOutlineWarning} from "react-icons/md";
 import {FaBell} from "react-icons/fa";
 
 export default function Home() {
+
   return (
     <div className={`flex flex-row gap-8 p-32`}>
       
