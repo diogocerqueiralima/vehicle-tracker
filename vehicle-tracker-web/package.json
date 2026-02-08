@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "ioredis": "^5.9.2",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -16,7 +17,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^20.19.33",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
