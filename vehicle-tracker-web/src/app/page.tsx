@@ -8,6 +8,10 @@ export default function Home() {
 
   return (
     <div className={`flex flex-row gap-8 p-32`}>
+
+        <p onClick={() => window.location.href = "/api/login"} className={`text-2xl font-bold cursor-pointer`}>
+            Login
+        </p>
       
         <Card title={"Dispositivos ativos"} label={"123"} indicator={Indicator.ONLINE} icon={<MdOnDeviceTraining size={32} />} change={`+3 esta semana`} changeType={ChangeType.POSITIVE}></Card>
         <Card
