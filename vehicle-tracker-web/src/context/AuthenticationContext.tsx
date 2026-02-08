@@ -4,7 +4,7 @@ import React, {createContext, useContext } from "react";
 
 export interface AuthenticationContextProps {
 
-    login: () => Promise<void>
+    login: () => void
     logout: () => Promise<void>
 
 }
@@ -25,9 +25,7 @@ export function useAuthentication() {
 export default function AuthenticationProvider({ children }: { children: React.ReactNode }) {
 
     const props: AuthenticationContextProps = {
-        login: async () => {
-            // Implement login logic here
-        },
+        login: () => window.location.href = "/api/login",
         logout: async () => {
             // Implement logout logic here
         }

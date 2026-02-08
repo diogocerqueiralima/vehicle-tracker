@@ -3,13 +3,16 @@
 import Card, {ChangeType, Indicator} from "@/components/Card";
 import {MdOnDeviceTraining, MdOutlineWarning} from "react-icons/md";
 import {FaBell} from "react-icons/fa";
+import {useAuthentication} from "@/context/AuthenticationContext";
 
 export default function Home() {
+
+    const { login } = useAuthentication()
 
   return (
     <div className={`flex flex-row gap-8`}>
 
-        <p onClick={() => window.location.href = "/api/login"} className={`text-2xl font-bold cursor-pointer`}>
+        <p onClick={() => login()} className={`text-2xl font-bold cursor-pointer`}>
             Login
         </p>
       

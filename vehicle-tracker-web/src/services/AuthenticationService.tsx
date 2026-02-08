@@ -15,6 +15,8 @@ class AuthenticationService {
 
     async handleRedirect(state: string | null, code: string | null) {
 
+        // 1. Validate input and retrieve session
+
         if (!code) {
             console.error("Code not found in URL")
             throw new Error(`Code not found in URL: ${code}`)
