@@ -8,6 +8,12 @@ public class ApplicationURIs {
     // This class should not be instantiated
     private ApplicationURIs() {}
 
+    // Page query parameter names
+    public final static String
+            PAGE_NUMBER_PARAM = "pageNumber",
+            PAGE_SIZE_PARAM = "pageSize";
+
+    // Certificate uri parameter names
     public final static String
             CERTIFICATE_SERIAL_NUMBER_PARAM = "serialNumber";
 
@@ -21,6 +27,6 @@ public class ApplicationURIs {
     public final static String
             BOOTSTRAP_CERTIFICATE_BASE_URI = "/certificates/bootstrap",
             BOOTSTRAP_CERTIFICATE_SIGNING_REQUEST_URI = BOOTSTRAP_CERTIFICATE_BASE_URI + "/sign",
-            BOOTSTRAP_CERTIFICATE_REVOKE_URI = CERTIFICATE_BASE_URI + "{" + CERTIFICATE_SERIAL_NUMBER_PARAM + "}" + "/revoke";
+            BOOTSTRAP_CERTIFICATE_REVOKE_URI = BOOTSTRAP_CERTIFICATE_BASE_URI + "{" + CERTIFICATE_SERIAL_NUMBER_PARAM + "}" + "/revoke";
 
 }

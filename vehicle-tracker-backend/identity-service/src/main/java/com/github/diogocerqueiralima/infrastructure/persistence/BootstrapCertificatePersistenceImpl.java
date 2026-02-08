@@ -5,6 +5,8 @@ import com.github.diogocerqueiralima.domain.ports.outbound.BootstrapCertificateP
 import com.github.diogocerqueiralima.infrastructure.entities.BootstrapCertificateEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.BootstrapCertificateMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.BootstrapCertificateRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -35,6 +37,16 @@ public class BootstrapCertificatePersistenceImpl implements BootstrapCertificate
     public Optional<BootstrapCertificate> getBySerialNumber(String serialNumber) {
         return certificateRepository
                 .findById(serialNumber)
+                .map(bootstrapCertificateMapper::toDomain);
+    }
+
+    @Override
+    public Page<BootstrapCertificate> getPage(int page, int pageSize) {
+
+        PageRequest pageRequest = PageRequest.of(page, pageSize);
+
+        return certificateRepository
+                .findAll(pageRequest)
                 .map(bootstrapCertificateMapper::toDomain);
     }
 

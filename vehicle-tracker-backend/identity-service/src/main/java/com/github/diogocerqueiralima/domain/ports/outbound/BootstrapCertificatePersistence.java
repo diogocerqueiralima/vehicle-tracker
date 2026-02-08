@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.ports.outbound;
 
 import com.github.diogocerqueiralima.domain.model.BootstrapCertificate;
+import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 
@@ -26,5 +27,15 @@ public interface BootstrapCertificatePersistence {
      * @return an Optional containing the found certificate, or empty if not found
      */
     Optional<BootstrapCertificate> getBySerialNumber(String serialNumber);
+
+    /**
+     *
+     * Retrieves a paginated list of bootstrap certificates.
+     *
+     * @param page the page number to retrieve (0-based index)
+     * @param pageSize the number of certificates to include in each page
+     * @return a paginated list of bootstrap certificates for the specified page and page size
+     */
+    Page<BootstrapCertificate> getPage(int page, int pageSize);
 
 }
