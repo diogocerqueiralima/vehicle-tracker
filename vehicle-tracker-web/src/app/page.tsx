@@ -7,7 +7,7 @@ import {FaBell} from "react-icons/fa";
 export default function Home() {
 
   return (
-    <div className={`flex flex-row gap-8 p-32`}>
+    <div className={`flex flex-row gap-8`}>
 
         <p onClick={() => window.location.href = "/api/login"} className={`text-2xl font-bold cursor-pointer`}>
             Login

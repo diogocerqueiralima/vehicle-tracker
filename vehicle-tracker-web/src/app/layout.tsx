@@ -26,14 +26,17 @@ export default function RootLayout({
     const items = [
         {
             name: "Início",
+            href: "/",
             icon: <IoMdHome size={24} />
         },
         {
             name: "Certificados",
+            href: "/certificates",
             icon: <PiCertificateFill size={24} />
         },
         {
             name: "Alarmes",
+            href: "/alerts",
             icon: <IoMdWarning size={24} />
         }
     ]
@@ -43,7 +46,9 @@ export default function RootLayout({
       <body className={`${roboto.className} antialiased flex`}>
         <AuthenticationProvider>
             <Header items={items} />
-            {children}
+            <main className={`p-32`}>
+                {children}
+            </main>
         </AuthenticationProvider>
       </body>
     </html>

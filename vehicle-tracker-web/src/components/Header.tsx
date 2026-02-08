@@ -3,10 +3,12 @@
 import React, {useState} from "react";
 import {IoLogOut} from "react-icons/io5";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Item {
 
     name: string
+    href: string
     icon: React.ReactNode
 
 }
@@ -47,7 +49,7 @@ export default function Header( { items } : Props ) {
                         items.map((item, index) => (
 
                             <li key={index}>
-                                <button
+                                <Link href={item.href}
                                     className={`
                                         flex items-center bg-background text-foreground px-8 py-2
                                         shadow-sm cursor-pointer rounded-lg hover:bg-highlight
@@ -69,7 +71,7 @@ export default function Header( { items } : Props ) {
                                       </span>
 
                                     </div>
-                                </button>
+                                </Link>
                             </li>
 
                         ))
