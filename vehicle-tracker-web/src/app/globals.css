@@ -3,6 +3,7 @@
 :root {
   --background: oklch(21% 0.006 285.885);
   --foreground: oklch(98.7% 0.022 95.277);
+  --foreground-muted: oklch(98.7% 0.022 95.277 / 0.5);
   --surface: oklch(27.4% 0.006 286.033);
   --highlight: oklch(39.1% 0.09 240.876);
   --positive: oklch(62.7% 0.194 149.214);
@@ -12,6 +13,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
   --color-surface: var(--surface);
   --color-highlight: var(--highlight);
   --color-positive: var(--positive);
