@@ -1,4 +1,4 @@
-import DataTable, {DataTableHeader} from "@/components/DataTable";
+import DataTable, {DataTableHeader, DataTableHighlightType} from "@/components/DataTable";
 
 export default function Certificates() {
 
@@ -39,13 +39,26 @@ export default function Certificates() {
         ]
     }
 
+    const content = certificates
+        .map(certificate => {
+            return {
+                item: certificate,
+                highlights: [
+                    {
+                        name: "status",
+                        type: certificate.status === "Válido" ? DataTableHighlightType.POSITIVE : DataTableHighlightType.NEGATIVE
+                    }
+                ]
+            }
+        })
+
     return (
 
         <div className={`flex flex-col gap-8`}>
 
             <h1 className={`text-4xl font-bold`}>Certificados</h1>
 
-            <DataTable header={header} content={certificates} />
+            <DataTable header={header} content={content} />
 
         </div>
 

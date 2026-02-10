@@ -11,10 +11,32 @@ export interface DataTableHeader {
 
 }
 
+export const DataTableHighlightType = {
+    POSITIVE: { name: "POSITIVE", color: "positive" },
+    NEGATIVE: { name: "NEGATIVE", color: "negative" }
+} as const;
+
+export type DataTableHighlightType =
+    typeof DataTableHighlightType[keyof typeof DataTableHighlightType];
+
+export interface DataTableCellHighlight {
+
+    name: string;
+    type: DataTableHighlightType;
+
+}
+
+export interface DataTableItem<T extends Record<string, unknown>> {
+
+    item: T
+    highlights: DataTableCellHighlight[]
+
+}
+
 export interface DataTableProps<T extends Record<string, unknown>> {
 
     header: DataTableHeader
-    content: T[]
+    content: DataTableItem<T>[]
 
 }
 
@@ -54,21 +76,28 @@ export default function DataTable<T extends Record<string, unknown>>({ header, c
                             <tr
                                 key={rowIndex}
                                 className={`
-                                    text-center border-b border-b-foreground-muted last:border-b-0 hover:bg-background
-                                    duration-200 cursor-default
+                                    text-center border-b border-b-foreground-muted last:border-b-0
+                                    hover:bg-surface-muted duration-200 cursor-default
                                 `}
                             >
 
                                 {
 
-                                    Object.entries(row).map(([key, value], colIndex) => {
+                                    Object.entries(row.item).map(([key, value], colIndex) => {
 
                                         const headerItem = header.items
                                             .find(h => h.name === key)
                                         if (!headerItem) return null
 
+                                        const highlight = row.highlights.find(h => h.name === key)
+                                        const color = highlight ? highlight.type.color : ""
+                                        const bg = highlight ? `bg-${color}-muted` : ""
+                                        const text = highlight ? `text-${color}` : ""
+
                                         return (
-                                            <td key={colIndex} className={`px-8 py-4`}>{String(value)}</td>
+                                            <td key={colIndex} className={`px-8 py-4`}>
+                                                <span className={`${bg} ${text} px-2 py-1 rounded-full`}>{String(value)}</span>
+                                            </td>
                                         )
 
                                     })
