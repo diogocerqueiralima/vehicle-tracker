@@ -32,11 +32,11 @@ export default function Header( { items } : Props ) {
                 { /* 1. Logo that open or close the sidebar */ }
 
                 <Image
-                    src="/icon.png"
+                    src="/Logo - 1000X1000.svg"
                     alt="MyTracker Logo"
-                    width={80}
-                    height={80}
-                    className="rounded-full cursor-pointer duration-200 hover:scale-105"
+                    width={64}
+                    height={64}
+                    className="cursor-pointer duration-200 hover:scale-105"
                     onClick={() => setIsOpen(!isOpen)}
                 />
 

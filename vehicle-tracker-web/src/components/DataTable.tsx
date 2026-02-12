@@ -43,19 +43,25 @@ export interface DataTableProps<T extends Record<string, unknown>> {
 export default function DataTable<T extends Record<string, unknown>>({ header, content }: DataTableProps<T>) {
     return (
 
-        <div className={`bg-surface rounded-sm shadow-md text-sm`}>
+        <div className={`flex flex-col bg-surface rounded-sm shadow-md text-sm`}>
+
+            <div className={`p-8`}>
+
+                <h1 className={`text-xl font-bold`}>Certificados</h1>
+
+            </div>
 
             <table>
 
                 <thead>
 
-                    <tr className={`opacity-40 border-b border-b-foreground-muted cursor-default`}>
+                    <tr className={`opacity-40 border-y border-foreground-muted cursor-default`}>
 
                         {
 
                             header.items.map((item, index) => (
 
-                                <th key={index} className={`px-8 py-4`}>
+                                <th key={index} className={`text-start px-8 py-4`}>
                                     {item.label}
                                 </th>
 
@@ -76,7 +82,7 @@ export default function DataTable<T extends Record<string, unknown>>({ header, c
                             <tr
                                 key={rowIndex}
                                 className={`
-                                    text-center border-b border-b-foreground-muted last:border-b-0
+                                    border-b border-b-foreground-muted last:border-b-0
                                     hover:bg-surface-muted duration-200 cursor-default
                                 `}
                             >
@@ -91,12 +97,11 @@ export default function DataTable<T extends Record<string, unknown>>({ header, c
 
                                         const highlight = row.highlights.find(h => h.name === key)
                                         const color = highlight ? highlight.type.color : ""
-                                        const bg = highlight ? `bg-${color}-muted` : ""
-                                        const text = highlight ? `text-${color}` : ""
+                                        const highlightClasses = highlight ? `bg-${color}-muted text-${color} py-1 px-2 rounded-full` : ""
 
                                         return (
                                             <td key={colIndex} className={`px-8 py-4`}>
-                                                <span className={`${bg} ${text} px-2 py-1 rounded-full`}>{String(value)}</span>
+                                                <span className={`${highlightClasses}`}>{String(value)}</span>
                                             </td>
                                         )
 
