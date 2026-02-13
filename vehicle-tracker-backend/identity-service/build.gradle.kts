@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.bouncy.castle.provider)
     implementation(libs.bouncy.castle.bcpkix)
     implementation(libs.postgresql)
+    implementation(libs.springdoc)
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
