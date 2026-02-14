@@ -82,7 +82,7 @@ export default function Header( { items } : Props ) {
 
             </div>
 
-            { /* 3. Logout button, that should have a component it self */ }
+            { /* 3. Logout button, that should have a component itself */ }
 
             <button
                 className="bg-background text-foreground rounded-full p-4 flex items-center justify-center shadow-md hover:bg-highlight hover:scale-105 duration-200 cursor-pointer"
