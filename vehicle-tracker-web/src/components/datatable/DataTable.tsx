@@ -31,16 +31,19 @@ export function createDataTable<T extends object>() {
 
         const [items, setItems] = useState<T[]>([])
         const [totalItems, setTotalItems] = useState(0)
+        const [currentPage, setCurrentPage] = useState(1)
 
         useEffect(() => {
 
-            getPage(1)
+            console.log("Fetching page", currentPage)
+
+            getPage(currentPage)
                 .then(page => {
                     setItems(page.items)
                     setTotalItems(page.totalItems)
                 })
 
-        }, [getPage])
+        }, [currentPage, getPage])
 
         return (
             <Provider value={
