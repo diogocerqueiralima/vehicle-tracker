@@ -16,7 +16,7 @@ export interface Page<T> {
 export interface RootProps<T> {
 
     children: React.ReactNode
-    getPage: (number: number) => Promise<Page<T>>
+    getPage: (number: number, filter: string) => Promise<Page<T>>
 
 }
 
@@ -32,22 +32,36 @@ export function createDataTable<T extends object>() {
         const [items, setItems] = useState<T[]>([])
         const [totalItems, setTotalItems] = useState(0)
         const [currentPage, setCurrentPage] = useState(1)
+        const [totalPages, setTotalPages] = useState(1)
+        const [filter, setFilter] = useState("")
 
         useEffect(() => {
 
             console.log("Fetching page", currentPage)
 
-            getPage(currentPage)
+            getPage(currentPage, filter)
                 .then(page => {
                     setItems(page.items)
                     setTotalItems(page.totalItems)
+                    setTotalPages(page.totalPages)
                 })
 
-        }, [currentPage, getPage])
+        }, [getPage, currentPage, filter])
 
         return (
             <Provider value={
-                { items, totalItems, totalPages: 1, currentPage: 1 }
+                {
+                    items, totalItems, totalPages, currentPage, filter,
+                    firstPage: () => setCurrentPage(1),
+                    lastPage: () => setCurrentPage(totalPages),
+                    nextPage: () => setCurrentPage(prev => Math.min(prev + 1, totalPages)),
+                    previousPage: () => setCurrentPage(prev => Math.max(prev - 1, 1)),
+                    canAdvance: () => currentPage < totalPages,
+                    canBack: () => currentPage > 1,
+                    isFirstPage: () => currentPage === 1,
+                    isLastPage: () => currentPage === totalPages,
+                    updateFilter: (value: string) => setFilter(value)
+                }
             }>
                 <div className={`flex flex-col bg-surface rounded-sm shadow-md text-sm`}>
                     { children }

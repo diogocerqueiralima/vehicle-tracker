@@ -6,6 +6,16 @@ export interface DataTableContextProps<T extends object> {
     totalItems: number
     totalPages: number
     currentPage: number
+    nextPage: () => void
+    previousPage: () => void
+    lastPage: () => void
+    firstPage: () => void
+    canAdvance: () => boolean
+    canBack: () => boolean
+    isFirstPage: () => boolean
+    isLastPage: () => boolean
+    filter: string
+    updateFilter: (value: string) => void
 
 }
 

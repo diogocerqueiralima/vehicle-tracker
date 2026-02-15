@@ -67,7 +67,7 @@ export function CertificatesDataTable() {
     ]
 
     return (
-        <DataTable.Root getPage={() => Promise.resolve({items: items, totalPages: 1, totalItems: 2, currentPage: 1})}>
+        <DataTable.Root getPage={() => Promise.resolve({items: items, totalPages: 3, totalItems: 2, currentPage: 1})}>
             <DataTable.Header title={"Certificados"} />
             <DataTable.Content headerItems={headerItems} />
             <DataTable.Footer />

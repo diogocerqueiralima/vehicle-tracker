@@ -15,7 +15,7 @@ export function createDataTableFooter<T extends object>({ useDataTable }: Create
 
     return function Header() {
 
-        const { currentPage, totalPages } = useDataTable()
+        const { currentPage, totalPages, firstPage, lastPage, nextPage, previousPage, isFirstPage, isLastPage, canBack, canAdvance } = useDataTable()
 
         return (
 
@@ -26,20 +26,24 @@ export function createDataTableFooter<T extends object>({ useDataTable }: Create
                 <div className={`flex flex-row items-center gap-2`}>
 
                     <MdKeyboardDoubleArrowLeft
-                        className={`bg-background rounded-md px-1 cursor-pointer duration-200 hover:bg-highlight`}
+                        className={`${isFirstPage() ? "bg-surface-muted cursor-default" : "bg-background duration-200 hover:bg-highlight cursor-pointer" } rounded-md px-1`}
                         size={28}
+                        onClick={() => firstPage()}
                     />
                     <MdKeyboardArrowLeft
-                        className={`bg-background rounded-md px-1 cursor-pointer duration-200 hover:bg-highlight`}
+                        className={`${canBack() ? "bg-background duration-200 hover:bg-highlight cursor-pointer" : "bg-surface-muted cursor-default"} rounded-md px-1`}
                         size={28}
+                        onClick={() => previousPage()}
                     />
                     <MdKeyboardArrowRight
-                        className={`bg-background rounded-md px-1 cursor-pointer duration-200 hover:bg-highlight`}
+                        className={`${canAdvance() ? "bg-background duration-200 hover:bg-highlight cursor-pointer" : "bg-surface-muted cursor-default"} rounded-md px-1`}
                         size={28}
+                        onClick={() => nextPage()}
                     />
                     <MdKeyboardDoubleArrowRight
-                        className={`bg-background rounded-md px-1 cursor-pointer duration-200 hover:bg-highlight`}
+                        className={`${isLastPage() ? "bg-surface-muted cursor-default" : "bg-background duration-200 hover:bg-highlight cursor-pointer" } rounded-md px-1`}
                         size={28}
+                        onClick={() => lastPage()}
                     />
 
                 </div>
