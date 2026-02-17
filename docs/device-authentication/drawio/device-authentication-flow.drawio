@@ -1,0 +1,91 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram name="Page-1" id="lcLLCCU199xhf4xAKYfe">
+    <mxGraphModel dx="1827" dy="597" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="cw8QS6b_2lbFsUennB9s-2" parent="1" style="html=1;shape=mxgraph.sysml.package;overflow=fill;labelX=197.09;align=left;spacingLeft=5;verticalAlign=top;spacingTop=-3;fillColor=none;" value="&lt;p style=&quot;margin:0px;margin-top:4px;margin-left:5px;text-align:left;&quot;&gt;&lt;b&gt;sd&lt;/b&gt;&amp;nbsp;Device authentication process&lt;/p&gt;" vertex="1">
+          <mxGeometry height="400" width="620" x="-130" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-7" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-49.84965517241372" y="169.9965517241379" as="sourcePoint" />
+            <mxPoint x="249.84" y="169.9965517241379" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-8" connectable="0" parent="cw8QS6b_2lbFsUennB9s-7" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="1. create Bootstrap Certificate" vertex="1">
+          <mxGeometry relative="1" x="-0.6538" y="-1" as="geometry">
+            <mxPoint x="28" y="-13" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-11" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-50.18965517241372" y="240.8965517241379" as="sourcePoint" />
+            <mxPoint x="99.50000000000023" y="240.8965517241379" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-12" connectable="0" parent="cw8QS6b_2lbFsUennB9s-11" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="3. Install Bootstrap Certificate" vertex="1">
+          <mxGeometry relative="1" x="-0.5872" y="3" as="geometry">
+            <mxPoint x="62" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-3" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Admin" vertex="1">
+          <mxGeometry height="300" width="100" x="-100" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-13" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="99.81034482758628" y="272.8965517241379" as="sourcePoint" />
+            <mxPoint x="249.5" y="272.8965517241379" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-14" connectable="0" parent="cw8QS6b_2lbFsUennB9s-13" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="4. Requests a new Certificate" vertex="1">
+          <mxGeometry relative="1" x="-0.6834" as="geometry">
+            <mxPoint x="52" y="-13" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-18" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="99.81034482758628" y="343.8965517241379" as="sourcePoint" />
+            <mxPoint x="409.5" y="343.8965517241379" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-19" connectable="0" parent="cw8QS6b_2lbFsUennB9s-18" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="6. Send data" vertex="1">
+          <mxGeometry relative="1" x="-0.7891" y="-2" as="geometry">
+            <mxPoint x="8" y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-4" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Device" vertex="1">
+          <mxGeometry height="300" width="100" x="50" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-9" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="249.5" y="206.8965517241379" as="sourcePoint" />
+            <mxPoint x="-50.18965517241372" y="206.8965517241379" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-10" connectable="0" parent="cw8QS6b_2lbFsUennB9s-9" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="2. Issued Bootstrap Certificate" vertex="1">
+          <mxGeometry relative="1" x="0.5645" y="1" as="geometry">
+            <mxPoint x="135" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-16" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="249.5" y="304.8965517241379" as="sourcePoint" />
+            <mxPoint x="99.81034482758628" y="304.8965517241379" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-17" connectable="0" parent="cw8QS6b_2lbFsUennB9s-16" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="5. Issued Certificate" vertex="1">
+          <mxGeometry relative="1" x="0.1967" as="geometry">
+            <mxPoint x="32" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-5" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Identity Service" vertex="1">
+          <mxGeometry height="300" width="100" x="200" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cw8QS6b_2lbFsUennB9s-15" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Broker MQTT" vertex="1">
+          <mxGeometry height="300" width="100" x="360" y="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
