@@ -29,4 +29,8 @@ public class ApplicationURIs {
             BOOTSTRAP_CERTIFICATE_SIGNING_REQUEST_URI = BOOTSTRAP_CERTIFICATE_BASE_URI + "/sign",
             BOOTSTRAP_CERTIFICATE_REVOKE_URI = BOOTSTRAP_CERTIFICATE_BASE_URI + "{" + CERTIFICATE_SERIAL_NUMBER_PARAM + "}" + "/revoke";
 
+    // CRL Distribution Point URI
+    public final static String
+            CRL_DISTRIBUTION_POINT_URI = "/crl";
+
 }

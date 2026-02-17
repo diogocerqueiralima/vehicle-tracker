@@ -1,10 +1,11 @@
-package com.github.diogocerqueiralima.infrastructure.signer;
+package com.github.diogocerqueiralima.infrastructure.services;
 
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
 import com.github.diogocerqueiralima.domain.model.IssuedCertificate;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateSigner;
 import com.github.diogocerqueiralima.infrastructure.config.CertificateAuthorityConfig;
 import com.github.diogocerqueiralima.infrastructure.exceptions.*;
+import com.github.diogocerqueiralima.presentation.config.ApplicationURIs;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -23,7 +24,7 @@ import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -35,7 +36,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
-@Component
+@Service
 public class HardwareCertificateSigner implements CertificateSigner {
 
     private static final Logger log = LoggerFactory.getLogger(HardwareCertificateSigner.class);
@@ -107,13 +108,19 @@ public class HardwareCertificateSigner implements CertificateSigner {
 
             // 5. Add extensions to the certificate
 
+            // 5.1 Basic Constraints: Not a CA
+
             certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
             certBuilder.addExtension(
                     Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment)
             );
 
+            // 5.2 Subject Alternative Name: Add the Common Name as an alternative name
+
             GeneralName[] names = { new GeneralName(GeneralName.rfc822Name, commonName) };
             certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(names));
+
+            // 5.3 Subject Key Identifier and Authority Key Identifier
 
             certBuilder.addExtension(
                     Extension.subjectKeyIdentifier,
@@ -123,6 +130,28 @@ public class HardwareCertificateSigner implements CertificateSigner {
 
             certBuilder.addExtension(
                     Extension.authorityKeyIdentifier, false, new AuthorityKeyIdentifier(publicKey.getEncoded())
+            );
+
+            // 5.4 CRL Distribution Points: Add a placeholder CRL distribution point
+
+            DistributionPoint[] distributionPoints = {
+                    new DistributionPoint(
+                            new DistributionPointName(
+                                    new GeneralNames(
+                                            new GeneralName(
+                                                    GeneralName.uniformResourceIdentifier,
+                                                    "https://api.mytracker.pt"
+                                                            + ApplicationURIs.CRL_DISTRIBUTION_POINT_URI
+                                            )
+                                    )
+                            ),
+                            null,
+                            null
+                    )
+            };
+
+            certBuilder.addExtension(
+                    Extension.cRLDistributionPoints, false, new CRLDistPoint(distributionPoints)
             );
 
             // 6. Sign the certificate using the CA's private key
