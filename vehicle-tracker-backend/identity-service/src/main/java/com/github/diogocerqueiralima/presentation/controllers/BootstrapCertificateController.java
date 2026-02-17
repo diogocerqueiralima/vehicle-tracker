@@ -11,7 +11,6 @@ import com.github.diogocerqueiralima.presentation.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.dto.BootstrapCertificateDTO;
 import com.github.diogocerqueiralima.presentation.dto.PageDTO;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

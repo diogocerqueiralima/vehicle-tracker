@@ -5,7 +5,6 @@ import com.github.diogocerqueiralima.application.commands.LookupCertificateBySer
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.domain.ports.inbound.CertificateUseCase;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

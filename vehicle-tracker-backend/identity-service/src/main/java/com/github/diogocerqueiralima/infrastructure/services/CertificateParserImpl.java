@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.infrastructure.parser;
+package com.github.diogocerqueiralima.infrastructure.services;
 
 import com.github.diogocerqueiralima.domain.model.IssuedCertificate;
 import com.github.diogocerqueiralima.domain.model.CertificateInfo;
@@ -9,14 +9,14 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-@Component
+@Service
 public class CertificateParserImpl implements CertificateParser {
 
     private static final Logger log = LoggerFactory.getLogger(CertificateParserImpl.class);
