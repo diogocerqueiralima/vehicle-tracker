@@ -1,0 +1,120 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram name="Page-1" id="rR4po5Qr22_jewFS9WM6">
+    <mxGraphModel dx="1180" dy="722" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-7" parent="1" style="html=1;shape=mxgraph.sysml.package;overflow=fill;labelX=196.82;align=left;spacingLeft=5;verticalAlign=top;spacingTop=-3;fillColor=none;" value="&lt;p style=&quot;margin:0px;margin-top:4px;margin-left:5px;text-align:left;&quot;&gt;&lt;b&gt;sd&lt;/b&gt;  Bootstrap Certificate Lifecycle&lt;/p&gt;" vertex="1">
+          <mxGeometry height="390" width="800" x="60" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-10" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" target="lodcNP8e-4JHbx-s-8dD-9">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="169.92857142857144" y="305" as="sourcePoint" />
+            <mxPoint x="374.5" y="305" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-11" connectable="0" parent="lodcNP8e-4JHbx-s-8dD-10" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="1. createBootstrapCertificate(device)" vertex="1">
+          <mxGeometry relative="1" x="-0.3226" y="2" as="geometry">
+            <mxPoint x="-35" y="-13" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ko5nT9GGbdeDrapOZp5a-1" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="170.10000000000002" y="375.20000000000005" as="sourcePoint" />
+            <mxPoint x="369.5" y="375.20000000000005" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ko5nT9GGbdeDrapOZp5a-2" connectable="0" parent="ko5nT9GGbdeDrapOZp5a-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="3. installCertificate(bootstrap)" vertex="1">
+          <mxGeometry relative="1" x="-0.5838" y="1" as="geometry">
+            <mxPoint x="37" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-8" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Admin" vertex="1">
+          <mxGeometry height="315" width="100" x="120" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-12" edge="1" parent="1" source="lodcNP8e-4JHbx-s-8dD-9" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="375" y="343" as="sourcePoint" />
+            <mxPoint x="169.92857142857144" y="343" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-13" connectable="0" parent="lodcNP8e-4JHbx-s-8dD-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="2. issuedBootstrapCertificate" vertex="1">
+          <mxGeometry relative="1" x="0.3359" y="-1" as="geometry">
+            <mxPoint x="187" y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-17" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="569.5" y="454" as="sourcePoint" />
+            <mxPoint x="369.92857142857133" y="454" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-18" connectable="0" parent="lodcNP8e-4JHbx-s-8dD-17" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="6. issuedCertificate" vertex="1">
+          <mxGeometry relative="1" x="-0.2016" y="-2" as="geometry">
+            <mxPoint x="12" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-9" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Identity Service" vertex="1">
+          <mxGeometry height="315" width="100" x="520" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-24" parent="lodcNP8e-4JHbx-s-8dD-9" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=default;" value="" vertex="1">
+          <mxGeometry height="30" width="10" x="45" y="187" as="geometry" />
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-27" edge="1" parent="lodcNP8e-4JHbx-s-8dD-9" style="endArrow=classic;html=1;rounded=0;" target="lodcNP8e-4JHbx-s-8dD-24" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <Array as="points">
+              <mxPoint x="70" y="182" />
+              <mxPoint x="70" y="202" />
+            </Array>
+            <mxPoint x="50.09999999999991" y="182" as="sourcePoint" />
+            <mxPoint x="50" y="202" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-28" connectable="0" parent="lodcNP8e-4JHbx-s-8dD-27" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="5. markAsUsed(bootstrap)" vertex="1">
+          <mxGeometry relative="1" x="-0.0203" as="geometry">
+            <mxPoint x="70" y="-7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-15" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="369.92857142857133" y="387" as="sourcePoint" />
+            <mxPoint x="569.5" y="387" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-16" connectable="0" parent="lodcNP8e-4JHbx-s-8dD-15" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="4. requestCertificate(bootstrap)" vertex="1">
+          <mxGeometry relative="1" x="-0.3931" y="-2" as="geometry">
+            <mxPoint x="30" y="-17" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-20" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="369.92857142857133" y="481" as="sourcePoint" />
+            <mxPoint x="769.5" y="481" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-21" connectable="0" parent="lodcNP8e-4JHbx-s-8dD-20" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="7. request(certificate)" vertex="1">
+          <mxGeometry relative="1" x="-0.839" y="2" as="geometry">
+            <mxPoint x="28" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-14" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Device" vertex="1">
+          <mxGeometry height="315" width="100" x="320" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-22" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="769.5" y="510" as="sourcePoint" />
+            <mxPoint x="369.92857142857133" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-23" connectable="0" parent="lodcNP8e-4JHbx-s-8dD-22" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="8. response" vertex="1">
+          <mxGeometry relative="1" x="-0.7924" as="geometry">
+            <mxPoint x="-4" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lodcNP8e-4JHbx-s-8dD-19" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Other Service" vertex="1">
+          <mxGeometry height="315" width="100" x="720" y="215" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
