@@ -1,0 +1,63 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram name="Page-1" id="4_ZCzVx4HnoFKmt3j96w">
+    <mxGraphModel dx="787" dy="481" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-1" parent="1" style="html=1;shape=mxgraph.sysml.package;overflow=fill;labelX=136.51;align=left;spacingLeft=5;verticalAlign=top;spacingTop=-3;fillColor=none;" value="&lt;p style=&quot;margin:0px;margin-top:4px;margin-left:5px;text-align:left;&quot;&gt;&lt;b&gt;sd&lt;/b&gt;  Certificate lifecycle&lt;/p&gt;" vertex="1">
+          <mxGeometry height="380" width="360" x="80" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-4" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" target="qJ8mc8bwWgyWmAwGQvrp-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="180.03" y="260" />
+            </Array>
+            <mxPoint x="170.00368421052636" y="259.9994736842105" as="sourcePoint" />
+            <mxPoint x="379.53" y="260.00000000000006" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-5" connectable="0" parent="qJ8mc8bwWgyWmAwGQvrp-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="1. requestCertificate(bootstrap)" vertex="1">
+          <mxGeometry relative="1" x="-0.5667" y="1" as="geometry">
+            <mxPoint x="35" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-9" edge="1" parent="1" source="qJ8mc8bwWgyWmAwGQvrp-2" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;" target="qJ8mc8bwWgyWmAwGQvrp-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-10" connectable="0" parent="qJ8mc8bwWgyWmAwGQvrp-9" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="3. requestCertificate(expiredCertificate)" vertex="1">
+          <mxGeometry relative="1" x="-0.666" as="geometry">
+            <mxPoint x="65" y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-2" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Device" vertex="1">
+          <mxGeometry height="300" width="100" x="120" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-7" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="369.5" y="290.0039240506329" as="sourcePoint" />
+            <mxPoint x="170.24683544303798" y="290.0039240506329" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-8" connectable="0" parent="qJ8mc8bwWgyWmAwGQvrp-7" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="2. issuedCertificate" vertex="1">
+          <mxGeometry relative="1" x="-0.6191" y="1" as="geometry">
+            <mxPoint x="-18" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-11" edge="1" parent="1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;elbow=vertical;curved=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="369.5" y="360.11392405063293" as="sourcePoint" />
+            <mxPoint x="170.24683544303798" y="360.11392405063293" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-12" connectable="0" parent="qJ8mc8bwWgyWmAwGQvrp-11" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;" value="4. newIssuedCertificate" vertex="1">
+          <mxGeometry relative="1" x="-0.5149" y="-1" as="geometry">
+            <mxPoint x="-13" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qJ8mc8bwWgyWmAwGQvrp-3" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=none;" value="Identity Service" vertex="1">
+          <mxGeometry height="300" width="100" x="320" y="180" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
