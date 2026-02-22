@@ -25,7 +25,7 @@ export default function Header( { items } : Props ) {
     return (
         <header className={`
             md:sticky top-0 flex justify-center gap-4 md:gap-0 md:flex-col md:justify-between items-center bg-surface
-            text-foreground md:h-screen py-10 px-4 transition-all duration-200 z-30
+            text-foreground md:h-screen py-10 px-4 transition-all duration-200
         `}>
 
             <div className="flex md:flex-col gap-12 items-center">
@@ -85,15 +85,14 @@ export default function Header( { items } : Props ) {
 
                 <nav
                     className={`
-                        md:hidden fixed top-0 left-0 h-screen w-screen z-50 
-                        transform transition-transform duration-300
+                        md:hidden fixed top-0 left-0 h-screen w-screen transform transition-transform duration-300 z-50
                         ${isOpen ? "bg-black/50 translate-x-0" : "-translate-x-full"}
                     `}
                 >
 
                     <div
                         className={`
-                            flex flex-col left-0 w-3/4 justify-between h-full items-center bg-surface px-8 py-16 z-20
+                            flex flex-col left-0 w-3/4 justify-between h-full items-center bg-surface px-8 py-16
                         `}
                     >
 
@@ -107,7 +106,7 @@ export default function Header( { items } : Props ) {
                                         <Link href={item.href}
                                               className={`
                                             flex items-center bg-background text-foreground px-8 py-2
-                                            shadow-sm cursor-pointer rounded-lg hover:bg-highlight z-10
+                                            shadow-sm cursor-pointer rounded-lg hover:bg-highlight
                                             duration-200 hover:scale-105 w-full ${isOpen ? "gap-2" : "gap-0"}
                                         `}
                                               type="button"
