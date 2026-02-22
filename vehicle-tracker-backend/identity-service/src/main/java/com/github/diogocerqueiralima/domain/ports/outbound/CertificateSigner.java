@@ -1,7 +1,9 @@
 package com.github.diogocerqueiralima.domain.ports.outbound;
 
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
-import com.github.diogocerqueiralima.domain.model.IssuedCertificate;
+
+import java.math.BigInteger;
+import java.time.Instant;
 
 /**
  * Port to interact with the certificate signer implementation.
@@ -10,13 +12,15 @@ public interface CertificateSigner {
 
     /**
      *
-     * Signs a certificate signing request.
-     * This method takes a CertificateSigningRequest object as input and returns a Certificate object.
-     * To sign the certificate, it uses the CA's private key stored in a secure KeyStore.
+     * Signs a certificate signing request (CSR) and issues a certificate.
      *
-     * @param request the certificate signing request to be signed
-     * @return the signed certificate response if the signing is successful, otherwise an empty Optional
+     * @param csr The CertificateSigningRequest object containing the details of the certificate to be signed.
+     * @param issuer The name of the issuer (CA) that will be associated with the issued certificate.
+     * @param serialNumber A unique serial number to be assigned to the issued certificate.
+     * @param notBefore The timestamp indicating when the issued certificate becomes valid.
+     * @param notAfter The timestamp indicating when the issued certificate expires.
+     * @return A byte array representing the signed certificate data, which can be stored or transmitted as needed.
      */
-    IssuedCertificate sign(CertificateSigningRequest request);
+    byte[] sign(CertificateSigningRequest csr, String issuer, BigInteger serialNumber, Instant notBefore, Instant notAfter);
 
 }

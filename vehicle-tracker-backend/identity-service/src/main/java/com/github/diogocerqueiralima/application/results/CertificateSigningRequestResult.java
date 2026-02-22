@@ -1,7 +1,9 @@
 package com.github.diogocerqueiralima.application.results;
 
+import java.math.BigInteger;
+
 public record CertificateSigningRequestResult(
-        String serialNumber,
+        BigInteger serialNumber,
         String subject,
         byte[] data
 ) {}

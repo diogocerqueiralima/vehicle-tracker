@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.infrastructure.entities;
 
 import jakarta.persistence.*;
 
+import java.math.BigInteger;
 import java.time.Instant;
 
 @Entity
@@ -11,7 +12,7 @@ public class CertificateEntity {
 
     @Id
     @Column(name = "serial_number")
-    private String serialNumber;
+    private BigInteger serialNumber;
 
     @Column(nullable = false)
     private String subject;
@@ -25,11 +26,11 @@ public class CertificateEntity {
     @Column(nullable = false)
     private boolean revoked;
 
-    public String getSerialNumber() {
+    public BigInteger getSerialNumber() {
         return serialNumber;
     }
 
-    public void setSerialNumber(String serialNumber) {
+    public void setSerialNumber(BigInteger serialNumber) {
         this.serialNumber = serialNumber;
     }
 

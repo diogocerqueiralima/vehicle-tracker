@@ -1,24 +1,26 @@
 package com.github.diogocerqueiralima.domain.model;
 
+import java.security.PublicKey;
+
 /**
  * Represents a Certificate Signing Request (CSR).
  */
 public class CertificateSigningRequest {
 
-    private final byte[] data;
+    private final CertificateSubject subject;
+    private final PublicKey publicKey;
 
-    /**
-     *
-     * Initializes a new CertificateSigningRequest with the given data.
-     *
-     * @param data the byte array representing the CSR data
-     */
-    public CertificateSigningRequest(byte[] data) {
-        this.data = data;
+    public CertificateSigningRequest(CertificateSubject subject, PublicKey publicKey) {
+        this.subject = subject;
+        this.publicKey = publicKey;
     }
 
-    public byte[] getData() {
-        return data;
+    public CertificateSubject getSubject() {
+        return subject;
+    }
+
+    public PublicKey getPublicKey() {
+        return publicKey;
     }
 
 }

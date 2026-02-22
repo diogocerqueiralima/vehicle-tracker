@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS devices (
 );
 
 CREATE TABLE IF NOT EXISTS certificates (
-    serial_number VARCHAR(255) PRIMARY KEY,
+    serial_number numeric(38, 0) PRIMARY KEY,
     subject VARCHAR(255) NOT NULL,
     issued_at TIMESTAMPTZ NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS certificates (
 );
 
 CREATE TABLE IF NOT EXISTS bootstrap_certificates (
-    serial_number VARCHAR(255) PRIMARY KEY,
+    serial_number numeric(38, 0) PRIMARY KEY,
     used BOOLEAN NOT NULL,
     CONSTRAINT FK_serial_number FOREIGN KEY (serial_number)
         REFERENCES certificates(serial_number) ON DELETE CASCADE

@@ -2,18 +2,21 @@ package com.github.diogocerqueiralima.application.services;
 
 import com.github.diogocerqueiralima.application.commands.CertificateSigningRequestCommand;
 import com.github.diogocerqueiralima.application.commands.LookupCertificateBySerialNumberCommand;
+import com.github.diogocerqueiralima.application.config.CertificateAuthorityConfig;
 import com.github.diogocerqueiralima.application.exceptions.CertificateNotFoundException;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.domain.model.Certificate;
-import com.github.diogocerqueiralima.domain.model.CertificateInfo;
+import com.github.diogocerqueiralima.domain.model.CertificateFactory;
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
-import com.github.diogocerqueiralima.domain.model.IssuedCertificate;
-import com.github.diogocerqueiralima.domain.ports.outbound.CertificateParser;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateSigner;
+import com.github.diogocerqueiralima.domain.ports.outbound.CertificateSigningRequestReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -23,11 +26,17 @@ public class CertificateService {
     private static final Logger log = LoggerFactory.getLogger(CertificateService.class);
 
     private final CertificateSigner certificateSigner;
-    private final CertificateParser certificateParser;
+    private final CertificateSigningRequestReader certificateSigningRequestReader;
+    private final CertificateAuthorityConfig certificateAuthorityConfig;
 
-    public CertificateService(CertificateSigner certificateSigner, CertificateParser certificateParser) {
+    public CertificateService(
+            CertificateSigner certificateSigner,
+            CertificateSigningRequestReader certificateSigningRequestReader,
+            CertificateAuthorityConfig certificateAuthorityConfig
+    ) {
         this.certificateSigner = certificateSigner;
-        this.certificateParser = certificateParser;
+        this.certificateSigningRequestReader = certificateSigningRequestReader;
+        this.certificateAuthorityConfig = certificateAuthorityConfig;
     }
 
     /**
@@ -42,37 +51,42 @@ public class CertificateService {
     public <T extends Certificate> CertificateSigningRequestResult sign(
             CertificateSigningRequestCommand command,
             Function<T, T> persistence,
-            Function<CertificateInfo, T> factory
+            CertificateFactory<T> factory
     ) {
 
-        // 1. Sign certificate
+        // 1. Parses the certificate signing request command into a CertificateSigningRequest object
+        CertificateSigningRequest certificateSigningRequest = certificateSigningRequestReader.read(command.value());
+        log.info("Parsed certificate signing request for Subject={}", certificateSigningRequest.getSubject());
 
-        CertificateSigningRequest request = new CertificateSigningRequest(command.value());
-        IssuedCertificate issuedCertificate = certificateSigner.sign(request);
-
-        // 2. Parse certificate information
-
-        CertificateInfo certificateInfo = certificateParser.parse(issuedCertificate);
-
-        log.info(
-                "Parsed certificate info: SerialNumber={}, Subject={}",
-                certificateInfo.getSerialNumber(),
-                certificateInfo.getSubject()
+        // 2. Generates the serial number, notBefore and notAfter timestamps for the certificate based on the CA configuration
+        BigInteger serialNumber = generateSerialNumber();
+        Instant notBefore = Instant.now();
+        Instant notAfter = notBefore.plusSeconds(
+                certificateAuthorityConfig.getValidityDays() * 24L * 60L * 60L
         );
 
-        // 3. Create and persists the certificate
+        // 3. Sign certificate
+        byte[] certificateData = certificateSigner.sign(
+                certificateSigningRequest,
+                certificateAuthorityConfig.getIssuer(),
+                generateSerialNumber(),
+                notBefore,
+                notAfter
+        );
 
-        Certificate certificate = persistence.apply(factory.apply(certificateInfo));
+        // 4. Create and persists the certificate
+        Certificate certificate = persistence.apply(
+                factory.create(certificateSigningRequest, serialNumber, notBefore, notAfter)
+        );
+        log.info("Persisted certificate with SerialNumber={}", certificate.getSerialNumber());
 
-        log.info("Persisted certificate with SerialNumber={}", certificate.getInfo().getSerialNumber());
-
-        // 4. Build result
-
+        // 5. Build result
         return new CertificateSigningRequestResult(
-                certificate.getInfo().getSerialNumber(),
-                certificate.getInfo().getSubject(),
-                issuedCertificate.getData()
+                certificate.getSerialNumber(),
+                certificate.getSubject().toString(),
+                certificateData
         );
+
     }
 
     /**
@@ -94,6 +108,16 @@ public class CertificateService {
                 .orElseThrow(() -> new CertificateNotFoundException(command.serialNumber()));
 
         persistence.apply((T) certificate.revoke());
+    }
+
+    /**
+     *
+     * Generates a random serial number for the certificate.
+     *
+     * @return the generated serial number
+     */
+    private BigInteger generateSerialNumber() {
+        return new BigInteger(120, new SecureRandom());
     }
 
 }

@@ -3,6 +3,7 @@ package com.github.diogocerqueiralima.presentation.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.math.BigInteger;
 import java.time.Instant;
 
 @Schema(
@@ -15,7 +16,7 @@ public record BootstrapCertificateDTO(
 
         @Schema(description = "The unique serial number of the certificate.")
         @JsonProperty("serial_number")
-        String serialNumber,
+        BigInteger serialNumber,
 
         @Schema(description = "The subject or entity to which the certificate is issued.")
         String subject,

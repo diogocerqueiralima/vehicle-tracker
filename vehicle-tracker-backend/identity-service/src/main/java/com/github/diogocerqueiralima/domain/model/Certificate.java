@@ -2,34 +2,51 @@ package com.github.diogocerqueiralima.domain.model;
 
 import com.github.diogocerqueiralima.domain.exceptions.CertificateRevokedException;
 
+import java.math.BigInteger;
+import java.time.Instant;
+
 /**
  * Represents a digital certificate with associated information and revocation status.
  */
 public class Certificate {
 
-    private final CertificateInfo info;
+    private final BigInteger serialNumber;
+    private final CertificateSubject subject;
+    private final Instant issuedAt;
+    private final Instant expiresAt;
     private final boolean revoked;
 
     /**
      *
-     * Instantiates a new Certificate.
+     * Creates a new instance of Certificate with the specified attributes, including the revoked status.
      *
-     * @param info the certificate information
-     * @param revoked the status indicating whether the certificate has been revoked
+     * @param serialNumber the unique serial number of the certificate
+     * @param subject the subject information associated with the certificate
+     * @param issuedAt the timestamp when the certificate was issued
+     * @param expiresAt the timestamp when the certificate expires
+     * @param revoked the revocation status of the certificate, indicating whether it has been revoked
      */
-    public Certificate(CertificateInfo info, boolean revoked) {
-        this.info = info;
+    public Certificate(
+            BigInteger serialNumber, CertificateSubject subject, Instant issuedAt, Instant expiresAt, boolean revoked
+    ) {
+        this.serialNumber = serialNumber;
+        this.subject = subject;
+        this.issuedAt = issuedAt;
+        this.expiresAt = expiresAt;
         this.revoked = revoked;
     }
 
     /**
      *
-     * Instantiates a new Certificate with not revoked status.
+     * Creates a new instance of Certificate with the specified attributes, defaulting the revoked status to false.
      *
-     * @param info the certificate information
+     * @param serialNumber the unique serial number of the certificate
+     * @param subject the subject information associated with the certificate
+     * @param issuedAt the timestamp when the certificate was issued
+     * @param expiresAt the timestamp when the certificate expires
      */
-    public Certificate(CertificateInfo info) {
-        this(info, false);
+    public Certificate(BigInteger serialNumber, CertificateSubject subject, Instant issuedAt, Instant expiresAt) {
+        this(serialNumber, subject, issuedAt, expiresAt, false);
     }
 
     /**
@@ -42,14 +59,26 @@ public class Certificate {
     public Certificate revoke() {
 
         if (this.revoked) {
-            throw new CertificateRevokedException(this.info);
+            throw new CertificateRevokedException(this.serialNumber);
         }
 
-        return new Certificate(this.info, true);
+        return new Certificate(this.serialNumber, this.subject, this.issuedAt, this.expiresAt, true);
     }
 
-    public CertificateInfo getInfo() {
-        return info;
+    public BigInteger getSerialNumber() {
+        return serialNumber;
+    }
+
+    public CertificateSubject getSubject() {
+        return subject;
+    }
+
+    public Instant getIssuedAt() {
+        return issuedAt;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
     }
 
     public boolean isRevoked() {

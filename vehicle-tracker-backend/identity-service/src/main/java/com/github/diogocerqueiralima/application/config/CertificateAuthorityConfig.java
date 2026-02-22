@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.infrastructure.config;
+package com.github.diogocerqueiralima.application.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

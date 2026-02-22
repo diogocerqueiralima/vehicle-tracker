@@ -33,7 +33,15 @@ public class BootstrapCertificateUseCaseImpl implements BootstrapCertificateUseC
         return certificateService.sign(
                 command,
                 bootstrapCertificatePersistence::save,
-                info -> new BootstrapCertificate(info, false, false)
+                (csr, serialNumber, notBefore, notAfter) ->
+                        new BootstrapCertificate(
+                                serialNumber,
+                                csr.getSubject(),
+                                notBefore,
+                                notAfter,
+                                false,
+                                false
+                        )
         );
     }
 
@@ -71,10 +79,10 @@ public class BootstrapCertificateUseCaseImpl implements BootstrapCertificateUseC
                 page
                         .map(bootstrapCertificate ->
                                 new BootstrapCertificateResult(
-                                        bootstrapCertificate.getInfo().getSerialNumber(),
-                                        bootstrapCertificate.getInfo().getSubject(),
-                                        bootstrapCertificate.getInfo().getIssuedAt(),
-                                        bootstrapCertificate.getInfo().getExpiresAt(),
+                                        bootstrapCertificate.getSerialNumber(),
+                                        bootstrapCertificate.getSubject().toString(),
+                                        bootstrapCertificate.getIssuedAt(),
+                                        bootstrapCertificate.getExpiresAt(),
                                         bootstrapCertificate.isRevoked(),
                                         bootstrapCertificate.isUsed()
                                 )

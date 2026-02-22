@@ -3,6 +3,9 @@ package com.github.diogocerqueiralima.domain.model;
 import com.github.diogocerqueiralima.domain.exceptions.BootstrapCertificateUsedException;
 import com.github.diogocerqueiralima.domain.exceptions.CertificateRevokedException;
 
+import java.math.BigInteger;
+import java.time.Instant;
+
 /**
  * Represents a bootstrap certificate with an additional attribute to track its usage status.
  * This certificate is only intended for one-time use during the bootstrap process.
@@ -13,14 +16,20 @@ public class BootstrapCertificate extends Certificate {
 
     /**
      *
-     * Instantiates a new BootstrapCertificate.
+     * Creates a new instance of BootstrapCertificate with the specified attributes, including the used status.
      *
-     * @param info the certificate information
-     * @param revoked the status indicating whether the bootstrap certificate has been revoked
-     * @param used the status indicating whether the bootstrap certificate has been used
+     * @param serialNumber the unique serial number of the certificate
+     * @param subject the subject information associated with the certificate
+     * @param issuedAt the timestamp when the certificate was issued
+     * @param expiresAt the timestamp when the certificate expires
+     * @param revoked the revocation status of the certificate
+     * @param used the usage status of the certificate, indicating whether it has been used during the bootstrap process
      */
-    public BootstrapCertificate(CertificateInfo info, boolean revoked, boolean used) {
-        super(info, revoked);
+    public BootstrapCertificate(
+            BigInteger serialNumber, CertificateSubject subject, Instant issuedAt, Instant expiresAt,
+            boolean revoked, boolean used
+    ) {
+        super(serialNumber, subject, issuedAt, expiresAt, revoked);
         this.used = used;
     }
 
@@ -35,14 +44,17 @@ public class BootstrapCertificate extends Certificate {
     public BootstrapCertificate markAsUsed() {
 
         if (this.isRevoked()) {
-            throw new CertificateRevokedException(this.getInfo());
+            throw new CertificateRevokedException(this.getSerialNumber());
         }
 
         if (this.used) {
             throw new BootstrapCertificateUsedException(this);
         }
 
-        return new BootstrapCertificate(this.getInfo(), this.isRevoked(), true);
+        return new BootstrapCertificate(
+                this.getSerialNumber(), this.getSubject(), this.getIssuedAt(), this.getExpiresAt(),
+                this.isRevoked(), true
+        );
     }
 
     public boolean isUsed() {

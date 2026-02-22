@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.mappers;
 
 import com.github.diogocerqueiralima.domain.model.Certificate;
-import com.github.diogocerqueiralima.domain.model.CertificateInfo;
+import com.github.diogocerqueiralima.domain.model.CertificateSubject;
 import com.github.diogocerqueiralima.infrastructure.entities.CertificateEntity;
 import org.springframework.stereotype.Component;
 
@@ -11,25 +11,23 @@ public class CertificateMapper {
 
     public Certificate toDomain(CertificateEntity entity) {
 
-        CertificateInfo info = new CertificateInfo(
+        return new Certificate(
                 entity.getSerialNumber(),
-                entity.getSubject(),
+                CertificateSubject.fromString(entity.getSubject()),
                 entity.getIssuedAt(),
-                entity.getExpiresAt()
+                entity.getExpiresAt(),
+                entity.isRevoked()
         );
-
-        return new Certificate(info, entity.isRevoked());
     }
 
     public CertificateEntity toEntity(Certificate certificate) {
 
-        CertificateInfo info = certificate.getInfo();
         CertificateEntity entity = new CertificateEntity();
 
-        entity.setSerialNumber(info.getSerialNumber());
-        entity.setSubject(info.getSubject());
-        entity.setIssuedAt(info.getIssuedAt());
-        entity.setExpiresAt(info.getExpiresAt());
+        entity.setSerialNumber(entity.getSerialNumber());
+        entity.setSubject(entity.getSubject());
+        entity.setIssuedAt(entity.getIssuedAt());
+        entity.setExpiresAt(entity.getExpiresAt());
         entity.setRevoked(certificate.isRevoked());
 
         return entity;
