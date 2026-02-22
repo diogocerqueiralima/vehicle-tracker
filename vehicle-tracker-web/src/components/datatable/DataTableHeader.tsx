@@ -21,7 +21,7 @@ export function createDataTableHeader<T extends object>({ useDataTable }: Create
 
         return (
 
-            <div className={`flex flex-row items-center justify-between p-8`}>
+            <div className={`flex flex-col gap-4 md:gap-0 md:flex-row items-center justify-between p-8`}>
 
                 <div className={`flex flex-row gap-4`}>
                     <h1 className={`font-bold text-xl`}> {title} </h1>

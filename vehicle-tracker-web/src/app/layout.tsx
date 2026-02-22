@@ -46,7 +46,7 @@ export default function RootLayout({
       <body className={`${roboto.className} antialiased flex`}>
         <AuthenticationProvider>
             <Header items={items} />
-            <main className={`p-32`}>
+            <main className={`px-4 py-8 md:p-16`}>
                 {children}
             </main>
         </AuthenticationProvider>

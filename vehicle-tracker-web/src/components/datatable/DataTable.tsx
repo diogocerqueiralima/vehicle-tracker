@@ -63,7 +63,7 @@ export function createDataTable<T extends object>() {
                     updateFilter: (value: string) => setFilter(value)
                 }
             }>
-                <div className={`flex flex-col bg-surface rounded-sm shadow-md text-sm`}>
+                <div className={`flex flex-col bg-surface rounded-sm shadow-md text-sm overflow-x-auto`}>
                     { children }
                 </div>
             </Provider>
