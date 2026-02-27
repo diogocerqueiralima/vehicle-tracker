@@ -1,3 +1,5 @@
+"use client"
+
 import { bootstrapCertificateService } from "@/services/BootstrapCertificateService"
 import React, {createContext, useContext, useMemo} from "react";
 
@@ -6,7 +8,6 @@ interface BootstrapCertificateServiceContextProps {
 }
 
 export interface BootstrapCertificateServiceProviderProps {
-    url: string
     children: React.ReactNode
 }
 
@@ -25,11 +26,11 @@ export function useBootstrapCertificateService() {
     return context.service
 }
 
-export function BootstrapCertificateServiceProvider({children, url}: BootstrapCertificateServiceProviderProps) {
+export function BootstrapCertificateServiceProvider({children}: BootstrapCertificateServiceProviderProps) {
 
     const service = useMemo(() => {
-        return bootstrapCertificateService({ url })
-    }, [url])
+        return bootstrapCertificateService()
+    }, [])
 
     return (
         <BootstrapCertificateServiceContext.Provider value={{service}}>

@@ -37,6 +37,7 @@ export function createDataTable<T extends object>() {
                     setTotalItems(page.totalItems)
                     setTotalPages(page.totalPages)
                 })
+                .catch(error => console.error(error))
 
         }, [getPage, currentPage, filter])
 

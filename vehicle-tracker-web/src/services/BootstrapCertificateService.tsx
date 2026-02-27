@@ -1,34 +1,52 @@
-import {ApiResponse} from "@/domain/ApiResponse";
+import {ApiResponseDTO} from "@/dto/ApiResponseDTO";
 import {BootstrapCertificate} from "@/domain/BootstrapCertificate";
+import {PageDTO} from "@/dto/PageDTO";
+import {BootstrapCertificateDTO} from "@/dto/BootstrapCertificateDTO";
 import {Page} from "@/domain/Page";
 
-export interface BootstrapCertificateServiceProps {
-
-    url: string
-
-}
-
-export function bootstrapCertificateService({ url }: BootstrapCertificateServiceProps) {
+export function bootstrapCertificateService() {
 
     const BOOTSTRAP_CERTIFICATES_PER_PAGE = 10
-    const BOOTSTRAP_CERTIFICATES_URL = "/api/v1/certificates/bootstrap"
+    const BOOTSTRAP_CERTIFICATES_PATH = "/certificates/bootstrap"
 
-    async function getPage(page: number, serialNumberFilter: string) {
+    async function getPage(page: number, serialNumberFilter: string): Promise<Page<BootstrapCertificate>> {
 
         const response = await fetch(
-            `${url}${BOOTSTRAP_CERTIFICATES_URL}?page=${page}&pageSize=${BOOTSTRAP_CERTIFICATES_PER_PAGE}`,
+            `/api/proxy/${BOOTSTRAP_CERTIFICATES_PATH}?pageNumber=${page}&pageSize=${BOOTSTRAP_CERTIFICATES_PER_PAGE}`,
             {
                 method: "GET"
             }
         )
 
-        const json: ApiResponse<Page<BootstrapCertificate>> = await response.json()
+        if (response.status == 401) {
+            throw new Error("Unauthorized. Please log in again.")
+        }
+
+        if (response.status == 403) {
+            throw new Error("Forbidden. You don't have permission to access this resource.")
+        }
+
+        const json: ApiResponseDTO<PageDTO<BootstrapCertificateDTO>> = await response.json()
 
         if (!response.ok) {
             throw new Error(json.message)
         }
 
-        return json.data
+        const pageDTO = json.data
+
+        return {
+            page: pageDTO.page,
+            totalPages: pageDTO.total_pages,
+            totalItems: pageDTO.total_items,
+            items: pageDTO.items.map(dto => ({
+                serialNumber: String(dto.serial_number).replace(".", "").substring(0, 16),
+                subject: dto.subject,
+                issuedAt: dto.issued_at,
+                expiresAt: dto.expires_at,
+                revoked: dto.revoked,
+                used: dto.used
+            }))
+        }
     }
 
     return {

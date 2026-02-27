@@ -20,10 +20,10 @@ export function CertificatesDataTable() {
             render: (certificate) => (
                 <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        certificate.revoked ? "bg-positive-muted text-positive" : "bg-negative-muted text-negative"
+                        certificate.revoked ? "bg-negative-muted text-negative" : "bg-positive-muted text-positive"
                     }`}
                 >
-                    {certificate.revoked}
+                    {certificate.revoked ? "Sim" : "Não"}
                 </span>
             )
         },
@@ -33,10 +33,10 @@ export function CertificatesDataTable() {
             render: (certificate) => (
                 <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        certificate.used ? "bg-positive-muted text-positive" : "bg-negative-muted text-negative"
+                        certificate.used ? "bg-negative-muted text-negative" : "bg-positive-muted text-positive"
                     }`}
                 >
-                    {certificate.used}
+                    {certificate.used ? "Sim" : "Não"}
                 </span>
             )
         }

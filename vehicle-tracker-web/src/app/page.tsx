@@ -3,19 +3,20 @@
 import Card, {ChangeType, Indicator} from "@/components/Card";
 import {MdOnDeviceTraining, MdOutlineWarning} from "react-icons/md";
 import {FaBell} from "react-icons/fa";
-import {useAuthentication} from "@/context/AuthenticationContext";
+import {signIn, signOut, useSession} from "next-auth/react";
 
 export default function Home() {
-
-    const { login } = useAuthentication()
 
   return (
     <div className={`flex flex-row gap-8`}>
 
-        <p onClick={() => login()} className={`text-2xl font-bold cursor-pointer`}>
+        <p onClick={() => signIn("keycloak")} className={`text-2xl font-bold cursor-pointer`}>
             Login
         </p>
-      
+        <p onClick={() => signOut()}>
+            Logout
+        </p>
+
         <Card title={"Dispositivos ativos"} label={"123"} indicator={Indicator.ONLINE} icon={<MdOnDeviceTraining size={32} />} change={`+3 esta semana`} changeType={ChangeType.POSITIVE}></Card>
         <Card
             title="Dispositivos offline"

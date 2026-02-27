@@ -1,4 +1,5 @@
 import {CertificatesDataTable} from "@/components/CertificatesDataTable";
+import {BootstrapCertificateServiceProvider} from "@/context/BootstrapCertificateServiceContext";
 
 export default function Certificates() {
 
@@ -6,7 +7,9 @@ export default function Certificates() {
 
         <div className={`flex flex-col gap-8`}>
 
-            <CertificatesDataTable />
+            <BootstrapCertificateServiceProvider>
+                <CertificatesDataTable />
+            </BootstrapCertificateServiceProvider>
 
         </div>
 
