@@ -58,7 +58,7 @@ public class CertificateSigningRequestReaderImpl implements CertificateSigningRe
                 throw new InvalidSignatureException();
             }
 
-            // 3. Extract subject information and other relevant data from the PKCS#10 request
+            // 3. Extract subject information and other relevant items from the PKCS#10 request
             X500Name subject = pkcs10Request.getSubject();
             CertificateSubject certificateSubject = new CertificateSubject(
                     getRdnValue(subject, BCStyle.CN),

@@ -6,13 +6,13 @@ import org.springframework.data.domain.Page;
 import java.util.Optional;
 
 /**
- * Port to interact with the bootstrap certificate data source.
+ * Port to interact with the bootstrap certificate items source.
  */
 public interface BootstrapCertificatePersistence {
 
     /**
      *
-     * Saves a certificate to the data source.
+     * Saves a certificate to the items source.
      *
      * @param certificate the certificate to be saved
      * @return the saved certificate

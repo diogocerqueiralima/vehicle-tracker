@@ -9,9 +9,9 @@ public interface CertificateSigningRequestReader {
 
     /**
      *
-     * Reads a certificate signing request (CSR) from the provided byte array data and constructs a CertificateSigningRequest object.
+     * Reads a certificate signing request (CSR) from the provided byte array items and constructs a CertificateSigningRequest object.
      *
-     * @param data A byte array containing the raw data of the certificate signing request.
+     * @param data A byte array containing the raw items of the certificate signing request.
      * @return A CertificateSigningRequest object representing the parsed CSR.
      */
     CertificateSigningRequest read(byte[] data);

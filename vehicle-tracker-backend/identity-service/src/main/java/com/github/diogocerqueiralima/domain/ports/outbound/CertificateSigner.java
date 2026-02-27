@@ -19,7 +19,7 @@ public interface CertificateSigner {
      * @param serialNumber A unique serial number to be assigned to the issued certificate.
      * @param notBefore The timestamp indicating when the issued certificate becomes valid.
      * @param notAfter The timestamp indicating when the issued certificate expires.
-     * @return A byte array representing the signed certificate data, which can be stored or transmitted as needed.
+     * @return A byte array representing the signed certificate items, which can be stored or transmitted as needed.
      */
     byte[] sign(CertificateSigningRequest csr, String issuer, BigInteger serialNumber, Instant notBefore, Instant notAfter);
 

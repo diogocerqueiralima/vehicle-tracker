@@ -76,6 +76,7 @@ public class BootstrapCertificateUseCaseImpl implements BootstrapCertificateUseC
         return new PageResult<>(
                 page.getNumber() + 1,
                 page.getTotalPages(),
+                page.getTotalElements(),
                 page
                         .map(bootstrapCertificate ->
                                 new BootstrapCertificateResult(

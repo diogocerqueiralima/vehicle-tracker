@@ -46,7 +46,7 @@ public class CertificateService {
      * @param command the certificate signing request command containing the CSR details
      * @param persistence a function to persist the Certificate
      * @param factory a function to create a Certificate from CertificateInfo
-     * @return the result of the certificate signing request, including the signed certificate data
+     * @return the result of the certificate signing request, including the signed certificate items
      */
     public <T extends Certificate> CertificateSigningRequestResult sign(
             CertificateSigningRequestCommand command,

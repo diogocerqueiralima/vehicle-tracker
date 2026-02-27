@@ -2,7 +2,7 @@ package com.github.diogocerqueiralima.presentation.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "A generic API response wrapper that includes a message and data payload.")
+@Schema(description = "A generic API response wrapper that includes a message and items payload.")
 public record ApiResponseDTO<T>(
 
         @Schema(
@@ -15,7 +15,7 @@ public record ApiResponseDTO<T>(
 
         @Schema(
                 description = """
-                        The data payload of the API response, which can be of any type
+                        The items payload of the API response, which can be of any type
                         depending on the specific endpoint and operation.
                         """
         )

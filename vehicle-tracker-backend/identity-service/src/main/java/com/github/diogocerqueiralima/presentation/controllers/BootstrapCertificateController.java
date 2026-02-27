@@ -79,7 +79,8 @@ public class BootstrapCertificateController {
         PageDTO<BootstrapCertificateDTO> dto = new PageDTO<>(
                 result.currentPage(),
                 result.totalPages(),
-                result.data().stream()
+                result.totalItems(),
+                result.items().stream()
                         .map(bootstrapCertificateResult ->
                                 new BootstrapCertificateDTO(
                                         bootstrapCertificateResult.serialNumber(),

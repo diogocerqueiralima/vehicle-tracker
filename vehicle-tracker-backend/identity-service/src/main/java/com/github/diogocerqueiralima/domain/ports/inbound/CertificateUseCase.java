@@ -17,7 +17,7 @@ public interface CertificateUseCase {
      * Receives a certificate signing request and processes it to issue a signed certificate.
      *
      * @param command the certificate signing request command containing the CSR details
-     * @return the result of the certificate signing request, including the signed certificate data
+     * @return the result of the certificate signing request, including the signed certificate items
      */
     CertificateSigningRequestResult sign(@Valid CertificateSigningRequestCommand command);
 

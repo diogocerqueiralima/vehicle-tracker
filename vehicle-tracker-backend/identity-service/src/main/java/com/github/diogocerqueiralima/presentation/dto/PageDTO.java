@@ -20,7 +20,11 @@ public record PageDTO<T>(
         @JsonProperty("total_pages")
         int totalPages,
 
-        @Schema(description = "The list of content items for the current page.")
-        List<T> content
+        @Schema(description = "The total number of items available across all pages.")
+        @JsonProperty("total_items")
+        long totalItems,
+
+        @Schema(description = "The list of items for the current page.")
+        List<T> items
 
 ) {}
