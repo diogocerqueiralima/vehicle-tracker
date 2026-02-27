@@ -1,5 +1,6 @@
 import {DataTableContextProps} from "@/context/DataTableContext";
 import React from "react";
+import Loader from "@/components/Loader";
 
 export interface ContentHeaderItem<T extends object, K extends keyof T = keyof T> {
     name: K
@@ -27,7 +28,7 @@ export function createDataTableContent<T extends object>({ useDataTable }: Creat
 
     return function Content({ headerItems }: ContentProps<T>) {
 
-        const { items } = useDataTable()
+        const { items, isLoading, error } = useDataTable()
 
         return (
             <table>
@@ -46,30 +47,51 @@ export function createDataTableContent<T extends object>({ useDataTable }: Creat
                 </thead>
 
                 <tbody>
-                {items.map((item, rowIndex) => (
-                    <tr
-                        key={rowIndex}
-                        className="
-                                border-b border-b-foreground-muted
-                                hover:bg-surface-muted duration-200 cursor-default
-                            "
-                    >
-                        {headerItems.map((headerItem, colIndex) => {
 
-                            const value = item[headerItem.name]
+                    {
+                        isLoading ? (
+                            <tr>
+                                <td colSpan={headerItems.length} className="py-8 text-center">
+                                    <div className="flex justify-center">
+                                        <Loader />
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : error != null ? (
+                            <td colSpan={headerItems.length} className="py-8 text-center">
+                                <span className={`bg-negative-muted px-8 py-2 rounded-md text-negative`}>{error}</span>
+                            </td>
+                        ) : (
 
-                            return (
-                                <DataTableCell key={colIndex}>
-                                    {
-                                        headerItem.render
-                                            ? headerItem.render(item)
-                                            : String(value)
-                                    }
-                                </DataTableCell>
-                            )
-                        })}
-                    </tr>
-                ))}
+                            items.map((item, rowIndex) => (
+                                <tr
+                                    key={rowIndex}
+                                    className="
+                                                border-b border-b-foreground-muted
+                                                hover:bg-surface-muted duration-200 cursor-default
+                                            "
+                                >
+                                    {headerItems.map((headerItem, colIndex) => {
+
+                                        const value = item[headerItem.name]
+
+                                        return (
+                                            <DataTableCell key={colIndex}>
+                                                {
+                                                    headerItem.render
+                                                        ? headerItem.render(item)
+                                                        : String(value)
+                                                }
+                                            </DataTableCell>
+                                        )
+                                    })}
+                                </tr>
+                            ))
+
+                        )
+
+                    }
+
                 </tbody>
 
             </table>

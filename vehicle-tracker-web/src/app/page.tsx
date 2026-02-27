@@ -3,7 +3,7 @@
 import Card, {ChangeType, Indicator} from "@/components/Card";
 import {MdOnDeviceTraining, MdOutlineWarning} from "react-icons/md";
 import {FaBell} from "react-icons/fa";
-import {signIn, signOut, useSession} from "next-auth/react";
+import {signIn, signOut} from "next-auth/react";
 
 export default function Home() {
 

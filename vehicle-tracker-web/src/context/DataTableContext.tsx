@@ -15,7 +15,9 @@ export interface DataTableContextProps<T extends object> {
     isFirstPage: () => boolean
     isLastPage: () => boolean
     filter: string
-    updateFilter: (value: string) => void
+    updateFilter: (value: string) => void,
+    isLoading: boolean,
+    error: string | null
 
 }
 

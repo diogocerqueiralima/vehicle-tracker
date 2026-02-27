@@ -26,6 +26,8 @@ export function createDataTable<T extends object>() {
         const [currentPage, setCurrentPage] = useState(1)
         const [totalPages, setTotalPages] = useState(1)
         const [filter, setFilter] = useState("")
+        const [isLoading, setIsLoading] = useState(true)
+        const [error, setError] = useState<string | null>(null)
 
         useEffect(() => {
 
@@ -36,8 +38,11 @@ export function createDataTable<T extends object>() {
                     setItems(page.items)
                     setTotalItems(page.totalItems)
                     setTotalPages(page.totalPages)
+                    setIsLoading(false)
+                    setError(null)
                 })
-                .catch(error => console.error(error))
+                .catch(error => setError(error.message))
+                .finally(() => setIsLoading(false))
 
         }, [getPage, currentPage, filter])
 
@@ -53,11 +58,13 @@ export function createDataTable<T extends object>() {
                     canBack: () => currentPage > 1,
                     isFirstPage: () => currentPage === 1,
                     isLastPage: () => currentPage === totalPages,
-                    updateFilter: (value: string) => setFilter(value)
+                    updateFilter: (value: string) => setFilter(value),
+                    isLoading,
+                    error
                 }
             }>
                 <div className={`flex flex-col bg-surface rounded-sm shadow-md text-sm overflow-x-auto`}>
-                    { children }
+                    {children}
                 </div>
             </Provider>
         )
