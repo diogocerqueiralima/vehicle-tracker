@@ -2,72 +2,50 @@
 
 import {ContentHeaderItem} from "@/components/datatable/DataTableContent";
 import {createDataTable} from "@/components/datatable/DataTable";
+import {BootstrapCertificate} from "@/domain/BootstrapCertificate";
+import {useBootstrapCertificateService} from "@/context/BootstrapCertificateServiceContext";
 
-enum CertificateStatus {
-
-    VALID = "Válido",
-    EXPIRED = "Expirado"
-
-}
-
-interface Certificate {
-
-    id: number
-    name: string
-    issuedBy: string
-    issueDate: string
-    expirationDate: string
-    status: CertificateStatus
-
-}
-
-const DataTable = createDataTable<Certificate>()
+const DataTable = createDataTable<BootstrapCertificate>()
 
 export function CertificatesDataTable() {
 
-    const headerItems: ContentHeaderItem<Certificate>[] = [
-        { name: "name", label: "Nome" },
-        { name: "issuedBy", label: "Emitido por" },
-        { name: "issueDate", label: "Data de emissão" },
-        { name: "expirationDate", label: "Data de expiração" },
+    const headerItems: ContentHeaderItem<BootstrapCertificate>[] = [
+        { name: "serialNumber", label: "Número de Série" },
+        { name: "subject", label: "Sujeito" },
+        { name: "issuedAt", label: "Data de emissão" },
+        { name: "expiresAt", label: "Data de expiração" },
         {
-            name: "status",
-            label: "Status",
+            name: "revoked",
+            label: "Revogado",
             render: (certificate) => (
                 <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        certificate.status === CertificateStatus.VALID ? "bg-positive-muted text-positive" : "bg-negative-muted text-negative"
+                        certificate.revoked ? "bg-positive-muted text-positive" : "bg-negative-muted text-negative"
                     }`}
                 >
-                    {certificate.status}
+                    {certificate.revoked}
+                </span>
+            )
+        },
+        {
+            name: "used",
+            label: "Usado",
+            render: (certificate) => (
+                <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        certificate.used ? "bg-positive-muted text-positive" : "bg-negative-muted text-negative"
+                    }`}
+                >
+                    {certificate.used}
                 </span>
             )
         }
     ]
 
-    const items: Certificate[] = [
-
-        {
-            id: 1,
-            name: "Certificado de Segurança",
-            issuedBy: "Certificadora XYZ",
-            issueDate: "2023-01-15",
-            expirationDate: "2024-01-15",
-            status: CertificateStatus.VALID
-        },
-        {
-            id: 2,
-            name: "Certificado de Conformidade",
-            issuedBy: "Certificadora ABC",
-            issueDate: "2022-05-10",
-            expirationDate: "2023-05-10",
-            status: CertificateStatus.EXPIRED
-        }
-
-    ]
+    const bootstrapCertificateService = useBootstrapCertificateService()
 
     return (
-        <DataTable.Root getPage={() => Promise.resolve({items: items, totalPages: 3, totalItems: 2, currentPage: 1})}>
+        <DataTable.Root getPage={bootstrapCertificateService.getPage}>
             <DataTable.Header title={"Certificados"} />
             <DataTable.Content headerItems={headerItems} />
             <DataTable.Footer />

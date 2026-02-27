@@ -3,15 +3,7 @@ import {createDataTableContext} from "@/context/DataTableContext";
 import React, {useEffect, useState} from "react";
 import {createDataTableHeader} from "@/components/datatable/DataTableHeader";
 import {createDataTableFooter} from "@/components/datatable/DataTableFooter";
-
-export interface Page<T> {
-
-    items: T[]
-    totalItems: number
-    totalPages: number
-    currentPage: number
-
-}
+import {Page} from "@/domain/Page";
 
 export interface RootProps<T> {
 
