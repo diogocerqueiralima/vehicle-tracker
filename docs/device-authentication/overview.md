@@ -16,10 +16,22 @@ The device authentication process can be summarized in the following steps:
 
 The following diagram illustrates the device authentication process:
 
-<figure style="text-align:center">
-  <img src="images/device-authentication-flow.svg" alt="Device Authentication Flow">
-  <figcaption>Figure 1: Device Authentication Flow</figcaption>
-</figure>
+```mermaid
+sequenceDiagram
+    title Device Authentication Flow
+
+    participant Admin
+    participant Device
+    participant IdentityService as Identity Service
+    participant BrokerMQTT as Broker MQTT
+
+    Admin->>IdentityService: 1. createBootstrapCertificate
+    IdentityService-->>Admin: 2. issuedBootstrapCertificate
+    Admin->>Device: 3. installBootstrapCertificate
+    Device->>IdentityService: 4. requestCertificate
+    IdentityService-->>Device: 5. issuedCertificate
+    Device->>BrokerMQTT: 6. sendData
+```
 
 There are some important points to note about the device authentication process:
 
