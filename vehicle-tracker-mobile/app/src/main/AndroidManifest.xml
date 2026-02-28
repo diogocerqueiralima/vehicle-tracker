@@ -13,9 +13,15 @@
             android:theme="@style/Theme.Vehicletrackermobile"
             android:name=".VehicleTrackerApplication">
         <activity
-                android:name=".presentation.authentication.AuthenticationActivity"
-                android:launchMode="singleTask"
-                android:exported="true">
+            android:name=".presentation.authentication.AuthenticationActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+        >
+        </activity>
+        <activity
+            android:name=".presentation.authentication.RedirectActivity"
+            android:exported="true"
+        >
 
             <intent-filter>
 
@@ -27,7 +33,8 @@
                 <data
                     android:scheme="${redirectScheme}"
                     android:host="${redirectHost}"
-                    android:path="${redirectPath}"/>
+                    android:path="${redirectPath}"
+                />
 
             </intent-filter>
 
@@ -35,7 +42,8 @@
         <activity
                 android:name=".presentation.home.HomeActivity"
                 android:exported="true"
-                android:theme="@style/Theme.Vehicletrackermobile">
+                android:theme="@style/Theme.Vehicletrackermobile"
+        >
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,12 +1,9 @@
 package com.github.diogocerqueiralima.presentation.authentication.views
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -60,6 +57,16 @@ fun AuthenticationErrorView(modifier: Modifier = Modifier) {
         title = stringResource(R.string.authentication_error_title),
         subtitle = stringResource(R.string.authentication_error_subtitle),
         indicator = { ErrorIndicator() }
+    )
+}
+
+@Composable
+fun AuthenticationCancelledView(modifier: Modifier = Modifier) {
+    AuthenticationView(
+        modifier = modifier,
+        title = stringResource(R.string.authentication_cancelled_title),
+        subtitle = stringResource(R.string.authentication_cancelled_subtitle),
+        indicator = { LoadingIndicator() }
     )
 }
 

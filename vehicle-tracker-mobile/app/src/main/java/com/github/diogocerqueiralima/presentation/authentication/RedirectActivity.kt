@@ -1,24 +1,31 @@
 package com.github.diogocerqueiralima.presentation.authentication
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.browser.customtabs.CustomTabsIntent
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.services.AuthenticationService
 import com.github.diogocerqueiralima.infrastructure.http.AuthenticationHttpClient
 import com.github.diogocerqueiralima.infrastructure.repositories.KeyRepositoryImpl
 import com.github.diogocerqueiralima.infrastructure.repositories.UserPreSessionRepositoryImpl
 import com.github.diogocerqueiralima.infrastructure.repositories.UserSessionRepositoryImpl
-import com.github.diogocerqueiralima.presentation.authentication.screens.AuthenticationScreen
-import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
-import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModelFactory
+import com.github.diogocerqueiralima.presentation.authentication.screens.RedirectScreen
+import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModel
+import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModelFactory
+import com.github.diogocerqueiralima.presentation.home.HomeActivity
 
-class AuthenticationActivity : ComponentActivity() {
+const val TAG = "REDIRECT_ACTIVITY"
 
-    private val viewModel by viewModels<AuthenticationViewModel>(
+class RedirectActivity : ComponentActivity() {
+
+    val homeIntent by lazy {
+        Intent(this, HomeActivity::class.java)
+    }
+
+    private val viewModel by viewModels<RedirectViewModel>(
         factoryProducer = {
 
             val dependenciesContainer = application as DependenciesContainer
@@ -30,28 +37,37 @@ class AuthenticationActivity : ComponentActivity() {
             val userPreSessionRepository = UserPreSessionRepositoryImpl(dataStore)
             val authenticationService = AuthenticationService(client, userSessionRepository, userPreSessionRepository)
 
-            AuthenticationViewModelFactory(authenticationService)
+            RedirectViewModelFactory(authenticationService)
         }
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
         setContent {
-            AuthenticationScreen(viewModel)
+            RedirectScreen(viewModel)
         }
 
-        viewModel.startAuthentication { uri ->
-            val intent = CustomTabsIntent.Builder().build()
-            intent.launchUrl(this@AuthenticationActivity, uri)
+        Log.d(TAG, "RedirectActivity created with intent: $intent")
+        val uri = intent?.data ?: return
+
+        val code = uri.getQueryParameter("code")
+        val state = uri.getQueryParameter("state")
+        val error = uri.getQueryParameter("error")
+
+        Log.d(TAG, "Received URI: $uri")
+        Log.d(TAG, "Extracted code: $code, state: $state, error: $error")
+
+        if (code != null && state != null) {
+            viewModel.handleAuthorizationCode(code, state) {
+                startActivity(homeIntent)
+            }
+            return
         }
 
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.handleAuthenticationCancellation { finish() }
+        viewModel.handleAuthenticationError(error ?: "Unknown error during authentication.") {
+            startActivity(homeIntent)
+        }
     }
 
 }
