@@ -72,6 +72,8 @@ class AuthenticationViewModel(
      * <p>Handles authentication cancellation by the user.
      * <p>This can happen if the user closes the authentication tab or presses the back button
      * during the authentication process.
+     *
+     * @param homeIntent A function that redirects the user to the home screen, used when authentication is canceled.
      */
     fun handleAuthenticationCancellation(homeIntent: () -> Unit) {
 
@@ -84,6 +86,8 @@ class AuthenticationViewModel(
     /**
      * Generates a secure code verifier for PKCE.
      * This method creates a random string that will be used as the code verifier
+     *
+     * @return A securely generated code verifier string that can be used in the PKCE flow.
      */
     private fun generateCodeVerifier(): String {
 
@@ -99,6 +103,9 @@ class AuthenticationViewModel(
     /**
      * Generates a code challenge from the given code verifier using SHA-256.
      * This method creates a hashed version of the code verifier to be sent to the OAuth2 provider.
+     *
+     * @param codeVerifier The code verifier for which to generate the code challenge.
+     * @return A code challenge string derived from the code verifier, suitable for use in the PKCE flow.
      */
     private fun generateCodeChallenge(codeVerifier: String): String {
 

@@ -35,6 +35,7 @@ class RedirectViewModel(
      * This method updates the state to Error with the provided error message.
      *
      * @param error The error message received during authentication, if any.
+     * @param homeIntent A function that redirects the user to the home screen, used in case of errors.
      */
     fun handleAuthenticationError(error: String?, homeIntent: () -> Unit) {
 
@@ -56,6 +57,7 @@ class RedirectViewModel(
      *
      * @param code The authorization code received from the OAuth2 provider.
      * @param state The state parameter received from the OAuth2 provider.
+     * @param homeIntent A function that redirects the user to the home screen, used in case of errors.
      */
     fun handleAuthorizationCode(code: String, state: String, homeIntent: () -> Unit) {
 

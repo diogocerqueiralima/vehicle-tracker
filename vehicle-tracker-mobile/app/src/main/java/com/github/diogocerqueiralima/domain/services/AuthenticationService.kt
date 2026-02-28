@@ -47,8 +47,14 @@ class AuthenticationService(
         userSessionRepository.save(session)
     }
 
+    /**
+     * Retrieves the user's pre-session information, which may include data necessary for finishing the authentication process.
+     */
     suspend fun getPreSession(): UserPreSession? = userPreSessionRepository.get()
 
+    /**
+     * Prepares the necessary information for the OAuth2 redirect process by saving the code verifier and state.
+     */
     suspend fun prepareRedirect(codeVerifier: String, state: String) {
         val preSession = UserPreSession(codeVerifier, state)
         userPreSessionRepository.save(preSession)
