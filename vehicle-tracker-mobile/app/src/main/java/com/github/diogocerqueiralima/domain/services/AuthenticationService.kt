@@ -2,7 +2,9 @@ package com.github.diogocerqueiralima.domain.services
 
 import com.github.diogocerqueiralima.domain.client.AuthenticationClient
 import com.github.diogocerqueiralima.domain.model.Token
+import com.github.diogocerqueiralima.domain.model.UserPreSession
 import com.github.diogocerqueiralima.domain.model.UserSession
+import com.github.diogocerqueiralima.domain.repositories.UserPreSessionRepository
 import com.github.diogocerqueiralima.domain.repositories.UserSessionRepository
 import kotlin.time.Clock
 
@@ -11,7 +13,8 @@ import kotlin.time.Clock
  */
 class AuthenticationService(
     private val client: AuthenticationClient,
-    private val userSessionRepository: UserSessionRepository
+    private val userSessionRepository: UserSessionRepository,
+    private val userPreSessionRepository: UserPreSessionRepository
 ) {
 
     /**
@@ -42,6 +45,19 @@ class AuthenticationService(
         )
 
         userSessionRepository.save(session)
+    }
+
+    /**
+     * Retrieves the user's pre-session information, which may include data necessary for finishing the authentication process.
+     */
+    suspend fun getPreSession(): UserPreSession? = userPreSessionRepository.get()
+
+    /**
+     * Prepares the necessary information for the OAuth2 redirect process by saving the code verifier and state.
+     */
+    suspend fun prepareRedirect(codeVerifier: String, state: String) {
+        val preSession = UserPreSession(codeVerifier, state)
+        userPreSessionRepository.save(preSession)
     }
 
 }
