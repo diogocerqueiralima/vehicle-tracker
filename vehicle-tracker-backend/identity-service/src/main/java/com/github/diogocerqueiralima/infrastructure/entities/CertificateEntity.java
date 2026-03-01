@@ -1,0 +1,69 @@
+package com.github.diogocerqueiralima.infrastructure.entities;
+
+import jakarta.persistence.*;
+
+import java.math.BigInteger;
+import java.time.Instant;
+
+@Entity
+@Table(name = "certificates")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class CertificateEntity {
+
+    @Id
+    @Column(name = "serial_number")
+    private BigInteger serialNumber;
+
+    @Column(nullable = false)
+    private String subject;
+
+    @Column(name = "issued_at", nullable = false)
+    private Instant issuedAt;
+
+    @Column(name = "expires_at", nullable = false)
+    private Instant expiresAt;
+
+    @Column(nullable = false)
+    private boolean revoked;
+
+    public BigInteger getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(BigInteger serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public Instant getIssuedAt() {
+        return issuedAt;
+    }
+
+    public void setIssuedAt(Instant issuedAt) {
+        this.issuedAt = issuedAt;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Instant expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public boolean isRevoked() {
+        return revoked;
+    }
+
+    public void setRevoked(boolean revoked) {
+        this.revoked = revoked;
+    }
+
+}

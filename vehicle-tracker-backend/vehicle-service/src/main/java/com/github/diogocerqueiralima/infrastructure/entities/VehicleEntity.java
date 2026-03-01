@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "vehicles", schema = "vehicle_tracker_schema")
+@Table(name = "vehicles")
 public class VehicleEntity {
 
     @Id

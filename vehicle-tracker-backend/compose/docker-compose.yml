@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: timescale/timescaledb-ha:pg18.1-ts2.23.0-all
+    container_name: tracker_postgres
+    environment:
+      POSTGRES_DB: tracker
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - 5432:5432
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
