@@ -24,6 +24,12 @@ import org.springframework.context.annotation.Configuration;
                         type = SecuritySchemeType.APIKEY,
                         in = SecuritySchemeIn.HEADER,
                         paramName = "X-Client-Cert-CN"
+                ),
+                @SecurityScheme(
+                        name = "certificateSerialAuth",
+                        type = SecuritySchemeType.APIKEY,
+                        in = SecuritySchemeIn.HEADER,
+                        paramName = "X-Client-Cert-Serial"
                 )
         }
 )

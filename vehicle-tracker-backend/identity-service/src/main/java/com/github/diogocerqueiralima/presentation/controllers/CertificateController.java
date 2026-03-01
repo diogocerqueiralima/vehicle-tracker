@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -26,7 +27,12 @@ import java.math.BigInteger;
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.*;
 
 @Tag(name = "Certificates", description = "Operations related to certificates, including signing and revocation.")
-@SecurityRequirement(name = "certificateAuth")
+@SecurityRequirements(
+        value = {
+                @SecurityRequirement(name = "certificateAuth"),
+                @SecurityRequirement(name = "certificateSerialAuth")
+        }
+)
 @RestController
 public class CertificateController {
 

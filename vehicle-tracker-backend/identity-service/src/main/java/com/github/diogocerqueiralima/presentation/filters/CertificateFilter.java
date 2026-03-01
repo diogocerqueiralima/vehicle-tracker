@@ -70,19 +70,19 @@ public class CertificateFilter extends OncePerRequestFilter {
 
         if (commonName != null && serialNumberHeader != null) {
 
-            BigInteger serialNumber = new BigInteger(serialNumberHeader);
-
             try {
+
+                BigInteger serialNumber = new BigInteger(serialNumberHeader);
 
                 // 2. Attempt to mark bootstrap certificate as used
 
                 bootstrapCertificateUseCase.markAsUsed(new MarkBootstrapCertificateAsUsedCommand(serialNumber));
 
-            } catch (CertificateNotFoundException e) {
+            } catch (CertificateNotFoundException | NumberFormatException e) {
 
                 // 2.1 Certificate is not a bootstrap certificate, proceed with authentication
 
-                log.info("The certificate is not a bootstrap certificate: {}", serialNumber);
+                log.info("The certificate is not a bootstrap certificate", e);
             } catch (CertificateRevokedException | BootstrapCertificateUsedException e) {
 
                 // 2.2 Certificate is revoked or already used, reject the request
