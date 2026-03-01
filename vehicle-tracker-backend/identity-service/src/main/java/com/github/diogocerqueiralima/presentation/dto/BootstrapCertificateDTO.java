@@ -32,7 +32,7 @@ public record BootstrapCertificateDTO(
         @Schema(description = "Indicates whether the certificate has been revoked.")
         boolean revoked,
 
-        @Schema(description = "Indicates whether the certificate has been used for generates a new certificate.")
+        @Schema(description = "Indicates whether the certificate has been used for generate a new certificate.")
         boolean used
 
 ) {}

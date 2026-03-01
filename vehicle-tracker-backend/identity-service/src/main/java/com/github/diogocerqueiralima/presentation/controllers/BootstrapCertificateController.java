@@ -24,12 +24,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.*;
 
 @Tag(
         name = "Bootstrap Certificates",
-        description = "Operations related to boostrap certificates, including retrieval, signing, and revocation."
+        description = "Operations related to bootstrap certificates, including retrieval, signing, and revocation."
 )
 @SecurityRequirement(name = "bearerAuth")
 @RestController
@@ -185,7 +186,7 @@ public class BootstrapCertificateController {
             }
     )
     @PostMapping(BOOTSTRAP_CERTIFICATE_REVOKE_URI)
-    public ResponseEntity<Void> revoke(@PathVariable String serialNumber) {
+    public ResponseEntity<Void> revoke(@PathVariable BigInteger serialNumber) {
         bootstrapCertificateUseCase.revoke(new LookupCertificateBySerialNumberCommand(serialNumber));
         return ResponseEntity.ok().build();
     }

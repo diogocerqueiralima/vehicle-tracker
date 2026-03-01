@@ -69,7 +69,7 @@ public class CertificateService {
         byte[] certificateData = certificateSigner.sign(
                 certificateSigningRequest,
                 certificateAuthorityConfig.getIssuer(),
-                generateSerialNumber(),
+                serialNumber,
                 notBefore,
                 notAfter
         );
@@ -101,7 +101,7 @@ public class CertificateService {
     @SuppressWarnings("unchecked")
     public <T extends Certificate> void revoke(
             LookupCertificateBySerialNumberCommand command,
-            Function<String, Optional<T>> finder,
+            Function<BigInteger, Optional<T>> finder,
             Function<T, T> persistence
     ) {
         T certificate = finder.apply(command.serialNumber())

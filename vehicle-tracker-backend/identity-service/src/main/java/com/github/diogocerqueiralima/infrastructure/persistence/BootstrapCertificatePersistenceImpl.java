@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.math.BigInteger;
 import java.util.Optional;
 
 @Component
@@ -34,7 +35,7 @@ public class BootstrapCertificatePersistenceImpl implements BootstrapCertificate
     }
 
     @Override
-    public Optional<BootstrapCertificate> getBySerialNumber(String serialNumber) {
+    public Optional<BootstrapCertificate> getBySerialNumber(BigInteger serialNumber) {
         return certificateRepository
                 .findById(serialNumber)
                 .map(bootstrapCertificateMapper::toDomain);

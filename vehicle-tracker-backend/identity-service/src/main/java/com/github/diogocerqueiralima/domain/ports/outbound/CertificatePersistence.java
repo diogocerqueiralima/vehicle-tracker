@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.domain.ports.outbound;
 
 import com.github.diogocerqueiralima.domain.model.Certificate;
 
+import java.math.BigInteger;
 import java.util.Optional;
 
 /**
@@ -25,6 +26,6 @@ public interface CertificatePersistence {
      * @param serialNumber the serial number of the certificate
      * @return an Optional containing the found certificate, or empty if not found
      */
-    Optional<Certificate> getBySerialNumber(String serialNumber);
+    Optional<Certificate> getBySerialNumber(BigInteger serialNumber);
 
 }

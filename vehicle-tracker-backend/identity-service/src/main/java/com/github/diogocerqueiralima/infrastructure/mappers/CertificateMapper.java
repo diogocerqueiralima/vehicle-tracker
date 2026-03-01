@@ -24,10 +24,10 @@ public class CertificateMapper {
 
         CertificateEntity entity = new CertificateEntity();
 
-        entity.setSerialNumber(entity.getSerialNumber());
-        entity.setSubject(entity.getSubject());
-        entity.setIssuedAt(entity.getIssuedAt());
-        entity.setExpiresAt(entity.getExpiresAt());
+        entity.setSerialNumber(certificate.getSerialNumber());
+        entity.setSubject(certificate.getSubject().toString());
+        entity.setIssuedAt(certificate.getIssuedAt());
+        entity.setExpiresAt(certificate.getExpiresAt());
         entity.setRevoked(certificate.isRevoked());
 
         return entity;

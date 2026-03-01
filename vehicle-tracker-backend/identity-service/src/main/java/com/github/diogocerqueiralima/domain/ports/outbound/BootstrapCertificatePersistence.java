@@ -3,6 +3,7 @@ package com.github.diogocerqueiralima.domain.ports.outbound;
 import com.github.diogocerqueiralima.domain.model.BootstrapCertificate;
 import org.springframework.data.domain.Page;
 
+import java.math.BigInteger;
 import java.util.Optional;
 
 /**
@@ -26,7 +27,7 @@ public interface BootstrapCertificatePersistence {
      * @param serialNumber the serial number of the certificate
      * @return an Optional containing the found certificate, or empty if not found
      */
-    Optional<BootstrapCertificate> getBySerialNumber(String serialNumber);
+    Optional<BootstrapCertificate> getBySerialNumber(BigInteger serialNumber);
 
     /**
      *

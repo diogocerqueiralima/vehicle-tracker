@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.*;
 
@@ -120,7 +121,7 @@ public class CertificateController {
             }
     )
     @PostMapping(CERTIFICATE_REVOKE_URI)
-    public ResponseEntity<Void> revoke(@PathVariable String serialNumber) {
+    public ResponseEntity<Void> revoke(@PathVariable BigInteger serialNumber) {
         certificateUseCase.revoke(new LookupCertificateBySerialNumberCommand(serialNumber));
         return ResponseEntity.ok().build();
     }

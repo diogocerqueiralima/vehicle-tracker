@@ -26,8 +26,7 @@ public class ErrorController {
 
     @ExceptionHandler({
             InvalidSignatureException.class, InvalidCertificateSigningRequestException.class,
-            InvalidCommonNameException.class, InvalidCertificateException.class,
-            InvalidCertificateException.class
+            InvalidCommonNameException.class, InvalidCertificateException.class
     })
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(RuntimeException e) {
 

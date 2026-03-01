@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -65,9 +66,11 @@ public class CertificateFilter extends OncePerRequestFilter {
         // 1. Extract certificate information from headers
 
         String commonName = request.getHeader(CERTIFICATE_CN_HEADER);
-        String serialNumber = request.getHeader(CERTIFICATE_SERIAL_HEADER);
+        String serialNumberHeader = request.getHeader(CERTIFICATE_SERIAL_HEADER);
 
-        if (commonName != null && serialNumber != null) {
+        if (commonName != null && serialNumberHeader != null) {
+
+            BigInteger serialNumber = new BigInteger(serialNumberHeader);
 
             try {
 

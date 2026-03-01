@@ -4,5 +4,7 @@ import com.github.diogocerqueiralima.infrastructure.entities.BootstrapCertificat
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigInteger;
+
 @Repository
-public interface BootstrapCertificateRepository extends JpaRepository<BootstrapCertificateEntity, String> {}
+public interface BootstrapCertificateRepository extends JpaRepository<BootstrapCertificateEntity, BigInteger> {}
