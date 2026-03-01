@@ -1,88 +1,61 @@
 package com.github.diogocerqueiralima.domain.model;
 
-import com.github.diogocerqueiralima.domain.exceptions.CertificateRevokedException;
-
 import java.math.BigInteger;
 import java.time.Instant;
 
 /**
- * Represents a digital certificate with associated information and revocation status.
+ * Represents a certificate in the system. This interface defines the common properties and behaviors of a certificate,
+ * such as revocation status, serial number, subject information, and validity period.
  */
-public class Certificate {
+public interface Certificate {
 
-    private final BigInteger serialNumber;
-    private final CertificateSubject subject;
-    private final Instant issuedAt;
-    private final Instant expiresAt;
-    private final boolean revoked;
+    /**
+     * Revokes the certificate, marking it as no longer valid for use. Once revoked, the certificate should not be accepted
+     * for authentication or authorization purposes.
+     *
+     * @return the revoked certificate instance, reflecting its new revoked status
+     */
+    Certificate revoke();
 
     /**
      *
-     * Creates a new instance of Certificate with the specified attributes, including the revoked status.
+     * Returns whether the certificate has been revoked. A revoked certificate is considered invalid and should not be accepted
      *
-     * @param serialNumber the unique serial number of the certificate
-     * @param subject the subject information associated with the certificate
-     * @param issuedAt the timestamp when the certificate was issued
-     * @param expiresAt the timestamp when the certificate expires
-     * @param revoked the revocation status of the certificate, indicating whether it has been revoked
+     * @return true if the certificate is revoked, false otherwise
      */
-    public Certificate(
-            BigInteger serialNumber, CertificateSubject subject, Instant issuedAt, Instant expiresAt, boolean revoked
-    ) {
-        this.serialNumber = serialNumber;
-        this.subject = subject;
-        this.issuedAt = issuedAt;
-        this.expiresAt = expiresAt;
-        this.revoked = revoked;
-    }
+    boolean isRevoked();
+
+    /**
+     * Returns the serial number of the certificate, which is a unique identifier assigned to each certificate.
+     * The serial number is used to distinguish between different certificates and is often used in certificate management and validation processes.
+     *
+     * @return the serial number of the certificate
+     */
+    BigInteger getSerialNumber();
+
+    /**
+     * Returns the subject information of the certificate, which typically includes details about the entity to which the certificate was issued.
+     *
+     * @return the subject information of the certificate
+     * @see CertificateSubject
+     */
+    CertificateSubject getSubject();
 
     /**
      *
-     * Creates a new instance of Certificate with the specified attributes, defaulting the revoked status to false.
+     * Returns the timestamp indicating when the certificate was issued.
+     * This information is important for determining the validity period of the certificate and for auditing purposes.
      *
-     * @param serialNumber the unique serial number of the certificate
-     * @param subject the subject information associated with the certificate
-     * @param issuedAt the timestamp when the certificate was issued
-     * @param expiresAt the timestamp when the certificate expires
+     * @return the timestamp when the certificate was issued
      */
-    public Certificate(BigInteger serialNumber, CertificateSubject subject, Instant issuedAt, Instant expiresAt) {
-        this(serialNumber, subject, issuedAt, expiresAt, false);
-    }
+    Instant getIssuedAt();
 
     /**
+     * Returns the timestamp indicating when the certificate expires.
+     * After this timestamp, the certificate is considered invalid and should not be accepted for authentication or authorization purposes.
      *
-     * Revokes the certificate by returning a new instance with the revoked status set to true.
-     *
-     * @return a new Certificate instance with revoked status set to true
-     * @throws CertificateRevokedException if the certificate is already revoked
+     * @return the timestamp when the certificate expires
      */
-    public Certificate revoke() {
-
-        if (this.revoked) {
-            throw new CertificateRevokedException(this.serialNumber);
-        }
-
-        return new Certificate(this.serialNumber, this.subject, this.issuedAt, this.expiresAt, true);
-    }
-
-    public BigInteger getSerialNumber() {
-        return serialNumber;
-    }
-
-    public CertificateSubject getSubject() {
-        return subject;
-    }
-
-    public Instant getIssuedAt() {
-        return issuedAt;
-    }
-
-    public Instant getExpiresAt() {
-        return expiresAt;
-    }
-
-    public boolean isRevoked() {
-        return revoked;
-    }
+    Instant getExpiresAt();
 
 }

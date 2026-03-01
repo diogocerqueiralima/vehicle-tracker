@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.domain.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.model.Certificate;
+import com.github.diogocerqueiralima.domain.model.RegularCertificate;
 
 import java.math.BigInteger;
 import java.util.Optional;
@@ -17,7 +17,7 @@ public interface CertificatePersistence {
      * @param certificate the certificate to be saved
      * @return the saved certificate
      */
-    Certificate save(Certificate certificate);
+    RegularCertificate save(RegularCertificate certificate);
 
     /**
      *
@@ -26,6 +26,6 @@ public interface CertificatePersistence {
      * @param serialNumber the serial number of the certificate
      * @return an Optional containing the found certificate, or empty if not found
      */
-    Optional<Certificate> getBySerialNumber(BigInteger serialNumber);
+    Optional<RegularCertificate> getBySerialNumber(BigInteger serialNumber);
 
 }

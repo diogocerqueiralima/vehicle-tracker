@@ -4,7 +4,7 @@ import com.github.diogocerqueiralima.application.commands.CertificateSigningRequ
 import com.github.diogocerqueiralima.application.commands.LookupCertificateBySerialNumberCommand;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.application.services.CertificateService;
-import com.github.diogocerqueiralima.domain.model.Certificate;
+import com.github.diogocerqueiralima.domain.model.RegularCertificate;
 import com.github.diogocerqueiralima.domain.ports.inbound.CertificateUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificatePersistence;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class CertificateUseCaseImpl implements CertificateUseCase {
                 command,
                 certificatePersistence::save,
                 (csr, serialNumber, notBefore, notAfter) ->
-                        new Certificate(
+                        new RegularCertificate(
                                 serialNumber,
                                 csr.getSubject(),
                                 notBefore,

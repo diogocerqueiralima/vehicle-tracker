@@ -1,17 +1,16 @@
 package com.github.diogocerqueiralima.infrastructure.mappers;
 
-import com.github.diogocerqueiralima.domain.model.Certificate;
 import com.github.diogocerqueiralima.domain.model.CertificateSubject;
+import com.github.diogocerqueiralima.domain.model.RegularCertificate;
 import com.github.diogocerqueiralima.infrastructure.entities.CertificateEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CertificateMapper {
 
+    public RegularCertificate toDomain(CertificateEntity entity) {
 
-    public Certificate toDomain(CertificateEntity entity) {
-
-        return new Certificate(
+        return new RegularCertificate(
                 entity.getSerialNumber(),
                 CertificateSubject.fromString(entity.getSubject()),
                 entity.getIssuedAt(),
@@ -20,7 +19,7 @@ public class CertificateMapper {
         );
     }
 
-    public CertificateEntity toEntity(Certificate certificate) {
+    public CertificateEntity toEntity(RegularCertificate certificate) {
 
         CertificateEntity entity = new CertificateEntity();
 

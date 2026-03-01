@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
-import com.github.diogocerqueiralima.domain.model.Certificate;
+import com.github.diogocerqueiralima.domain.model.RegularCertificate;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificatePersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.CertificateEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.CertificateMapper;
@@ -24,7 +24,7 @@ public class CertificatePersistenceImpl implements CertificatePersistence {
     }
 
     @Override
-    public Certificate save(Certificate certificate) {
+    public RegularCertificate save(RegularCertificate certificate) {
 
         CertificateEntity entity = certificateMapper.toEntity(certificate);
         CertificateEntity savedEntity = certificateRepository.save(entity);
@@ -33,7 +33,7 @@ public class CertificatePersistenceImpl implements CertificatePersistence {
     }
 
     @Override
-    public Optional<Certificate> getBySerialNumber(BigInteger serialNumber) {
+    public Optional<RegularCertificate> getBySerialNumber(BigInteger serialNumber) {
         return certificateRepository
                 .findById(serialNumber)
                 .map(certificateMapper::toDomain);
