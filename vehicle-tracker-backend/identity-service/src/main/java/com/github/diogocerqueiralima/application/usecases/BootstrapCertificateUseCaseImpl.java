@@ -10,6 +10,7 @@ import com.github.diogocerqueiralima.application.results.CertificateSigningReque
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.services.CertificateService;
 import com.github.diogocerqueiralima.domain.model.BootstrapCertificate;
+import com.github.diogocerqueiralima.domain.model.factories.BootstrapCertificateFactory;
 import com.github.diogocerqueiralima.domain.ports.inbound.BootstrapCertificateUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.BootstrapCertificatePersistence;
 import org.springframework.data.domain.Page;
@@ -30,18 +31,11 @@ public class BootstrapCertificateUseCaseImpl implements BootstrapCertificateUseC
 
     @Override
     public CertificateSigningRequestResult sign(CertificateSigningRequestCommand command) {
+
         return certificateService.sign(
                 command,
                 bootstrapCertificatePersistence::save,
-                (csr, serialNumber, notBefore, notAfter) ->
-                        new BootstrapCertificate(
-                                serialNumber,
-                                csr.getSubject(),
-                                notBefore,
-                                notAfter,
-                                false,
-                                false
-                        )
+                new BootstrapCertificateFactory()
         );
     }
 
