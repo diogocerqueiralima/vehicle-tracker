@@ -21,7 +21,10 @@ Vehicle devices installed in vehicles send GPS data to the reverse proxy. This d
 
 The following diagram illustrates the high-level architecture of the Vehicle Tracker system:
 
-![System Overview](docs/images/system-overview.svg)
+<figure style="text-align:center">
+  <img src="docs/images/system-overview.svg" alt="System overview">
+  <figcaption>Figure 1: System Overview</figcaption>
+</figure>
 
 In folder `docs` you can find more detailed documentation about the architecture, deployment, and other aspects of the system.
 ## Stack

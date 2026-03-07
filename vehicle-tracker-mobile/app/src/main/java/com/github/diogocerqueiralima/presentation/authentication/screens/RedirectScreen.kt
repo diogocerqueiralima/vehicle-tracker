@@ -6,14 +6,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationState
-import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
+import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectState
+import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModel
 import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationCancelledView
-import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationIdleView
+import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationErrorView
+import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationRedirectView
+import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationSuccessView
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
 @Composable
-fun AuthenticationScreen(viewModel: AuthenticationViewModel) {
+fun RedirectScreen(viewModel: RedirectViewModel) {
 
     VehicleTrackerMobileTheme() {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -22,22 +24,22 @@ fun AuthenticationScreen(viewModel: AuthenticationViewModel) {
 
             when (state) {
 
-                is AuthenticationState.Idle -> {
-                    AuthenticationIdleView(
+                is RedirectState.Redirected -> {
+                    AuthenticationRedirectView(
                         modifier = Modifier
                             .padding(innerPadding)
                     )
                 }
 
-                is AuthenticationState.Authenticating -> {
-                    AuthenticationIdleView(
+                is RedirectState.Authenticated -> {
+                    AuthenticationSuccessView(
                         modifier = Modifier
                             .padding(innerPadding)
                     )
                 }
 
-                is AuthenticationState.Canceled -> {
-                    AuthenticationCancelledView(
+                is RedirectState.Error -> {
+                    AuthenticationErrorView(
                         modifier = Modifier
                             .padding(innerPadding)
                     )
