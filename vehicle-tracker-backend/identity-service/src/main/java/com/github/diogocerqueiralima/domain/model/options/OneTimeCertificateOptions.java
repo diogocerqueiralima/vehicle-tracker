@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.domain.model.options;
 
 /**
- * Represents options for a one-time certificate, which can be used only once and cannot be revoked.
+ * Represents options for a one-time certificate, which can be used only once.
  * This class extends {@link RevokeCertificateOptions} to include the revoked state, but also adds a used state.
  */
 public class OneTimeCertificateOptions extends RevokeCertificateOptions {
