@@ -28,13 +28,11 @@ class CertificateOptions {
 class RevokeCertificateOptions {
     -boolean revoked
     +boolean isRevoked()
-    +RevokeCertificateOptions setRevoked(boolean revoked)
 }
 
 class OneTimeCertificateOptions {
     -boolean used
     +boolean isUsed()
-    +OneTimeCertificateOptions setUsed(boolean used)
 }
 
 class Certificate {
