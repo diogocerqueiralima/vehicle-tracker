@@ -35,7 +35,7 @@ public class RegularCertificate extends AbstractCertificate {
     @Override
     public Certificate revoke() {
 
-        if (options.isRevoked()) {
+        if (!options.validate()) {
             throw new CertificateRevokedException(getSerialNumber());
         }
 

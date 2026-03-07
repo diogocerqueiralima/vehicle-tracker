@@ -47,7 +47,7 @@ public class BootstrapCertificate extends AbstractCertificate {
     @Override
     public BootstrapCertificate revoke() {
 
-        if (options.isRevoked()) {
+        if (!options.validate()) {
             throw new CertificateRevokedException(getSerialNumber());
         }
 
@@ -67,7 +67,7 @@ public class BootstrapCertificate extends AbstractCertificate {
      */
     public BootstrapCertificate markAsUsed() {
 
-        if (options.isUsed()) {
+        if (!options.validate()) {
             throw new BootstrapCertificateUsedException(this);
         }
 

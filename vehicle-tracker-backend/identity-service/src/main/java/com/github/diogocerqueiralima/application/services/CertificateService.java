@@ -6,7 +6,7 @@ import com.github.diogocerqueiralima.application.config.CertificateAuthorityConf
 import com.github.diogocerqueiralima.application.exceptions.CertificateNotFoundException;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.domain.model.Certificate;
-import com.github.diogocerqueiralima.domain.model.CertificateFactory;
+import com.github.diogocerqueiralima.domain.model.factories.CertificateFactory;
 import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateSigner;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificateSigningRequestReader;
