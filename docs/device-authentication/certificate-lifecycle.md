@@ -17,10 +17,24 @@ The lifecycle of the Bootstrap Certificate can be summarized in the following st
 
 The following diagram illustrates the Bootstrap Certificate lifecycle:
 
-<figure style="text-align:center">
-  <img src="images/bootstrap-certificate-lifecycle.svg" alt="Bootstrap Certificate Lifecycle">
-  <figcaption>Figure 1: Bootstrap Certificate Lifecycle</figcaption>
-</figure>
+```mermaid
+sequenceDiagram
+    title Bootstrap Certificate Lifecycle
+
+    participant Admin
+    participant Device
+    participant IdentityService as Identity Service
+    participant OtherService as Other Service
+
+    Admin->>IdentityService: 1. createBootstrapCertificate(device)
+    IdentityService-->>Admin: 2. issuedBootstrapCertificate
+    Admin->>Device: 3. installCertificate(bootstrap)
+    Device->>IdentityService: 4. requestCertificate(bootstrap)
+    IdentityService->>IdentityService: 5. markAsUsed(bootstrap)
+    IdentityService-->>Device: 6. issuedCertificate
+    Device->>OtherService: 7. request(certificate)
+    OtherService-->>Device: 8. response
+```
 
 There is one important point to note about the Bootstrap Certificate lifecycle: **only** the administrator can request a Bootstrap Certificate for a device. This means that the device cannot request a Bootstrap Certificate on its own, which adds an extra layer of security to the system. So, if the device is compromised, the user can simply revoke the Certificate associated with the device, which will prevent the compromised device from authenticating with the other services, but then how the user can request a new Bootstrap Certificate to the device?
 Without the Bootstrap Certificate, the device cannot request a new Certificate, which means that the device will be permanently blocked from authenticating with the other services. This is a trade-off between security and usability, and it will be discussed in more detail in the [Certificate Revocation](#certificate-revocation) section.
@@ -37,10 +51,19 @@ The lifecycle of the Certificate can be summarized in the following steps:
 4. The Certificate should be renewed before it expires to ensure uninterrupted authentication with the other services.
 
 The following diagram illustrates the Certificate lifecycle:
-<figure style="text-align:center">
-  <img src="images/certificate-lifecycle.svg" alt="Certificate Lifecycle">
-  <figcaption>Figure 2: Certificate Lifecycle</figcaption>
-</figure>
+
+```mermaid
+sequenceDiagram
+    title Certificate Lifecycle
+
+    participant Device
+    participant IdentityService as Identity Service
+
+    Device->>IdentityService: 1. requestCertificate(bootstrap)
+    IdentityService-->>Device: 2. issuedCertificate
+    Device->>IdentityService: 3. requestCertificate(expiredCertificate)
+    IdentityService-->>Device: 4. newIssuedCertificate
+```
 
 The Certificate lifecycle has two important aspects: **renewal** and **revocation**. These aspects are crucial for maintaining the security of the system, and they will be discussed in the following sections.
 
