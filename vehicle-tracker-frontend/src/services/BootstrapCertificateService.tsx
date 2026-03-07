@@ -12,7 +12,7 @@ export function bootstrapCertificateService() {
     async function getPage(page: number, serialNumberFilter: string): Promise<Page<BootstrapCertificate>> {
 
         const response = await fetch(
-            `/api/proxy/${BOOTSTRAP_CERTIFICATES_PATH}?pageNumber=${page}&pageSize=${BOOTSTRAP_CERTIFICATES_PER_PAGE}`,
+            `/api/proxy${BOOTSTRAP_CERTIFICATES_PATH}?pageNumber=${page}&pageSize=${BOOTSTRAP_CERTIFICATES_PER_PAGE}&serialNumber=${encodeURIComponent(serialNumberFilter)}`,
             {
                 method: "GET"
             }

@@ -31,18 +31,23 @@ export function createDataTable<T extends object>() {
 
         useEffect(() => {
 
-            console.log("Fetching page", currentPage)
+            const fetchData = () => {
 
-            getPage(currentPage, filter)
-                .then(page => {
-                    setItems(page.items)
-                    setTotalItems(page.totalItems)
-                    setTotalPages(page.totalPages)
-                    setIsLoading(false)
-                    setError(null)
-                })
-                .catch(error => setError(error.message))
-                .finally(() => setIsLoading(false))
+                setIsLoading(true);
+                setError(null);
+
+                getPage(currentPage, filter)
+                    .then(page => {
+                        setItems(page.items);
+                        setTotalItems(page.totalItems);
+                        setTotalPages(page.totalPages);
+                        setError(null);
+                    })
+                    .catch(err => setError(err.message))
+                    .finally(() => setIsLoading(false));
+            };
+
+            fetchData();
 
         }, [getPage, currentPage, filter])
 

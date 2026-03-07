@@ -5,6 +5,7 @@ import {IoLogOut} from "react-icons/io5";
 import Image from "next/image";
 import Link from "next/link";
 import {IoMdClose} from "react-icons/io";
+import {signOut} from "next-auth/react";
 
 interface Item {
 
@@ -155,7 +156,7 @@ export default function Header( { items } : Props ) {
                 aria-label="Logout"
                 type="button"
             >
-                <IoLogOut size={32} />
+                <IoLogOut size={32} onClick={() => signOut()} />
             </button>
 
         </header>

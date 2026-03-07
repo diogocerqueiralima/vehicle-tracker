@@ -1,5 +1,4 @@
 import {DataTableContextProps} from "@/context/DataTableContext";
-import {CreateContentProps} from "@/components/datatable/DataTableContent";
 import InputBar from "@/components/InputBar";
 import {IoIosSearch} from "react-icons/io";
 
@@ -13,7 +12,7 @@ export interface HeaderProps {
 
 }
 
-export function createDataTableHeader<T extends object>({ useDataTable }: CreateContentProps<T>) {
+export function createDataTableHeader<T extends object>({ useDataTable }: CreateHeaderProps<T>) {
 
     return function Header({ title }: HeaderProps) {
 

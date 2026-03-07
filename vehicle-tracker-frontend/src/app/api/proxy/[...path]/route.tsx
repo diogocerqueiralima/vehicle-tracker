@@ -36,7 +36,7 @@ async function proxyRequest(req: NextRequest, context: { params: Promise<{ path:
 
     // 5. Return the response from the backend API to the client
     const data = await response.text()
-    return new NextResponse(data, { status: response.status })
+    return new NextResponse(data, { status: response.status, headers: response.headers })
 }
 
 export const GET = proxyRequest

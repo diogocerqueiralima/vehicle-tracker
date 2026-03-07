@@ -13,7 +13,7 @@ export interface CreateFooterProps<T extends object> {
 
 export function createDataTableFooter<T extends object>({ useDataTable }: CreateContentProps<T>) {
 
-    return function Header() {
+    return function Footer() {
 
         const { currentPage, totalPages, firstPage, lastPage, nextPage, previousPage, isFirstPage, isLastPage, canBack, canAdvance } = useDataTable()
 
