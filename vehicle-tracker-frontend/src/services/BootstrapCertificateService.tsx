@@ -26,6 +26,11 @@ export function bootstrapCertificateService() {
             throw new Error("Forbidden. You don't have permission to access this resource.")
         }
 
+        if (response.headers.get("content-type") != "application/json") {
+            const text = await response.text()
+            throw new Error(`Unexpected response from server: ${text}`)
+        }
+
         const json: ApiResponseDTO<PageDTO<BootstrapCertificateDTO>> = await response.json()
 
         if (!response.ok) {

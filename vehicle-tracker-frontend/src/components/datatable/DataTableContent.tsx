@@ -58,9 +58,11 @@ export function createDataTableContent<T extends object>({ useDataTable }: Creat
                                 </td>
                             </tr>
                         ) : error != null ? (
-                            <td colSpan={headerItems.length} className="py-8 text-center">
-                                <span className={`bg-negative-muted px-8 py-2 rounded-md text-negative`}>{error}</span>
-                            </td>
+                            <tr>
+                                <td colSpan={headerItems.length} className="py-8 text-center">
+                                    <span className={`bg-negative-muted px-8 py-2 rounded-md text-negative`}>{error}</span>
+                                </td>
+                            </tr>
                         ) : (
 
                             items.map((item, rowIndex) => (

@@ -17,14 +17,12 @@ async function proxyRequest(req: NextRequest, context: { params: Promise<{ path:
         body = await req.text()
     }
 
-    const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-    }
+    const headers: Headers = req.headers
 
     // 3. Get the access token from the session and add it to the headers
     const token = await getToken({req, secret: process.env.NEXTAUTH_SECRET})
     if (token) {
-        headers["Authorization"] = `Bearer ${token.accessToken}`
+        headers.set('Authorization', `Bearer ${token.accessToken}`)
     }
 
     // 4. Make the proxied request to the backend API

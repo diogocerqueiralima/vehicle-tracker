@@ -155,8 +155,9 @@ export default function Header( { items } : Props ) {
                 className="bg-background text-foreground rounded-full p-4 flex items-center justify-center shadow-md hover:bg-highlight hover:scale-105 duration-200 cursor-pointer"
                 aria-label="Logout"
                 type="button"
+                onClick={() => signOut()}
             >
-                <IoLogOut size={32} onClick={() => signOut()} />
+                <IoLogOut size={32} />
             </button>
 
         </header>

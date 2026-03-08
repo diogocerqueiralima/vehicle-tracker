@@ -63,7 +63,10 @@ export function createDataTable<T extends object>() {
                     canBack: () => currentPage > 1,
                     isFirstPage: () => currentPage === 1,
                     isLastPage: () => currentPage === totalPages,
-                    updateFilter: (value: string) => setFilter(value),
+                    updateFilter: (value: string) => {
+                        setFilter(value)
+                        setCurrentPage(1)
+                    },
                     isLoading,
                     error
                 }

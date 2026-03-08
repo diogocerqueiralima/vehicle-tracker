@@ -10,13 +10,6 @@ export default function Home() {
   return (
     <div className={`flex flex-row gap-8`}>
 
-        <p onClick={() => signIn("keycloak")} className={`text-2xl font-bold cursor-pointer`}>
-            Login
-        </p>
-        <p onClick={() => signOut()}>
-            Logout
-        </p>
-
         <Card title={"Dispositivos ativos"} label={"123"} indicator={Indicator.ONLINE} icon={<MdOnDeviceTraining size={32} />} change={`+3 esta semana`} changeType={ChangeType.POSITIVE}></Card>
         <Card
             title="Dispositivos offline"
