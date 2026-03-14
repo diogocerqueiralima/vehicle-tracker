@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+:root {
+  --background: oklch(21% 0.006 285.885);
+  --foreground: oklch(98.7% 0.022 95.277);
+  --foreground-muted: oklch(98.7% 0.022 95.277 / 0.5);
+  --surface: oklch(27.4% 0.006 286.033);
+  --surface-muted: oklch(30% 0.003 286.033);
+  --highlight: oklch(39.1% 0.09 240.876);
+  --positive: oklch(62.7% 0.194 149.214);
+  --positive-muted: oklch(38% 0.06 149.214);
+  --negative: oklch(63.7% 0.237 25.331);
+  --negative-muted: oklch(36% 0.065 25.331);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-highlight: var(--highlight);
+  --color-positive: var(--positive);
+  --color-positive-muted: var(--positive-muted);
+  --color-negative: var(--negative);
+  --color-negative-muted: var(--negative-muted);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
