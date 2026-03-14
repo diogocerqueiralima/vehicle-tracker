@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.domain.model.assignments;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -19,9 +20,11 @@ public abstract class Assignment {
     private final UUID unassignedBy;
     private final boolean active;
 
-    protected Assignment(Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy, boolean active) {
-        this.assignedAt = assignedAt;
-        this.assignedBy = assignedBy;
+    protected Assignment(
+            Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy, boolean active
+    ) {
+        this.assignedAt = Objects.requireNonNull(assignedAt, "assignedAt cannot be null");
+        this.assignedBy = Objects.requireNonNull(assignedBy, "assignedBy cannot be null");
         this.unassignedAt = unassignedAt;
         this.unassignedBy = unassignedBy;
         this.active = active;

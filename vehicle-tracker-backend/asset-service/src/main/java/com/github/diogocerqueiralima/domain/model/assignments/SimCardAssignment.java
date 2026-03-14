@@ -1,9 +1,10 @@
 package com.github.diogocerqueiralima.domain.model.assignments;
 
-import com.github.diogocerqueiralima.domain.model.assets.SimCard;
+import com.github.diogocerqueiralima.domain.model.SimCard;
 import com.github.diogocerqueiralima.domain.model.assets.Device;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -21,8 +22,8 @@ public class SimCardAssignment extends Assignment {
             SimCardRemovalReason removalReason
     ) {
         super(assignedAt, unassignedAt, assignedBy, unassignedBy, unassignedAt == null);
-        this.device = device;
-        this.simCard = simCard;
+        this.device = Objects.requireNonNull(device, "device cannot be null");
+        this.simCard = Objects.requireNonNull(simCard, "simCard cannot be null");
         this.removalReason = removalReason;
     }
 

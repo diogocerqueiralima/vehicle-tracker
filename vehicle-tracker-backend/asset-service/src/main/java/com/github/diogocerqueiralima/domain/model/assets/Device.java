@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.model.assets;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -17,10 +18,10 @@ public class Device extends Asset {
 
     public Device(UUID id, Instant createdAt, Instant updatedAt, String serialNumber, String model, String manufacturer, String imei) {
         super(id, createdAt, updatedAt);
-        this.serialNumber = serialNumber;
-        this.model = model;
-        this.manufacturer = manufacturer;
-        this.imei = imei;
+        this.serialNumber = Objects.requireNonNull(serialNumber, "serialNumber cannot be null");
+        this.model = Objects.requireNonNull(model, "model cannot be null");
+        this.manufacturer = Objects.requireNonNull(manufacturer, "manufacturer cannot be null");
+        this.imei = Objects.requireNonNull(imei, "imei cannot be null");
     }
 
     public String getSerialNumber() {

@@ -4,6 +4,7 @@ import com.github.diogocerqueiralima.domain.model.assets.Device;
 import com.github.diogocerqueiralima.domain.model.assets.Vehicle;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -23,8 +24,8 @@ public class VehicleAssignment extends Assignment {
             VehicleRemovalReason removalReason, UUID installedBy, String notes
     ) {
         super(assignedAt, unassignedAt, assignedBy, unassignedBy, unassignedAt == null);
-        this.device = device;
-        this.vehicle = vehicle;
+        this.device = Objects.requireNonNull(device, "device cannot be null");
+        this.vehicle = Objects.requireNonNull(vehicle, "vehicle cannot be null");
         this.removalReason = removalReason;
         this.installedBy = installedBy;
         this.notes = notes;

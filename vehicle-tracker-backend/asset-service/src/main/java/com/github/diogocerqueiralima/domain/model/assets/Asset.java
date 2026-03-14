@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.model.assets;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -15,8 +16,8 @@ public abstract class Asset {
 
     protected Asset(UUID id, Instant createdAt, Instant updatedAt) {
         this.id = id;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.createdAt = Objects.requireNonNull(createdAt, "createdAt cannot be null");
+        this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt cannot be null");
     }
 
     public UUID getId() {

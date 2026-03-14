@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.domain.model.assets;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -21,11 +22,11 @@ public class Vehicle extends Asset {
             String model, String manufacturer, LocalDate manufacturingDate
     ) {
         super(id, createdAt, updatedAt);
-        this.vin = vin;
-        this.plate = plate;
-        this.model = model;
-        this.manufacturer = manufacturer;
-        this.manufacturingDate = manufacturingDate;
+        this.vin = Objects.requireNonNull(vin, "vin cannot be null");
+        this.plate = Objects.requireNonNull(plate, "plate cannot be null");
+        this.model = Objects.requireNonNull(model, "model cannot be null");
+        this.manufacturer = Objects.requireNonNull(manufacturer, "manufacturer cannot be null");
+        this.manufacturingDate = Objects.requireNonNull(manufacturingDate, "manufacturingDate cannot be null");
     }
 
     public String getVin() {
