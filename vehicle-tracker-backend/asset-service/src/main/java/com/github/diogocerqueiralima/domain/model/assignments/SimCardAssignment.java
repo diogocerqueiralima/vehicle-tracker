@@ -14,12 +14,16 @@ public class SimCardAssignment extends Assignment {
 
     private final Device device;
     private final SimCard simCard;
-    private SimCardRemovalReason removalReason;
+    private final SimCardRemovalReason removalReason;
 
-    public SimCardAssignment(Device device, SimCard simCard, Instant assignedAt, Instant unassignedAt, UUID unassignedBy, UUID assignedBy) {
-        super(assignedAt, unassignedAt, assignedBy, unassignedBy, true);
+    public SimCardAssignment(
+            Device device, SimCard simCard, Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy,
+            SimCardRemovalReason removalReason
+    ) {
+        super(assignedAt, unassignedAt, assignedBy, unassignedBy, unassignedAt == null);
         this.device = device;
         this.simCard = simCard;
+        this.removalReason = removalReason;
     }
 
     public Device getDevice() {

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 /**
  * Base class for all assets in the system.
- * An asset can be a {@link Vehicle}, a {@link Device} or a {@link SimCard}.
+ * An asset can be a {@link Vehicle}, a {@link Device}.
  */
 public abstract class Asset {
 

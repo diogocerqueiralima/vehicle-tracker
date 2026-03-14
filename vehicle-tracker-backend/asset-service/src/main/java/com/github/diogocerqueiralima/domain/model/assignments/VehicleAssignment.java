@@ -22,7 +22,7 @@ public class VehicleAssignment extends Assignment {
             Device device, Vehicle vehicle, Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy,
             VehicleRemovalReason removalReason, UUID installedBy, String notes
     ) {
-        super(assignedAt, unassignedAt, assignedBy, unassignedBy, true);
+        super(assignedAt, unassignedAt, assignedBy, unassignedBy, unassignedAt == null);
         this.device = device;
         this.vehicle = vehicle;
         this.removalReason = removalReason;
