@@ -23,7 +23,7 @@ public class VehicleAssignment extends Assignment {
             Device device, Vehicle vehicle, Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy,
             VehicleRemovalReason removalReason, UUID installedBy, String notes
     ) {
-        super(assignedAt, unassignedAt, assignedBy, unassignedBy, unassignedAt == null);
+        super(assignedAt, unassignedAt, assignedBy, unassignedBy);
         this.device = Objects.requireNonNull(device, "device cannot be null");
         this.vehicle = Objects.requireNonNull(vehicle, "vehicle cannot be null");
         this.removalReason = removalReason;

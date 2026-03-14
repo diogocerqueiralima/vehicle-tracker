@@ -7,7 +7,7 @@ spring:
   grpc:
     client:
       channels:
-        vehicle-service:
+        asset-service:
           address: processing-service:9090
           negotiation-type: plaintext
   datasource:

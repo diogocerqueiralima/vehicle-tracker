@@ -21,13 +21,13 @@ public abstract class Assignment {
     private final boolean active;
 
     protected Assignment(
-            Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy, boolean active
+            Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy
     ) {
         this.assignedAt = Objects.requireNonNull(assignedAt, "assignedAt cannot be null");
         this.assignedBy = Objects.requireNonNull(assignedBy, "assignedBy cannot be null");
         this.unassignedAt = unassignedAt;
         this.unassignedBy = unassignedBy;
-        this.active = active;
+        this.active = unassignedAt == null;
     }
 
     public Instant getAssignedAt() {

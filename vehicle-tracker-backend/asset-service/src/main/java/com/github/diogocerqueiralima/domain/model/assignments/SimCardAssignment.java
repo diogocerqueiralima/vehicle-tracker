@@ -21,7 +21,7 @@ public class SimCardAssignment extends Assignment {
             Device device, SimCard simCard, Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy,
             SimCardRemovalReason removalReason
     ) {
-        super(assignedAt, unassignedAt, assignedBy, unassignedBy, unassignedAt == null);
+        super(assignedAt, unassignedAt, assignedBy, unassignedBy);
         this.device = Objects.requireNonNull(device, "device cannot be null");
         this.simCard = Objects.requireNonNull(simCard, "simCard cannot be null");
         this.removalReason = removalReason;

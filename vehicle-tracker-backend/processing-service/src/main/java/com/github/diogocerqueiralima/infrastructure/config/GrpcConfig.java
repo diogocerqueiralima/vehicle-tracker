@@ -10,7 +10,7 @@ public class GrpcConfig {
 
     @Bean
     public VehicleServiceGrpc.VehicleServiceBlockingStub vehicleServiceStub(GrpcChannelFactory channels) {
-        return VehicleServiceGrpc.newBlockingStub(channels.createChannel("vehicle-service"));
+        return VehicleServiceGrpc.newBlockingStub(channels.createChannel("asset-service"));
     }
 
 }
