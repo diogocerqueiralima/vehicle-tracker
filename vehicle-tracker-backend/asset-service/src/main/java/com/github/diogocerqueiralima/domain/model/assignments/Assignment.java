@@ -1,0 +1,55 @@
+package com.github.diogocerqueiralima.domain.model.assignments;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
+/**
+ * <p>Base class for all assignments in the system.
+ * An assignment can be a {@link VehicleAssignment} or a {@link SimCardAssignment}.
+ * <p>The {@link Assignment} is responsible for tracking the assignment history of assets,
+ * including the timestamps of when the assignment was made and when it was removed,
+ * as well as the users responsible for these actions.
+ */
+public abstract class Assignment {
+
+    private final Instant assignedAt;
+    private final Instant unassignedAt;
+    private final UUID assignedBy;
+    private final UUID unassignedBy;
+    private final boolean active;
+
+    protected Assignment(Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy, boolean active) {
+        this.assignedAt = assignedAt;
+        this.assignedBy = assignedBy;
+        this.unassignedAt = unassignedAt;
+        this.unassignedBy = unassignedBy;
+        this.active = active;
+    }
+
+    public Instant getAssignedAt() {
+        return assignedAt;
+    }
+
+    public Instant getUnassignedAt() {
+        return unassignedAt;
+    }
+
+    public UUID getAssignedBy() {
+        return assignedBy;
+    }
+
+    public UUID getUnassignedBy() {
+        return unassignedBy;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public Duration getDuration() {
+        Instant end = active ? Instant.now() : unassignedAt;
+        return Duration.between(assignedAt, end);
+    }
+
+}
