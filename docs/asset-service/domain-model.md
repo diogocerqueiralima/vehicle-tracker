@@ -40,7 +40,7 @@ class Assignment {
     -unassignedAt: Instant?
     -assignedBy: UUID
     -unassignedBy: UUID?
-    +isActive() boolean
+    -active: boolean
     +getDuration() Duration
 }
 
