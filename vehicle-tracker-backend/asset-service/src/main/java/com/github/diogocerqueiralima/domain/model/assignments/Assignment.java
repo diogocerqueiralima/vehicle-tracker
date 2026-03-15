@@ -50,6 +50,14 @@ public abstract class Assignment {
         return active;
     }
 
+    /**
+     *
+     * Calculates the duration of the assignment.
+     * If the assignment is still active, it calculates the duration from the assignedAt timestamp to the current time.
+     * If the assignment has been unassigned, it calculates the duration from the assignedAt timestamp to the unassignedAt timestamp.
+     *
+     * @return the duration of the assignment
+     */
     public Duration getDuration() {
         Instant end = active ? Instant.now() : unassignedAt;
         return Duration.between(assignedAt, end);
