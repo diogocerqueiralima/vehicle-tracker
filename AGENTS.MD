@@ -101,6 +101,7 @@ Agents MUST follow these rules when modifying the database schema:
 2. Schema changes must never be applied manually.
 3. The migration must be idempotent and safe to run in production environments.
 4. The migration script must be included in the same change set as the code that requires it.
+5. Agents MUST update domain models and persistence mappings when schema changes occur.
 
 # Testing
 
@@ -124,3 +125,13 @@ When modifying code, agents should:
 2. Ensure that their changes do not break existing functionality.
 3. Add comments and documentation where necessary to explain the purpose of their changes. Javadoc comments should be used for public methods and classes, while inline comments can be used for complex logic within methods.
 4. Inline comments should use numbered enumerations such as "1.", "1.1", "2.", etc., to clearly indicate the steps or logic being explained. This helps in improving readability and understanding of the code, especially for complex sections.
+
+# Goal for AI Agents
+
+Agents should assist with:
+
+- implementing new features
+- fixing bugs
+- improving code quality
+- writing tests
+- maintaining architectural boundaries
