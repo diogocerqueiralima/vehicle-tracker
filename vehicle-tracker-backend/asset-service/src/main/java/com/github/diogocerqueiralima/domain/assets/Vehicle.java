@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.domain.model.assets;
+package com.github.diogocerqueiralima.domain.assets;
 
 import java.time.Instant;
 import java.time.LocalDate;

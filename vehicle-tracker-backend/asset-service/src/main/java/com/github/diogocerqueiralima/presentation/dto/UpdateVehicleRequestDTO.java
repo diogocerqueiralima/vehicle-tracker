@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.application.commands;
+package com.github.diogocerqueiralima.presentation.dto;
 
 import com.github.diogocerqueiralima.application.validation.Plate;
 import com.github.diogocerqueiralima.application.validation.VIN;
@@ -9,9 +9,9 @@ import jakarta.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
 
 /**
- * Command payload used by the presentation layer to request vehicle creation.
+ * Request DTO for vehicle update.
  */
-public record CreateVehicleCommand(
+public record UpdateVehicleRequestDTO(
 
         @NotBlank(message = "vin is required")
         @VIN
@@ -32,3 +32,4 @@ public record CreateVehicleCommand(
         LocalDate manufacturingDate
 
 ) {}
+

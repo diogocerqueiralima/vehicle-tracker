@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
-import com.github.diogocerqueiralima.domain.model.SimCard;
-import com.github.diogocerqueiralima.domain.ports.outbound.SimCardPersistence;
+import com.github.diogocerqueiralima.domain.SimCard;
+import com.github.diogocerqueiralima.application.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.SimCardEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.SimCardMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.SimCardRepository;

@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.entities.assignments;
 
-import com.github.diogocerqueiralima.domain.model.assignments.SimCardRemovalReason;
+import com.github.diogocerqueiralima.domain.assignments.SimCardRemovalReason;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.SimCardEntity;
 import jakarta.persistence.Column;

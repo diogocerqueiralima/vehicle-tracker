@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.domain.model;
+package com.github.diogocerqueiralima.domain;
 
 import java.util.Objects;
 

@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
-import com.github.diogocerqueiralima.domain.model.assets.Vehicle;
-import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
+import com.github.diogocerqueiralima.domain.assets.Vehicle;
+import com.github.diogocerqueiralima.application.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.VehicleRepository;

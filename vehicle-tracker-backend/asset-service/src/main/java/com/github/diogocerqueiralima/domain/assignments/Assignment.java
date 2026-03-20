@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.domain.model.assignments;
+package com.github.diogocerqueiralima.domain.assignments;
 
 import java.time.Duration;
 import java.time.Instant;

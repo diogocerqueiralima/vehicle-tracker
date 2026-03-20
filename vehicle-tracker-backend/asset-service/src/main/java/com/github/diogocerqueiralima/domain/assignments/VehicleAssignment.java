@@ -1,7 +1,7 @@
-package com.github.diogocerqueiralima.domain.model.assignments;
+package com.github.diogocerqueiralima.domain.assignments;
 
-import com.github.diogocerqueiralima.domain.model.assets.Device;
-import com.github.diogocerqueiralima.domain.model.assets.Vehicle;
+import com.github.diogocerqueiralima.domain.assets.Device;
+import com.github.diogocerqueiralima.domain.assets.Vehicle;
 
 import java.time.Instant;
 import java.util.Objects;

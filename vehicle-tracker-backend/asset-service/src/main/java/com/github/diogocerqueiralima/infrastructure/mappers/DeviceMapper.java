@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.mappers;
 
-import com.github.diogocerqueiralima.domain.model.assets.Device;
+import com.github.diogocerqueiralima.domain.assets.Device;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 
 public class DeviceMapper {

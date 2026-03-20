@@ -1,6 +1,6 @@
-package com.github.diogocerqueiralima.domain.ports.outbound;
+package com.github.diogocerqueiralima.application.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.model.assets.Device;
+import com.github.diogocerqueiralima.domain.assets.Device;
 
 import java.util.Optional;
 import java.util.UUID;

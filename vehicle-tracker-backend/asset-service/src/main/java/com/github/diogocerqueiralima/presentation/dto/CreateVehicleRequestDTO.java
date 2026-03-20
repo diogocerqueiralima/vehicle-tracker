@@ -1,5 +1,7 @@
 package com.github.diogocerqueiralima.presentation.dto;
 
+import com.github.diogocerqueiralima.application.validation.Plate;
+import com.github.diogocerqueiralima.application.validation.VIN;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -12,9 +14,11 @@ import java.time.LocalDate;
 public record CreateVehicleRequestDTO(
 
         @NotBlank(message = "vin is required")
+        @VIN
         String vin,
 
         @NotBlank(message = "plate is required")
+        @Plate
         String plate,
 
         @NotBlank(message = "model is required")
@@ -28,4 +32,3 @@ public record CreateVehicleRequestDTO(
         LocalDate manufacturingDate
 
 ) {}
-

@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.mappers;
 
-import com.github.diogocerqueiralima.domain.model.SimCard;
+import com.github.diogocerqueiralima.domain.SimCard;
 import com.github.diogocerqueiralima.infrastructure.entities.SimCardEntity;
 
 public class SimCardMapper {

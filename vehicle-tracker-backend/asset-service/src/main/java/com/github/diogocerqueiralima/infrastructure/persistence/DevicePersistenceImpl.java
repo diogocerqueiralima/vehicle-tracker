@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
-import com.github.diogocerqueiralima.domain.model.assets.Device;
-import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
+import com.github.diogocerqueiralima.domain.assets.Device;
+import com.github.diogocerqueiralima.application.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.DeviceMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.DeviceRepository;

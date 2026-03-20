@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.mappers;
 
-import com.github.diogocerqueiralima.domain.model.assets.Vehicle;
+import com.github.diogocerqueiralima.domain.assets.Vehicle;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
 
 public class VehicleMapper {

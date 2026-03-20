@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
-import com.github.diogocerqueiralima.domain.model.assignments.VehicleAssignment;
-import com.github.diogocerqueiralima.domain.ports.outbound.VehicleAssignmentPersistence;
+import com.github.diogocerqueiralima.domain.assignments.VehicleAssignment;
+import com.github.diogocerqueiralima.application.ports.outbound.VehicleAssignmentPersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assignments.VehicleAssignmentEntity;

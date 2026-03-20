@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.presentation.controllers;
 
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
+import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.presentation.dto.ApiResponseDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -63,6 +64,21 @@ public class ErrorController {
         String message = exception.getMessage() == null ? "Bad request" : exception.getMessage();
 
         return ResponseEntity.status(400)
+                .body(new ApiResponseDTO<>(message, null));
+    }
+
+    /**
+     * Handles not-found requests.
+     *
+     * @param exception not found exception.
+     * @return not found response.
+     */
+    @ExceptionHandler(VehicleNotFoundException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(VehicleNotFoundException exception) {
+
+        String message = exception.getMessage() == null ? "Not found" : exception.getMessage();
+
+        return ResponseEntity.status(404)
                 .body(new ApiResponseDTO<>(message, null));
     }
 

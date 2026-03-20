@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.entities.assignments;
 
-import com.github.diogocerqueiralima.domain.model.assignments.VehicleRemovalReason;
+import com.github.diogocerqueiralima.domain.assignments.VehicleRemovalReason;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
 import jakarta.persistence.Column;

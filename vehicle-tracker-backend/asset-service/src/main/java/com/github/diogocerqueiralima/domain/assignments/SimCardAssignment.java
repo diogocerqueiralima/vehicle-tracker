@@ -1,7 +1,7 @@
-package com.github.diogocerqueiralima.domain.model.assignments;
+package com.github.diogocerqueiralima.domain.assignments;
 
-import com.github.diogocerqueiralima.domain.model.SimCard;
-import com.github.diogocerqueiralima.domain.model.assets.Device;
+import com.github.diogocerqueiralima.domain.SimCard;
+import com.github.diogocerqueiralima.domain.assets.Device;
 
 import java.time.Instant;
 import java.util.Objects;

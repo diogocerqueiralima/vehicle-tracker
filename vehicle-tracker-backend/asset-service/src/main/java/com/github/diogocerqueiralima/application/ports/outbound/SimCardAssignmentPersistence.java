@@ -1,6 +1,6 @@
-package com.github.diogocerqueiralima.domain.ports.outbound;
+package com.github.diogocerqueiralima.application.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.model.assignments.SimCardAssignment;
+import com.github.diogocerqueiralima.domain.assignments.SimCardAssignment;
 
 /**
  * Interface for sim card assignment persistence operations.

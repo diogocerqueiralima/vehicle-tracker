@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.domain.model.assignments;
+package com.github.diogocerqueiralima.domain.assignments;
 
 /**
  * Represents the reason for removing a SIM card from an assignment.

@@ -1,6 +1,6 @@
-package com.github.diogocerqueiralima.domain.ports.outbound;
+package com.github.diogocerqueiralima.application.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.model.SimCard;
+import com.github.diogocerqueiralima.domain.SimCard;
 
 import java.util.Optional;
 
