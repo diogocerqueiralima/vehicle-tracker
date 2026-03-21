@@ -3,11 +3,21 @@ package com.github.diogocerqueiralima.infrastructure.mappers;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
 
+/**
+ * Mapper for vehicle conversions between domain and persistence layers.
+ */
 public class VehicleMapper {
 
     // Should not be instantiated
     private VehicleMapper() {}
 
+    /**
+     *
+     * Builds a persistence entity from a domain vehicle.
+     *
+     * @param vehicle domain vehicle with the data to be persisted.
+     * @return persistence entity with the provided data and timestamps.
+     */
     public static VehicleEntity toEntity(Vehicle vehicle) {
 
         VehicleEntity entity = new VehicleEntity();
@@ -24,6 +34,13 @@ public class VehicleMapper {
         return entity;
     }
 
+    /**
+     *
+     * Builds a domain vehicle from a persistence entity.
+     *
+     * @param entity persistence entity with the vehicle data.
+     * @return domain vehicle with the provided data and timestamps.
+     */
     public static Vehicle toDomain(VehicleEntity entity) {
         return new Vehicle(
                 entity.getId(),

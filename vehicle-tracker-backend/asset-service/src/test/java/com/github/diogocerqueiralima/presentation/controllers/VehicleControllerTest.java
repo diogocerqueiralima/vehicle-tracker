@@ -1,9 +1,11 @@
 package com.github.diogocerqueiralima.presentation.controllers;
 
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.application.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.presentation.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.dto.CreateVehicleRequestDTO;
+import com.github.diogocerqueiralima.presentation.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.VehicleDTO;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -171,6 +174,36 @@ class VehicleControllerTest {
         assertThat(response.getBody().data()).isNotNull();
         assertThat(response.getBody().data().id()).isEqualTo(id);
         assertThat(response.getBody().data().vin()).isEqualTo("1HGCM82633A123456");
+    }
+
+    @Test
+    void shouldGetVehiclePageAndReturnOkResponse() {
+
+        UUID id = UUID.randomUUID();
+        Instant now = Instant.parse("2026-03-15T12:00:00Z");
+        VehicleResult vehicleResult = new VehicleResult(
+                id,
+                now,
+                now,
+                "1HGCM82633A123456",
+                "AA-00-AA",
+                "Model 3",
+                "Tesla",
+                LocalDate.of(2024, 1, 15)
+        );
+
+        when(vehicleUseCase.getPage(any())).thenReturn(new PageResult<>(1, 10, 1, 1, List.of(vehicleResult)));
+
+        ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> response = vehicleController.getPage(1, 10);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Vehicles fetched successfully.");
+        assertThat(response.getBody().data()).isNotNull();
+        assertThat(response.getBody().data().pageNumber()).isEqualTo(1);
+        assertThat(response.getBody().data().pageSize()).isEqualTo(10);
+        assertThat(response.getBody().data().data()).hasSize(1);
+        assertThat(response.getBody().data().data().getFirst().id()).isEqualTo(id);
     }
 
 }

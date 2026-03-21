@@ -2,9 +2,12 @@ package com.github.diogocerqueiralima.presentation.mappers;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.presentation.dto.CreateVehicleRequestDTO;
+import com.github.diogocerqueiralima.presentation.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.VehicleDTO;
 
@@ -15,8 +18,16 @@ import java.util.UUID;
  */
 public final class VehiclePresentationMapper {
 
+    // Should not be instantiated
     private VehiclePresentationMapper() {}
 
+    /**
+     *
+     * Builds a create command from an HTTP request payload.
+     *
+     * @param request request payload for vehicle creation.
+     * @return command consumed by the application layer.
+     */
     public static CreateVehicleCommand toCreateCommand(CreateVehicleRequestDTO request) {
         return new CreateVehicleCommand(
                 request.vin(),
@@ -27,6 +38,14 @@ public final class VehiclePresentationMapper {
         );
     }
 
+    /**
+     *
+     * Builds an update command from an HTTP path identifier and a request payload.
+     *
+     * @param id vehicle identifier from the request path.
+     * @param request request payload for vehicle update.
+     * @return command consumed by the application layer.
+     */
     public static UpdateVehicleCommand toUpdateCommand(UUID id, UpdateVehicleRequestDTO request) {
         return new UpdateVehicleCommand(
                 id,
@@ -48,6 +67,24 @@ public final class VehiclePresentationMapper {
         return new GetVehicleByIdCommand(id);
     }
 
+    /**
+     * Builds a get-page command from HTTP query params.
+     *
+     * @param pageNumber one-based page number.
+     * @param pageSize requested page size.
+     * @return command consumed by the application layer.
+     */
+    public static GetVehiclePageCommand toGetPageCommand(int pageNumber, int pageSize) {
+        return new GetVehiclePageCommand(pageNumber, pageSize);
+    }
+
+    /**
+     *
+     * Builds a transport DTO from an application result.
+     *
+     * @param result the application result to be converted into a transport DTO.
+     * @return vehicle DTO payload.
+     */
     public static VehicleDTO toDTO(VehicleResult result) {
         return new VehicleDTO(
                 result.id(),
@@ -58,6 +95,24 @@ public final class VehiclePresentationMapper {
                 result.model(),
                 result.manufacturer(),
                 result.manufacturingDate()
+        );
+    }
+
+    /**
+     * Converts a paginated application result into a paginated transport DTO.
+     *
+     * @param result paginated vehicle results from application layer.
+     * @return paginated vehicle DTO payload.
+     */
+    public static PageDTO<VehicleDTO> toPageDTO(PageResult<VehicleResult> result) {
+        return new PageDTO<>(
+                result.pageNumber(),
+                result.pageSize(),
+                result.totalElements(),
+                result.totalPages(),
+                result.data().stream()
+                        .map(VehiclePresentationMapper::toDTO)
+                        .toList()
         );
     }
 

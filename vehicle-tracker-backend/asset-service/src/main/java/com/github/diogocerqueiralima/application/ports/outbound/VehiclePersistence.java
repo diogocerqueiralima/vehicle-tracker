@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.ports.outbound;
 
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
+import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -46,5 +47,14 @@ public interface VehiclePersistence {
      * @return true if a vehicle with the plate exists, otherwise false.
      */
     boolean existsByPlate(String plate);
+
+    /**
+     * Retrieves a one-based page of vehicles.
+     *
+     * @param pageNumber one-based page number.
+     * @param pageSize amount of items in the page.
+     * @return paginated vehicles.
+     */
+    Page<Vehicle> getPage(int pageNumber, int pageSize);
 
 }

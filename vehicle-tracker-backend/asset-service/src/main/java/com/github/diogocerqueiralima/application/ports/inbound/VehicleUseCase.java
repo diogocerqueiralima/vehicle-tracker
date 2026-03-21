@@ -2,7 +2,9 @@ package com.github.diogocerqueiralima.application.ports.inbound;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
@@ -36,6 +38,14 @@ public interface VehicleUseCase {
      * @return the retrieved vehicle result.
      */
     VehicleResult getById(@Valid GetVehicleByIdCommand command);
+
+    /**
+     * Retrieves a one-based page of vehicles.
+     *
+     * @param command the page request command.
+     * @return paginated vehicle result.
+     */
+    PageResult<VehicleResult> getPage(@Valid GetVehiclePageCommand command);
 
 }
 

@@ -2,14 +2,17 @@ package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.VehicleApplicationMapper;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
 import com.github.diogocerqueiralima.application.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.application.ports.outbound.VehiclePersistence;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -20,6 +23,8 @@ import java.util.UUID;
  */
 @Service
 public class VehicleUseCaseImpl implements VehicleUseCase {
+
+    private static final int MAX_PAGE_SIZE = 50;
 
     private final VehiclePersistence vehiclePersistence;
 
@@ -98,6 +103,26 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
 
         // 3. Map the domain object to the response contract.
         return VehicleApplicationMapper.toResult(vehicle);
+    }
+
+    /**
+     * Retrieves a one-based page of vehicles.
+     *
+     * @param command page request payload.
+     * @return paginated vehicle result.
+     */
+    @Override
+    public PageResult<VehicleResult> getPage(GetVehiclePageCommand command) {
+
+        // 1. Get the params used to search
+        int pageNumber = command.pageNumber();
+        int pageSize = command.pageSize();
+
+        // 2. Fetches the page from persistence preserving one-based indexing semantics.
+        Page<Vehicle> vehiclePageResult = vehiclePersistence.getPage(pageNumber, pageSize);
+
+        // 3. Converts domain page payload to application output contract.
+        return VehicleApplicationMapper.toPageResult(vehiclePageResult);
     }
 
 }
