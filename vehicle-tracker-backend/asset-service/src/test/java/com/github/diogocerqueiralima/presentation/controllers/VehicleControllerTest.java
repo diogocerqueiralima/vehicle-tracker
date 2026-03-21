@@ -144,6 +144,35 @@ class VehicleControllerTest {
         assertThat(response.getBody().data().model()).isEqualTo("Model Y");
     }
 
+    @Test
+    void shouldGetVehicleByIdAndReturnOkResponse() {
+
+        UUID id = UUID.randomUUID();
+        Instant now = Instant.parse("2026-03-15T12:00:00Z");
+
+        VehicleResult result = new VehicleResult(
+                id,
+                now,
+                now,
+                "1HGCM82633A123456",
+                "AA-00-AA",
+                "Model 3",
+                "Tesla",
+                LocalDate.of(2024, 1, 15)
+        );
+
+        when(vehicleUseCase.getById(any())).thenReturn(result);
+
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.getById(id);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Vehicle fetched successfully.");
+        assertThat(response.getBody().data()).isNotNull();
+        assertThat(response.getBody().data().id()).isEqualTo(id);
+        assertThat(response.getBody().data().vin()).isEqualTo("1HGCM82633A123456");
+    }
+
 }
 
 

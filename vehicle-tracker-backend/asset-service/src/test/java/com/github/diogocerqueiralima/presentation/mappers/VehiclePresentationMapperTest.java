@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.presentation.mappers;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.presentation.dto.CreateVehicleRequestDTO;
@@ -70,6 +71,15 @@ class VehiclePresentationMapperTest {
         assertThat(dto.id()).isEqualTo(result.id());
         assertThat(dto.vin()).isEqualTo(result.vin());
         assertThat(dto.manufacturer()).isEqualTo(result.manufacturer());
+    }
+
+    @Test
+    void shouldMapPathIdToGetByIdCommand() {
+        UUID id = UUID.randomUUID();
+
+        GetVehicleByIdCommand command = VehiclePresentationMapper.toGetByIdCommand(id);
+
+        assertThat(command.id()).isEqualTo(id);
     }
 }
 

@@ -87,5 +87,6 @@ class VehicleApplicationMapperTest {
         assertThat(result.vin()).isEqualTo(vehicle.getVin());
         assertThat(result.plate()).isEqualTo(vehicle.getPlate());
     }
+
 }
 

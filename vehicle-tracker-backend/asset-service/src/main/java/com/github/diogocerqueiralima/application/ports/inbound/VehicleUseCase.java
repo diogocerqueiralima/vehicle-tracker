@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.ports.inbound;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import jakarta.validation.Valid;
@@ -27,6 +28,14 @@ public interface VehicleUseCase {
      * @return the updated vehicle result.
      */
     VehicleResult update(@Valid UpdateVehicleCommand command);
+
+    /**
+     * Retrieves an existing vehicle by id.
+     *
+     * @param command the get vehicle by id command.
+     * @return the retrieved vehicle result.
+     */
+    VehicleResult getById(@Valid GetVehicleByIdCommand command);
 
 }
 

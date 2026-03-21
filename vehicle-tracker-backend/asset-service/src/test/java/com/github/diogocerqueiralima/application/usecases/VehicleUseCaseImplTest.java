@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
@@ -249,6 +250,47 @@ class VehicleUseCaseImplTest {
                 .hasMessage("A vehicle with the provided plate already exists.");
 
         verify(vehiclePersistence, never()).save(any(Vehicle.class));
+    }
+
+    @Test
+    void shouldGetVehicleByIdWhenVehicleExists() {
+
+        UUID id = UUID.randomUUID();
+        Instant now = Instant.parse("2026-03-15T12:00:00Z");
+
+        Vehicle vehicle = new Vehicle(
+                id,
+                now,
+                now,
+                "1HGCM82633A123456",
+                "AA-00-AA",
+                "Model 3",
+                "Tesla",
+                LocalDate.of(2024, 1, 15)
+        );
+
+        GetVehicleByIdCommand command = new GetVehicleByIdCommand(id);
+
+        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.of(vehicle));
+
+        VehicleResult result = vehicleUseCase.getById(command);
+
+        assertThat(result.id()).isEqualTo(id);
+        assertThat(result.vin()).isEqualTo(vehicle.getVin());
+        assertThat(result.plate()).isEqualTo(vehicle.getPlate());
+    }
+
+    @Test
+    void shouldFailGettingVehicleByIdWhenVehicleDoesNotExist() {
+
+        UUID id = UUID.randomUUID();
+        GetVehicleByIdCommand command = new GetVehicleByIdCommand(id);
+
+        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> vehicleUseCase.getById(command))
+                .isInstanceOf(VehicleNotFoundException.class)
+                .hasMessage("Vehicle not found for id: " + id);
     }
 
 }

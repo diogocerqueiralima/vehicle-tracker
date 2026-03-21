@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.presentation.mappers;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.presentation.dto.CreateVehicleRequestDTO;
@@ -35,6 +36,16 @@ public final class VehiclePresentationMapper {
                 request.manufacturer(),
                 request.manufacturingDate()
         );
+    }
+
+    /**
+     * Builds a get-by-id command from an HTTP path identifier.
+     *
+     * @param id vehicle identifier from the request path.
+     * @return command consumed by the application layer.
+     */
+    public static GetVehicleByIdCommand toGetByIdCommand(UUID id) {
+        return new GetVehicleByIdCommand(id);
     }
 
     public static VehicleDTO toDTO(VehicleResult result) {

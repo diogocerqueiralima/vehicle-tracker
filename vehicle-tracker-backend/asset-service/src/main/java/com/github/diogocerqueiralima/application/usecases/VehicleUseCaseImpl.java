@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
@@ -15,7 +16,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Application-layer implementation that orchestrates vehicle creation.
+ * Application-layer implementation that orchestrates vehicle use cases.
  */
 @Service
 public class VehicleUseCaseImpl implements VehicleUseCase {
@@ -77,6 +78,26 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
 
         // 6. Build the result
         return VehicleApplicationMapper.toResult(updatedVehicle);
+    }
+
+    /**
+     * Retrieves a vehicle by id.
+     *
+     * @param command get-by-id payload.
+     * @return the matching vehicle as a result object.
+     */
+    @Override
+    public VehicleResult getById(GetVehicleByIdCommand command) {
+
+        // 1. Resolve the target id directly from the inbound command.
+        UUID id = command.id();
+
+        // 2. Load and fail fast when the vehicle does not exist.
+        Vehicle vehicle = vehiclePersistence.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException(id));
+
+        // 3. Map the domain object to the response contract.
+        return VehicleApplicationMapper.toResult(vehicle);
     }
 
 }
