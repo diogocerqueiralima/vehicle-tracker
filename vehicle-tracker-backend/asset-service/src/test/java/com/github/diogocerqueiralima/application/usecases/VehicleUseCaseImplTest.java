@@ -2,9 +2,11 @@ package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
 import com.github.diogocerqueiralima.application.ports.outbound.VehiclePersistence;
@@ -13,9 +15,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -291,6 +297,45 @@ class VehicleUseCaseImplTest {
         assertThatThrownBy(() -> vehicleUseCase.getById(command))
                 .isInstanceOf(VehicleNotFoundException.class)
                 .hasMessage("Vehicle not found for id: " + id);
+    }
+
+    @Test
+    void shouldGetVehiclePageWhenVehiclesExist() {
+
+        int pageNumber = 1;
+        int pageSize = 10;
+
+        Vehicle vehicle = new Vehicle(
+                UUID.randomUUID(),
+                Instant.parse("2026-03-15T12:00:00Z"),
+                Instant.parse("2026-03-15T12:00:00Z"),
+                "1HGCM82633A123456",
+                "AA-00-AA",
+                "Model 3",
+                "Tesla",
+                LocalDate.of(2024, 1, 15)
+        );
+
+        Page<Vehicle> vehiclePage = new PageImpl<>(
+                List.of(vehicle),
+                PageRequest.of(0, pageSize),
+                1
+        );
+
+        GetVehiclePageCommand command = new GetVehiclePageCommand(pageNumber, pageSize);
+
+        when(vehiclePersistence.getPage(pageNumber, pageSize)).thenReturn(vehiclePage);
+
+        PageResult<VehicleResult> result = vehicleUseCase.getPage(command);
+
+        assertThat(result.pageNumber()).isEqualTo(pageNumber);
+        assertThat(result.pageSize()).isEqualTo(pageSize);
+        assertThat(result.totalElements()).isEqualTo(1);
+        assertThat(result.totalPages()).isEqualTo(1);
+        assertThat(result.data()).hasSize(1);
+        assertThat(result.data().getFirst().id()).isEqualTo(vehicle.getId());
+
+        verify(vehiclePersistence).getPage(pageNumber, pageSize);
     }
 
 }
