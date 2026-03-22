@@ -8,6 +8,7 @@ import com.github.diogocerqueiralima.presentation.dto.CreateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.VehicleDTO;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,7 +36,8 @@ class VehicleControllerTest {
     private VehicleController vehicleController;
 
     @Test
-    void shouldCreateVehicleAndReturnCreatedResponse() {
+    @DisplayName("Should create vehicle and return created response")
+    void should_create_vehicle_and_return_created_response() {
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -73,7 +75,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void shouldMapResponseDataFromUseCaseResult() {
+    @DisplayName("Should map response data from use case result")
+    void should_map_response_data_from_use_case_result() {
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -109,7 +112,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void shouldUpdateVehicleAndReturnOkResponse() {
+    @DisplayName("Should update vehicle and return ok response")
+    void should_update_vehicle_and_return_ok_response() {
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
@@ -148,7 +152,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void shouldGetVehicleByIdAndReturnOkResponse() {
+    @DisplayName("Should get vehicle by id and return ok response")
+    void should_get_vehicle_by_id_and_return_ok_response() {
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -177,7 +182,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void shouldGetVehiclePageAndReturnOkResponse() {
+    @DisplayName("Should get vehicle page and return ok response")
+    void should_get_vehicle_page_and_return_ok_response() {
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");

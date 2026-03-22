@@ -10,6 +10,7 @@ import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
 import com.github.diogocerqueiralima.application.ports.outbound.VehiclePersistence;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,7 +42,8 @@ class VehicleUseCaseImplTest {
     private VehicleUseCaseImpl vehicleUseCase;
 
     @Test
-    void shouldCreateVehicleWhenVinAndPlateAreUnique() {
+    @DisplayName("Should create vehicle when VIN and plate are unique")
+    void should_create_vehicle_when_vin_and_plate_are_unique() {
 
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
@@ -76,7 +78,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldFailWhenVinAlreadyExists() {
+    @DisplayName("Should fail when VIN already exists")
+    void should_fail_when_vin_already_exists() {
 
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
@@ -96,7 +99,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldFailWhenPlateAlreadyExists() {
+    @DisplayName("Should fail when plate already exists")
+    void should_fail_when_plate_already_exists() {
 
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
@@ -117,7 +121,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldUpdateVehicleWhenVehicleExistsAndVinAndPlateAreUnique() {
+    @DisplayName("Should update vehicle when vehicle exists and VIN and plate are unique")
+    void should_update_vehicle_when_vehicle_exists_and_vin_and_plate_are_unique() {
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
@@ -167,7 +172,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldFailUpdatingWhenVehicleDoesNotExist() {
+    @DisplayName("Should fail updating when vehicle does not exist")
+    void should_fail_updating_when_vehicle_does_not_exist() {
 
         UUID id = UUID.randomUUID();
         UpdateVehicleCommand command = new UpdateVehicleCommand(
@@ -189,7 +195,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldFailUpdatingWhenVinAlreadyExistsInAnotherVehicle() {
+    @DisplayName("Should fail updating when VIN already exists in another vehicle")
+    void should_fail_updating_when_vin_already_exists_in_another_vehicle() {
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
@@ -224,7 +231,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldFailUpdatingWhenPlateAlreadyExistsInAnotherVehicle() {
+    @DisplayName("Should fail updating when plate already exists in another vehicle")
+    void should_fail_updating_when_plate_already_exists_in_another_vehicle() {
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
@@ -259,7 +267,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldGetVehicleByIdWhenVehicleExists() {
+    @DisplayName("Should get vehicle by id when vehicle exists")
+    void should_get_vehicle_by_id_when_vehicle_exists() {
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -287,7 +296,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldFailGettingVehicleByIdWhenVehicleDoesNotExist() {
+    @DisplayName("Should fail getting vehicle by id when vehicle does not exist")
+    void should_fail_getting_vehicle_by_id_when_vehicle_does_not_exist() {
 
         UUID id = UUID.randomUUID();
         GetVehicleByIdCommand command = new GetVehicleByIdCommand(id);
@@ -300,7 +310,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    void shouldGetVehiclePageWhenVehiclesExist() {
+    @DisplayName("Should get vehicle page when vehicles exist")
+    void should_get_vehicle_page_when_vehicles_exist() {
 
         int pageNumber = 1;
         int pageSize = 10;

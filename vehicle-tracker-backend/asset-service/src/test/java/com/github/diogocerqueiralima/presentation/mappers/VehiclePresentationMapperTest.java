@@ -10,6 +10,7 @@ import com.github.diogocerqueiralima.presentation.dto.CreateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.VehicleDTO;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -22,7 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class VehiclePresentationMapperTest {
 
     @Test
-    void shouldMapCreateRequestToCommand() {
+    @DisplayName("Should map create request to command")
+    void should_map_create_request_to_command() {
         CreateVehicleRequestDTO request = new CreateVehicleRequestDTO(
                 "1HGCM82633A123456",
                 "AA-00-AA",
@@ -38,7 +40,8 @@ class VehiclePresentationMapperTest {
     }
 
     @Test
-    void shouldMapUpdateRequestToCommand() {
+    @DisplayName("Should map update request to command")
+    void should_map_update_request_to_command() {
         UUID id = UUID.randomUUID();
         UpdateVehicleRequestDTO request = new UpdateVehicleRequestDTO(
                 "1HGCM82633A123456",
@@ -56,7 +59,8 @@ class VehiclePresentationMapperTest {
     }
 
     @Test
-    void shouldMapResultToDto() {
+    @DisplayName("Should map result to dto")
+    void should_map_result_to_dto() {
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
         VehicleResult result = new VehicleResult(
@@ -78,7 +82,8 @@ class VehiclePresentationMapperTest {
     }
 
     @Test
-    void shouldMapPathIdToGetByIdCommand() {
+    @DisplayName("Should map path id to get by id command")
+    void should_map_path_id_to_get_by_id_command() {
         UUID id = UUID.randomUUID();
 
         GetVehicleByIdCommand command = VehiclePresentationMapper.toGetByIdCommand(id);
@@ -87,7 +92,8 @@ class VehiclePresentationMapperTest {
     }
 
     @Test
-    void shouldMapQueryParamsToGetPageCommand() {
+    @DisplayName("Should map query params to get page command")
+    void should_map_query_params_to_get_page_command() {
 
         GetVehiclePageCommand command = VehiclePresentationMapper.toGetPageCommand(2, 15);
 
@@ -96,7 +102,8 @@ class VehiclePresentationMapperTest {
     }
 
     @Test
-    void shouldMapPageResultToPageDTO() {
+    @DisplayName("Should map page result to page dto")
+    void should_map_page_result_to_page_dto() {
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");

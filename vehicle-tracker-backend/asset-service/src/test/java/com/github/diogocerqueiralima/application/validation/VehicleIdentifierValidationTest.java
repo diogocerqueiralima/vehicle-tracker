@@ -4,6 +4,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import jakarta.validation.constraints.NotBlank;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,20 +28,23 @@ class VehicleIdentifierValidationTest {
     }
 
     @Test
-    void shouldAcceptValidVinAndPlate() {
+    @DisplayName("Should accept valid VIN and plate")
+    void should_accept_valid_vin_and_plate() {
         VehicleData data = new VehicleData("1HGCM82633A123456", "AA-00-AA");
         assertThat(validator.validate(data)).isEmpty();
     }
 
     @Test
-    void shouldAcceptLegacyPortuguesePlateFormats() {
+    @DisplayName("Should accept legacy Portuguese plate formats")
+    void should_accept_legacy_portuguese_plate_formats() {
         assertThat(validator.validate(new VehicleData("1HGCM82633A123456", "12-34-AB"))).isEmpty();
         assertThat(validator.validate(new VehicleData("1HGCM82633A123456", "12-AB-34"))).isEmpty();
         assertThat(validator.validate(new VehicleData("1HGCM82633A123456", "AB-12-34"))).isEmpty();
     }
 
     @Test
-    void shouldRejectInvalidVin() {
+    @DisplayName("Should reject invalid VIN")
+    void should_reject_invalid_vin() {
         VehicleData data = new VehicleData("1HGCM82633A12345I", "ABC1234");
 
         assertThat(validator.validate(data))
@@ -49,7 +53,8 @@ class VehicleIdentifierValidationTest {
     }
 
     @Test
-    void shouldRejectInvalidPlate() {
+    @DisplayName("Should reject invalid plate")
+    void should_reject_invalid_plate() {
         VehicleData data = new VehicleData("1HGCM82633A123456", "12-INVALID");
 
         assertThat(validator.validate(data))
@@ -58,7 +63,8 @@ class VehicleIdentifierValidationTest {
     }
 
     @Test
-    void shouldRejectPlateWithoutPortugueseSeparators() {
+    @DisplayName("Should reject plate without Portuguese separators")
+    void should_reject_plate_without_portuguese_separators() {
         VehicleData data = new VehicleData("1HGCM82633A123456", "AA00AA");
 
         assertThat(validator.validate(data))

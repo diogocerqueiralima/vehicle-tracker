@@ -4,6 +4,7 @@ import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -15,7 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class VehicleApplicationMapperTest {
 
     @Test
-    void shouldMapCreateCommandToDomain() {
+    @DisplayName("Should map create command to domain")
+    void should_map_create_command_to_domain() {
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
                 "AA-00-AA",
@@ -34,7 +36,8 @@ class VehicleApplicationMapperTest {
     }
 
     @Test
-    void shouldMapUpdateCommandToDomainUsingExistingVehicleIdentity() {
+    @DisplayName("Should map update command to domain using existing vehicle identity")
+    void should_map_update_command_to_domain_using_existing_vehicle_identity() {
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-10T12:00:00Z");
         Vehicle existingVehicle = new Vehicle(
@@ -67,7 +70,8 @@ class VehicleApplicationMapperTest {
     }
 
     @Test
-    void shouldMapDomainToResult() {
+    @DisplayName("Should map domain to result")
+    void should_map_domain_to_result() {
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
         Vehicle vehicle = new Vehicle(
