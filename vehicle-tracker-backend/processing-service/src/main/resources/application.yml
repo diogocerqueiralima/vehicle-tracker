@@ -7,8 +7,8 @@ spring:
   grpc:
     client:
       channels:
-        vehicle-service:
-          address: vehicle-service:9090
+        asset-service:
+          address: processing-service:9090
           negotiation-type: plaintext
   datasource:
     url: "jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}"
