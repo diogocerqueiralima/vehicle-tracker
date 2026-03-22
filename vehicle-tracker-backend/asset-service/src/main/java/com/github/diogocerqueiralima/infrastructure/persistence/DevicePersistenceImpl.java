@@ -5,6 +5,8 @@ import com.github.diogocerqueiralima.application.ports.outbound.DevicePersistenc
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.DeviceMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.DeviceRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -35,6 +37,27 @@ public class DevicePersistenceImpl implements DevicePersistence {
     public Optional<Device> findById(UUID id) {
         return deviceRepository
                 .findById(id)
+                .map(DeviceMapper::toDomain);
+    }
+
+    @Override
+    public boolean existsBySerialNumber(String serialNumber) {
+        return deviceRepository.existsBySerialNumber(serialNumber);
+    }
+
+    @Override
+    public boolean existsByImei(String imei) {
+        return deviceRepository.existsByImei(imei);
+    }
+
+    @Override
+    public Page<Device> getPage(int pageNumber, int pageSize) {
+
+        // 1. Converts one-based inbound page number to Spring Data zero-based index.
+        PageRequest pageRequest = PageRequest.of(pageNumber - 1, pageSize);
+
+        // 2. Loads entity page and maps each entry to the domain model.
+        return deviceRepository.findAll(pageRequest)
                 .map(DeviceMapper::toDomain);
     }
 
