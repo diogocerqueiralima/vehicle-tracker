@@ -17,6 +17,7 @@ import com.github.diogocerqueiralima.domain.assignments.VehicleAssignment;
 import com.github.diogocerqueiralima.domain.assets.Device;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -48,6 +49,7 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
      * @return created assignment result.
      */
     @Override
+    @Transactional
     public VehicleAssignmentResult assignDeviceToVehicle(AssignDeviceToVehicleCommand command) {
 
         UUID deviceId = command.deviceId();
@@ -92,6 +94,7 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
      * @return updated assignment result.
      */
     @Override
+    @Transactional
     public VehicleAssignmentResult unassignDeviceFromVehicle(UnassignDeviceFromVehicleCommand command) {
 
         UUID deviceId = command.deviceId();
