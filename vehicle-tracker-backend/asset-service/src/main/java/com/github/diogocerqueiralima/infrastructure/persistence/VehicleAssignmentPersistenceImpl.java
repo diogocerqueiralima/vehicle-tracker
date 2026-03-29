@@ -6,10 +6,13 @@ import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assignments.VehicleAssignmentEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.DeviceMapper;
+import com.github.diogocerqueiralima.infrastructure.mappers.VehicleAssignmentMapper;
 import com.github.diogocerqueiralima.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.VehicleAssignmentRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.github.diogocerqueiralima.infrastructure.mappers.VehicleAssignmentMapper.toDomain;
 import static com.github.diogocerqueiralima.infrastructure.mappers.VehicleAssignmentMapper.toEntity;
@@ -24,7 +27,6 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
     }
 
     @Override
-    @Transactional
     public VehicleAssignment save(VehicleAssignment vehicleAssignment) {
 
         DeviceEntity deviceEntity = DeviceMapper.toEntity(vehicleAssignment.getDevice());
@@ -33,6 +35,22 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
         VehicleAssignmentEntity savedEntity = vehicleAssignmentRepository.save(entity);
 
         return toDomain(savedEntity);
+    }
+
+    @Override
+    public boolean existsActiveByDeviceId(UUID deviceId) {
+        return vehicleAssignmentRepository.existsByDeviceIdAndUnassignedAtIsNull(deviceId);
+    }
+
+    @Override
+    public boolean existsActiveByVehicleId(UUID vehicleId) {
+        return vehicleAssignmentRepository.existsByVehicleIdAndUnassignedAtIsNull(vehicleId);
+    }
+
+    @Override
+    public Optional<VehicleAssignment> findActiveByDeviceIdAndVehicleId(UUID deviceId, UUID vehicleId) {
+        return vehicleAssignmentRepository.findByDeviceIdAndVehicleIdAndUnassignedAtIsNull(deviceId, vehicleId)
+                .map(VehicleAssignmentMapper::toDomain);
     }
 }
 

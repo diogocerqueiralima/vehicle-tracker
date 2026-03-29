@@ -28,6 +28,7 @@ public class SimCardAssignmentMapper {
 
         SimCardAssignmentEntity entity = new SimCardAssignmentEntity();
 
+        entity.setId(assignment.getId());
         entity.setDevice(deviceEntity);
         entity.setSimCard(simCardEntity);
         entity.setAssignedAt(assignment.getAssignedAt());
@@ -48,6 +49,7 @@ public class SimCardAssignmentMapper {
      */
     public static SimCardAssignment toDomain(SimCardAssignmentEntity entity) {
         return new SimCardAssignment(
+                entity.getId(),
                 DeviceMapper.toDomain(entity.getDevice()),
                 SimCardMapper.toDomain(entity.getSimCard()),
                 entity.getAssignedAt(),

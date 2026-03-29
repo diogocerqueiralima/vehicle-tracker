@@ -28,6 +28,7 @@ public class VehicleAssignmentMapper {
 
         VehicleAssignmentEntity entity = new VehicleAssignmentEntity();
 
+        entity.setId(assignment.getId());
         entity.setDevice(deviceEntity);
         entity.setVehicle(vehicleEntity);
         entity.setAssignedAt(assignment.getAssignedAt());
@@ -50,6 +51,7 @@ public class VehicleAssignmentMapper {
      */
     public static VehicleAssignment toDomain(VehicleAssignmentEntity entity) {
         return new VehicleAssignment(
+                entity.getId(),
                 DeviceMapper.toDomain(entity.getDevice()),
                 VehicleMapper.toDomain(entity.getVehicle()),
                 entity.getAssignedAt(),
