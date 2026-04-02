@@ -11,6 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Set up WireGuard
+      uses: egor-tensin/setup-wireguard@v1
+      with:
+        endpoint: '${{ secrets.VPN_ENDPOINT }}'
+        ips: '${{ secrets.IPS }}'
+        allowed_ips: '${{ secrets.VPN_ALLOWED_IPS }}'
+        private_key: '${{ secrets.VPN_PRIVATE_KEY }}'
     - name: Login to registry
       uses: docker/login-action@v3
       with:
