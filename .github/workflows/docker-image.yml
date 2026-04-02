@@ -15,6 +15,7 @@ jobs:
       uses: egor-tensin/setup-wireguard@v1
       with:
         endpoint: '${{ secrets.VPN_ENDPOINT }}'
+        endpoint_public_key: '${{ secrets.VPN_ENDPOINT_PUBLIC_KEY }}'
         ips: '${{ secrets.IPS }}'
         allowed_ips: '${{ secrets.VPN_ALLOWED_IPS }}'
         private_key: '${{ secrets.VPN_PRIVATE_KEY }}'
