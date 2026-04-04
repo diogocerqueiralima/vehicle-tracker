@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-HARBOR_URL="registry.mytracker.pt"
+HARBOR_URL="registry.homelab"
 HARBOR_PROJECT="vehicle-tracker"
 IMAGE_NAME="processing-service"
 IMAGE_TAG=$(tr -dc 'a-z0-9' </dev/urandom | head -c 10)
