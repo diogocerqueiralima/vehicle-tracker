@@ -107,6 +107,8 @@ public class DeviceController {
             @AuthenticationPrincipal Jwt jwt
     ) {
 
+        // TODO: for now, the admins can not get the device by id, in the future implement this
+
         // 1. Resolves the authenticated user id from Keycloak token subject.
         UUID userId = extractUserId(jwt);
 
