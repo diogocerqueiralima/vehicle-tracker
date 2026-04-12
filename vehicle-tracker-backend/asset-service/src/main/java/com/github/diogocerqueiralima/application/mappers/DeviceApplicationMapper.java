@@ -29,6 +29,7 @@ public final class DeviceApplicationMapper {
     public static Device toDomain(CreateDeviceCommand command, Instant now) {
         return new Device(
                 UUID.randomUUID(),
+                command.ownerId(),
                 now,
                 now,
                 command.serialNumber(),
@@ -50,6 +51,7 @@ public final class DeviceApplicationMapper {
     public static Device toDomain(UpdateDeviceCommand command, Device existingDevice, Instant updatedAt) {
         return new Device(
                 existingDevice.getId(),
+                command.ownerId(),
                 existingDevice.getCreatedAt(),
                 updatedAt,
                 command.serialNumber(),

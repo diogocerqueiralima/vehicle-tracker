@@ -31,6 +31,15 @@ public interface DevicePersistence {
     Optional<Device> findById(UUID id);
 
     /**
+     * Finds a device by id constrained to the provided owner.
+     *
+     * @param id device identifier.
+     * @param ownerId owner identifier.
+     * @return matching device when found for the owner.
+     */
+    Optional<Device> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    /**
      *
      * Checks whether a device with the provided serial number already exists.
      *
@@ -56,5 +65,15 @@ public interface DevicePersistence {
      * @return paginated devices.
      */
     Page<Device> getPage(int pageNumber, int pageSize);
+
+    /**
+     * Retrieves a one-based page of devices constrained to an owner.
+     *
+     * @param pageNumber one-based page number.
+     * @param pageSize amount of items in the page.
+     * @param ownerId owner identifier used to scope the search.
+     * @return paginated devices for the owner.
+     */
+    Page<Device> getPageByOwnerId(int pageNumber, int pageSize, UUID ownerId);
 
 }

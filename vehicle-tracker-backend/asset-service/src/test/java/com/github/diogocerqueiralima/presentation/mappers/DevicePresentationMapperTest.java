@@ -24,28 +24,33 @@ class DevicePresentationMapperTest {
     @Test
     @DisplayName("Should map create request to command")
     void should_map_create_request_to_command() {
+        UUID ownerId = UUID.randomUUID();
         CreateDeviceRequestDTO request = new CreateDeviceRequestDTO(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         CreateDeviceCommand command = DevicePresentationMapper.toCreateCommand(request);
 
         assertThat(command.serialNumber()).isEqualTo(request.serialNumber());
         assertThat(command.imei()).isEqualTo(request.imei());
+        assertThat(command.ownerId()).isEqualTo(ownerId);
     }
 
     @Test
     @DisplayName("Should map update request to command")
     void should_map_update_request_to_command() {
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         UpdateDeviceRequestDTO request = new UpdateDeviceRequestDTO(
                 "SN-002",
                 "TK-1100",
                 "Teltonika",
-                "223456789012345"
+                "223456789012345",
+                ownerId
         );
 
         UpdateDeviceCommand command = DevicePresentationMapper.toUpdateCommand(id, request);
@@ -53,6 +58,7 @@ class DevicePresentationMapperTest {
         assertThat(command.id()).isEqualTo(id);
         assertThat(command.serialNumber()).isEqualTo(request.serialNumber());
         assertThat(command.model()).isEqualTo(request.model());
+        assertThat(command.ownerId()).isEqualTo(ownerId);
     }
 
     @Test
@@ -81,20 +87,24 @@ class DevicePresentationMapperTest {
     @DisplayName("Should map path id to get by id command")
     void should_map_path_id_to_get_by_id_command() {
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
-        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id);
+        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id, userId);
 
         assertThat(command.id()).isEqualTo(id);
+        assertThat(command.userId()).isEqualTo(userId);
     }
 
     @Test
     @DisplayName("Should map query params to get page command")
     void should_map_query_params_to_get_page_command() {
+        UUID userId = UUID.randomUUID();
 
-        GetDevicePageCommand command = DevicePresentationMapper.toGetPageCommand(2, 15);
+        GetDevicePageCommand command = DevicePresentationMapper.toGetPageCommand(2, 15, userId);
 
         assertThat(command.pageNumber()).isEqualTo(2);
         assertThat(command.pageSize()).isEqualTo(15);
+        assertThat(command.userId()).isEqualTo(userId);
     }
 
     @Test

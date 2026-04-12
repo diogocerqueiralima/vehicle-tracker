@@ -24,8 +24,6 @@ import java.util.UUID;
 @Service
 public class VehicleUseCaseImpl implements VehicleUseCase {
 
-    private static final int MAX_PAGE_SIZE = 50;
-
     private final VehiclePersistence vehiclePersistence;
 
     public VehicleUseCaseImpl(VehiclePersistence vehiclePersistence) {
@@ -60,9 +58,10 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
     public VehicleResult update(UpdateVehicleCommand command) {
 
         UUID id = command.id();
+        UUID userId = command.userId();
 
-        // 1. Get the vehicle with the provided id
-        Vehicle existingVehicle = vehiclePersistence.findById(id)
+        // 1. Gets the vehicle by id constrained to the authenticated owner.
+        Vehicle existingVehicle = vehiclePersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new VehicleNotFoundException(id));
 
         // 2. Check if exists a vehicle with the given VIN
@@ -96,9 +95,10 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
 
         // 1. Resolve the target id directly from the inbound command.
         UUID id = command.id();
+        UUID userId = command.userId();
 
-        // 2. Load and fail fast when the vehicle does not exist.
-        Vehicle vehicle = vehiclePersistence.findById(id)
+        // 2. Load by id constrained to owner and fail fast when absent.
+        Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new VehicleNotFoundException(id));
 
         // 3. Map the domain object to the response contract.
@@ -117,9 +117,10 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
         // 1. Get the params used to search
         int pageNumber = command.pageNumber();
         int pageSize = command.pageSize();
+        UUID userId = command.userId();
 
-        // 2. Fetches the page from persistence preserving one-based indexing semantics.
-        Page<Vehicle> vehiclePageResult = vehiclePersistence.getPage(pageNumber, pageSize);
+        // 2. Fetches the owner-scoped page from persistence preserving one-based indexing semantics.
+        Page<Vehicle> vehiclePageResult = vehiclePersistence.getPageByOwnerId(pageNumber, pageSize, userId);
 
         // 3. Converts domain page payload to application output contract.
         return VehicleApplicationMapper.toPageResult(vehiclePageResult);

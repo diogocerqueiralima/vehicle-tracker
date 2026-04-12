@@ -25,6 +25,7 @@ class VehiclePresentationMapperTest {
     @Test
     @DisplayName("Should map create request to command")
     void should_map_create_request_to_command() {
+        UUID userId = UUID.randomUUID();
         CreateVehicleRequestDTO request = new CreateVehicleRequestDTO(
                 "1HGCM82633A123456",
                 "AA-00-AA",
@@ -33,16 +34,18 @@ class VehiclePresentationMapperTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        CreateVehicleCommand command = VehiclePresentationMapper.toCreateCommand(request);
+        CreateVehicleCommand command = VehiclePresentationMapper.toCreateCommand(request, userId);
 
         assertThat(command.vin()).isEqualTo(request.vin());
         assertThat(command.plate()).isEqualTo(request.plate());
+        assertThat(command.userId()).isEqualTo(userId);
     }
 
     @Test
     @DisplayName("Should map update request to command")
     void should_map_update_request_to_command() {
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         UpdateVehicleRequestDTO request = new UpdateVehicleRequestDTO(
                 "1HGCM82633A123456",
                 "BB-11-BB",
@@ -51,11 +54,12 @@ class VehiclePresentationMapperTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        UpdateVehicleCommand command = VehiclePresentationMapper.toUpdateCommand(id, request);
+        UpdateVehicleCommand command = VehiclePresentationMapper.toUpdateCommand(id, request, userId);
 
         assertThat(command.id()).isEqualTo(id);
         assertThat(command.plate()).isEqualTo(request.plate());
         assertThat(command.model()).isEqualTo(request.model());
+        assertThat(command.userId()).isEqualTo(userId);
     }
 
     @Test
@@ -85,20 +89,24 @@ class VehiclePresentationMapperTest {
     @DisplayName("Should map path id to get by id command")
     void should_map_path_id_to_get_by_id_command() {
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
-        GetVehicleByIdCommand command = VehiclePresentationMapper.toGetByIdCommand(id);
+        GetVehicleByIdCommand command = VehiclePresentationMapper.toGetByIdCommand(id, userId);
 
         assertThat(command.id()).isEqualTo(id);
+        assertThat(command.userId()).isEqualTo(userId);
     }
 
     @Test
     @DisplayName("Should map query params to get page command")
     void should_map_query_params_to_get_page_command() {
+        UUID userId = UUID.randomUUID();
 
-        GetVehiclePageCommand command = VehiclePresentationMapper.toGetPageCommand(2, 15);
+        GetVehiclePageCommand command = VehiclePresentationMapper.toGetPageCommand(2, 15, userId);
 
         assertThat(command.pageNumber()).isEqualTo(2);
         assertThat(command.pageSize()).isEqualTo(15);
+        assertThat(command.userId()).isEqualTo(userId);
     }
 
     @Test

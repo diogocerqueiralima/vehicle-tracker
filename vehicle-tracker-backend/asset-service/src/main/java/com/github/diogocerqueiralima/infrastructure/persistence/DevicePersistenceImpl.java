@@ -41,6 +41,13 @@ public class DevicePersistenceImpl implements DevicePersistence {
     }
 
     @Override
+    public Optional<Device> findByIdAndOwnerId(UUID id, UUID ownerId) {
+        return deviceRepository
+                .findByIdAndOwnerId(id, ownerId)
+                .map(DeviceMapper::toDomain);
+    }
+
+    @Override
     public boolean existsBySerialNumber(String serialNumber) {
         return deviceRepository.existsBySerialNumber(serialNumber);
     }
@@ -58,6 +65,17 @@ public class DevicePersistenceImpl implements DevicePersistence {
 
         // 2. Loads entity page and maps each entry to the domain model.
         return deviceRepository.findAll(pageRequest)
+                .map(DeviceMapper::toDomain);
+    }
+
+    @Override
+    public Page<Device> getPageByOwnerId(int pageNumber, int pageSize, UUID ownerId) {
+
+        // 1. Converts one-based inbound page number to Spring Data zero-based index.
+        PageRequest pageRequest = PageRequest.of(pageNumber - 1, pageSize);
+
+        // 2. Loads owner-scoped entity page and maps each entry to the domain model.
+        return deviceRepository.findAllByOwnerId(ownerId, pageRequest)
                 .map(DeviceMapper::toDomain);
     }
 

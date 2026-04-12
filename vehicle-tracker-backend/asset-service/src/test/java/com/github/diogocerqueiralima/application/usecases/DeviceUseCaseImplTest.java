@@ -44,12 +44,14 @@ class DeviceUseCaseImplTest {
     @Test
     @DisplayName("Should create device when serial number and IMEI are unique")
     void should_create_device_when_serial_number_and_imei_are_unique() {
+        UUID ownerId = UUID.randomUUID();
 
         CreateDeviceCommand command = new CreateDeviceCommand(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -78,12 +80,14 @@ class DeviceUseCaseImplTest {
     @Test
     @DisplayName("Should fail when serial number already exists")
     void should_fail_when_serial_number_already_exists() {
+        UUID ownerId = UUID.randomUUID();
 
         CreateDeviceCommand command = new CreateDeviceCommand(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         when(devicePersistence.existsBySerialNumber(command.serialNumber())).thenReturn(true);
@@ -98,12 +102,14 @@ class DeviceUseCaseImplTest {
     @Test
     @DisplayName("Should fail when IMEI already exists")
     void should_fail_when_imei_already_exists() {
+        UUID ownerId = UUID.randomUUID();
 
         CreateDeviceCommand command = new CreateDeviceCommand(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         when(devicePersistence.existsBySerialNumber(command.serialNumber())).thenReturn(false);
@@ -121,6 +127,7 @@ class DeviceUseCaseImplTest {
     void should_update_device_when_device_exists_and_unique_fields_are_valid() {
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
 
         Device existingDevice = new Device(
@@ -138,7 +145,8 @@ class DeviceUseCaseImplTest {
                 "SN-002",
                 "TK-1100",
                 "Teltonika",
-                "223456789012345"
+                "223456789012345",
+                ownerId
         );
 
         Device updatedDevice = new Device(
@@ -170,12 +178,14 @@ class DeviceUseCaseImplTest {
     void should_fail_updating_when_device_does_not_exist() {
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         UpdateDeviceCommand command = new UpdateDeviceCommand(
                 id,
                 "SN-002",
                 "TK-1100",
                 "Teltonika",
-                "223456789012345"
+                "223456789012345",
+                ownerId
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.empty());
@@ -192,6 +202,7 @@ class DeviceUseCaseImplTest {
     void should_fail_updating_when_serial_number_already_exists_in_another_device() {
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
 
         Device existingDevice = new Device(
@@ -209,7 +220,8 @@ class DeviceUseCaseImplTest {
                 "SN-002",
                 "TK-1100",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
@@ -227,6 +239,7 @@ class DeviceUseCaseImplTest {
     void should_fail_updating_when_imei_already_exists_in_another_device() {
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
 
         Device existingDevice = new Device(
@@ -244,7 +257,8 @@ class DeviceUseCaseImplTest {
                 "SN-001",
                 "TK-1100",
                 "Teltonika",
-                "223456789012345"
+                "223456789012345",
+                ownerId
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
@@ -262,6 +276,7 @@ class DeviceUseCaseImplTest {
     void should_get_device_by_id_when_device_exists() {
 
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
 
         Device device = new Device(
@@ -274,9 +289,9 @@ class DeviceUseCaseImplTest {
                 "123456789012345"
         );
 
-        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id);
+        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId);
 
-        when(devicePersistence.findById(id)).thenReturn(Optional.of(device));
+        when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(device));
 
         DeviceResult result = deviceUseCase.getById(command);
 
@@ -290,9 +305,10 @@ class DeviceUseCaseImplTest {
     void should_fail_getting_device_by_id_when_device_does_not_exist() {
 
         UUID id = UUID.randomUUID();
-        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id);
+        UUID userId = UUID.randomUUID();
+        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId);
 
-        when(devicePersistence.findById(id)).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> deviceUseCase.getById(command))
                 .isInstanceOf(DeviceNotFoundException.class)
@@ -305,6 +321,7 @@ class DeviceUseCaseImplTest {
 
         int pageNumber = 1;
         int pageSize = 10;
+        UUID userId = UUID.randomUUID();
 
         Device device = new Device(
                 UUID.randomUUID(),
@@ -322,9 +339,9 @@ class DeviceUseCaseImplTest {
                 1
         );
 
-        GetDevicePageCommand command = new GetDevicePageCommand(pageNumber, pageSize);
+        GetDevicePageCommand command = new GetDevicePageCommand(pageNumber, pageSize, userId);
 
-        when(devicePersistence.getPage(pageNumber, pageSize)).thenReturn(devicePage);
+        when(devicePersistence.getPageByOwnerId(pageNumber, pageSize, userId)).thenReturn(devicePage);
 
         PageResult<DeviceResult> result = deviceUseCase.getPage(command);
 
@@ -335,7 +352,7 @@ class DeviceUseCaseImplTest {
         assertThat(result.data()).hasSize(1);
         assertThat(result.data().getFirst().id()).isEqualTo(device.getId());
 
-        verify(devicePersistence).getPage(pageNumber, pageSize);
+        verify(devicePersistence).getPageByOwnerId(pageNumber, pageSize, userId);
     }
 
 }

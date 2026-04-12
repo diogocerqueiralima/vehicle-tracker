@@ -21,7 +21,14 @@ public class Vehicle extends Asset {
             UUID id, Instant createdAt, Instant updatedAt, String vin, String plate,
             String model, String manufacturer, LocalDate manufacturingDate
     ) {
-        super(id, createdAt, updatedAt);
+        this(id, null, createdAt, updatedAt, vin, plate, model, manufacturer, manufacturingDate);
+    }
+
+    public Vehicle(
+            UUID id, UUID ownerId, Instant createdAt, Instant updatedAt, String vin, String plate,
+            String model, String manufacturer, LocalDate manufacturingDate
+    ) {
+        super(id, ownerId, createdAt, updatedAt);
         this.vin = Objects.requireNonNull(vin, "vin cannot be null");
         this.plate = Objects.requireNonNull(plate, "plate cannot be null");
         this.model = Objects.requireNonNull(model, "model cannot be null");

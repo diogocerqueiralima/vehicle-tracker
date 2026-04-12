@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Command payload used by the presentation layer to request vehicle creation.
@@ -29,6 +30,9 @@ public record CreateVehicleCommand(
 
         @NotNull(message = "manufacturingDate is required")
         @PastOrPresent(message = "manufacturingDate cannot be in the future")
-        LocalDate manufacturingDate
+        LocalDate manufacturingDate,
+
+        @NotNull(message = "userId is required")
+        UUID userId
 
 ) {}

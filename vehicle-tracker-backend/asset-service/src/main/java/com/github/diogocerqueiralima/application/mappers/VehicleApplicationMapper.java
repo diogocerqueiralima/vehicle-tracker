@@ -29,6 +29,7 @@ public final class VehicleApplicationMapper {
     public static Vehicle toDomain(CreateVehicleCommand command, Instant now) {
         return new Vehicle(
                 UUID.randomUUID(),
+                command.userId(),
                 now,
                 now,
                 command.vin(),
@@ -51,6 +52,7 @@ public final class VehicleApplicationMapper {
     public static Vehicle toDomain(UpdateVehicleCommand command, Vehicle existingVehicle, Instant updatedAt) {
         return new Vehicle(
                 existingVehicle.getId(),
+                existingVehicle.getOwnerId(),
                 existingVehicle.getCreatedAt(),
                 updatedAt,
                 command.vin(),

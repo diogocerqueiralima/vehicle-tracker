@@ -17,7 +17,7 @@ public abstract class AssetEntity {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
-    private UUID id;
+    private java.util.UUID id;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -25,13 +25,16 @@ public abstract class AssetEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "owner_id")
+    private UUID ownerId;
+
     public AssetEntity() {}
 
-    public UUID getId() {
+    public java.util.UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(java.util.UUID id) {
         this.id = id;
     }
 
@@ -49,6 +52,14 @@ public abstract class AssetEntity {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public UUID getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(UUID ownerId) {
+        this.ownerId = ownerId;
     }
 
 }

@@ -23,6 +23,7 @@ public class DeviceMapper {
         DeviceEntity entity = new DeviceEntity();
 
         entity.setId(device.getId());
+        entity.setOwnerId(device.getOwnerId());
         entity.setCreatedAt(device.getCreatedAt());
         entity.setUpdatedAt(device.getUpdatedAt());
         entity.setSerialNumber(device.getSerialNumber());
@@ -43,6 +44,7 @@ public class DeviceMapper {
     public static Device toDomain(DeviceEntity entity) {
         return new Device(
                 entity.getId(),
+                entity.getOwnerId(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getSerialNumber(),

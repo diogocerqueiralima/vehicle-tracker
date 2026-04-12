@@ -33,7 +33,10 @@ public record UpdateVehicleCommand(
 
         @NotNull(message = "manufacturingDate is required")
         @PastOrPresent(message = "manufacturingDate cannot be in the future")
-        LocalDate manufacturingDate
+        LocalDate manufacturingDate,
+
+        @NotNull(message = "userId is required")
+        UUID userId
 
 ) {}
 

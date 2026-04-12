@@ -2,6 +2,9 @@ package com.github.diogocerqueiralima.application.commands;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
 
 /**
  * Command payload used by the presentation layer to request a page of devices.
@@ -13,7 +16,10 @@ public record GetDevicePageCommand(
 
         @Min(value = 1, message = "pageSize must be greater than zero")
         @Max(value = 50, message = "pageSize must be less than or equal to 50")
-        int pageSize
+        int pageSize,
+
+        @NotNull(message = "userId is required")
+        UUID userId
 
 ) {}
 

@@ -16,10 +16,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,6 +40,7 @@ class VehicleControllerTest {
     @Test
     @DisplayName("Should create vehicle and return created response")
     void should_create_vehicle_and_return_created_response() {
+        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -63,7 +66,7 @@ class VehicleControllerTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(request);
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(buildJwt(userId), request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -77,6 +80,7 @@ class VehicleControllerTest {
     @Test
     @DisplayName("Should map response data from use case result")
     void should_map_response_data_from_use_case_result() {
+        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -102,7 +106,7 @@ class VehicleControllerTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(request);
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(buildJwt(userId), request);
 
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().data()).isNotNull();
@@ -114,6 +118,7 @@ class VehicleControllerTest {
     @Test
     @DisplayName("Should update vehicle and return ok response")
     void should_update_vehicle_and_return_ok_response() {
+        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
@@ -140,7 +145,7 @@ class VehicleControllerTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.update(id, request);
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.update(id, buildJwt(userId), request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -154,6 +159,7 @@ class VehicleControllerTest {
     @Test
     @DisplayName("Should get vehicle by id and return ok response")
     void should_get_vehicle_by_id_and_return_ok_response() {
+        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -171,7 +177,7 @@ class VehicleControllerTest {
 
         when(vehicleUseCase.getById(any())).thenReturn(result);
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.getById(id);
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.getById(id, buildJwt(userId));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -184,6 +190,7 @@ class VehicleControllerTest {
     @Test
     @DisplayName("Should get vehicle page and return ok response")
     void should_get_vehicle_page_and_return_ok_response() {
+        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -200,7 +207,7 @@ class VehicleControllerTest {
 
         when(vehicleUseCase.getPage(any())).thenReturn(new PageResult<>(1, 10, 1, 1, List.of(vehicleResult)));
 
-        ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> response = vehicleController.getPage(1, 10);
+        ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> response = vehicleController.getPage(buildJwt(userId), 1, 10);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -210,6 +217,16 @@ class VehicleControllerTest {
         assertThat(response.getBody().data().pageSize()).isEqualTo(10);
         assertThat(response.getBody().data().data()).hasSize(1);
         assertThat(response.getBody().data().data().getFirst().id()).isEqualTo(id);
+    }
+
+    private Jwt buildJwt(UUID userId) {
+        return new Jwt(
+                "token-value",
+                Instant.parse("2026-03-15T12:00:00Z"),
+                Instant.parse("2026-03-16T12:00:00Z"),
+                Map.of("alg", "none"),
+                Map.of("sub", userId.toString())
+        );
     }
 
 }

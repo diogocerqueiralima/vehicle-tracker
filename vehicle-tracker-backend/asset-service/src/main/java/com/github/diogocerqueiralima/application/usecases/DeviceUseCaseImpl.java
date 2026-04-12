@@ -96,9 +96,10 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
 
         // 1. Resolves the target id directly from the inbound command.
         UUID id = command.id();
+        UUID userId = command.userId();
 
-        // 2. Loads and fails fast when the device does not exist.
-        Device device = devicePersistence.findById(id)
+        // 2. Loads owner-scoped device and fails fast when it does not exist.
+        Device device = devicePersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new DeviceNotFoundException(id));
 
         // 3. Maps the domain object to the response contract.
@@ -117,9 +118,10 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
         // 1. Gets the params used to search.
         int pageNumber = command.pageNumber();
         int pageSize = command.pageSize();
+        UUID userId = command.userId();
 
-        // 2. Fetches the page from persistence preserving one-based indexing semantics.
-        Page<Device> devicePageResult = devicePersistence.getPage(pageNumber, pageSize);
+        // 2. Fetches the owner-scoped page from persistence preserving one-based indexing semantics.
+        Page<Device> devicePageResult = devicePersistence.getPageByOwnerId(pageNumber, pageSize, userId);
 
         // 3. Converts domain page payload to application output contract.
         return DeviceApplicationMapper.toPageResult(devicePageResult);

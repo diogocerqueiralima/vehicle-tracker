@@ -23,6 +23,7 @@ public class VehicleMapper {
         VehicleEntity entity = new VehicleEntity();
 
         entity.setId(vehicle.getId());
+        entity.setOwnerId(vehicle.getOwnerId());
         entity.setCreatedAt(vehicle.getCreatedAt());
         entity.setUpdatedAt(vehicle.getUpdatedAt());
         entity.setVin(vehicle.getVin());
@@ -44,6 +45,7 @@ public class VehicleMapper {
     public static Vehicle toDomain(VehicleEntity entity) {
         return new Vehicle(
                 entity.getId(),
+                entity.getOwnerId(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.getVin(),

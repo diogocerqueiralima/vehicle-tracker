@@ -33,7 +33,8 @@ public final class DevicePresentationMapper {
                 request.serialNumber(),
                 request.model(),
                 request.manufacturer(),
-                request.imei()
+                request.imei(),
+                request.ownerId()
         );
     }
 
@@ -51,7 +52,8 @@ public final class DevicePresentationMapper {
                 request.serialNumber(),
                 request.model(),
                 request.manufacturer(),
-                request.imei()
+                request.imei(),
+                request.ownerId()
         );
     }
 
@@ -61,8 +63,8 @@ public final class DevicePresentationMapper {
      * @param id device identifier from the request path.
      * @return command consumed by the application layer.
      */
-    public static GetDeviceByIdCommand toGetByIdCommand(UUID id) {
-        return new GetDeviceByIdCommand(id);
+    public static GetDeviceByIdCommand toGetByIdCommand(UUID id, UUID userId) {
+        return new GetDeviceByIdCommand(id, userId);
     }
 
     /**
@@ -72,8 +74,8 @@ public final class DevicePresentationMapper {
      * @param pageSize requested page size.
      * @return command consumed by the application layer.
      */
-    public static GetDevicePageCommand toGetPageCommand(int pageNumber, int pageSize) {
-        return new GetDevicePageCommand(pageNumber, pageSize);
+    public static GetDevicePageCommand toGetPageCommand(int pageNumber, int pageSize, UUID userId) {
+        return new GetDevicePageCommand(pageNumber, pageSize, userId);
     }
 
     /**

@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS assets (
     id UUID PRIMARY KEY,
+    owner_id UUID,
     created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC')
 );

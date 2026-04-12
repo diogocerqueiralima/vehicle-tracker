@@ -18,12 +18,14 @@ class VehicleApplicationMapperTest {
     @Test
     @DisplayName("Should map create command to domain")
     void should_map_create_command_to_domain() {
+        UUID userId = UUID.randomUUID();
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
                 "AA-00-AA",
                 "Model 3",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -33,15 +35,18 @@ class VehicleApplicationMapperTest {
         assertThat(vehicle.getCreatedAt()).isEqualTo(now);
         assertThat(vehicle.getUpdatedAt()).isEqualTo(now);
         assertThat(vehicle.getVin()).isEqualTo(command.vin());
+        assertThat(vehicle.getOwnerId()).isEqualTo(userId);
     }
 
     @Test
     @DisplayName("Should map update command to domain using existing vehicle identity")
     void should_map_update_command_to_domain_using_existing_vehicle_identity() {
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-10T12:00:00Z");
         Vehicle existingVehicle = new Vehicle(
                 id,
+                userId,
                 createdAt,
                 createdAt,
                 "1HGCM82633A123456",
@@ -57,7 +62,8 @@ class VehicleApplicationMapperTest {
                 "BB-11-BB",
                 "Model Y",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
         Instant updatedAt = Instant.parse("2026-03-20T10:00:00Z");
@@ -67,6 +73,7 @@ class VehicleApplicationMapperTest {
         assertThat(mapped.getCreatedAt()).isEqualTo(createdAt);
         assertThat(mapped.getUpdatedAt()).isEqualTo(updatedAt);
         assertThat(mapped.getPlate()).isEqualTo("BB-11-BB");
+        assertThat(mapped.getOwnerId()).isEqualTo(userId);
     }
 
     @Test

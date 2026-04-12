@@ -23,7 +23,10 @@ public record UpdateDeviceCommand(
         String manufacturer,
 
         @NotBlank(message = "imei is required")
-        String imei
+        String imei,
+
+        @NotNull(message = "ownerId is required")
+        UUID ownerId
 
 ) {}
 

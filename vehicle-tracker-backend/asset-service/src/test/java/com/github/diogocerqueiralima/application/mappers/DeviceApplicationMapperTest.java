@@ -17,11 +17,13 @@ class DeviceApplicationMapperTest {
     @Test
     @DisplayName("Should map create command to domain")
     void should_map_create_command_to_domain() {
+        UUID ownerId = UUID.randomUUID();
         CreateDeviceCommand command = new CreateDeviceCommand(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -31,15 +33,18 @@ class DeviceApplicationMapperTest {
         assertThat(device.getCreatedAt()).isEqualTo(now);
         assertThat(device.getUpdatedAt()).isEqualTo(now);
         assertThat(device.getSerialNumber()).isEqualTo(command.serialNumber());
+        assertThat(device.getOwnerId()).isEqualTo(ownerId);
     }
 
     @Test
     @DisplayName("Should map update command to domain using existing device identity")
     void should_map_update_command_to_domain_using_existing_device_identity() {
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-10T12:00:00Z");
         Device existingDevice = new Device(
                 id,
+                ownerId,
                 createdAt,
                 createdAt,
                 "SN-001",
@@ -53,7 +58,8 @@ class DeviceApplicationMapperTest {
                 "SN-002",
                 "TK-1100",
                 "Teltonika",
-                "223456789012345"
+                "223456789012345",
+                ownerId
         );
 
         Instant updatedAt = Instant.parse("2026-03-20T10:00:00Z");
@@ -63,6 +69,7 @@ class DeviceApplicationMapperTest {
         assertThat(mapped.getCreatedAt()).isEqualTo(createdAt);
         assertThat(mapped.getUpdatedAt()).isEqualTo(updatedAt);
         assertThat(mapped.getSerialNumber()).isEqualTo("SN-002");
+        assertThat(mapped.getOwnerId()).isEqualTo(ownerId);
     }
 
     @Test

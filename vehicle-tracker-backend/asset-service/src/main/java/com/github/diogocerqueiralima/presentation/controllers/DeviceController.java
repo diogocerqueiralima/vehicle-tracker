@@ -16,6 +16,8 @@ import com.github.diogocerqueiralima.presentation.mappers.DevicePresentationMapp
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -100,15 +102,21 @@ public class DeviceController {
      * @return device wrapped in an API response.
      */
     @GetMapping(DEVICES_ID_URI)
-    public ResponseEntity<ApiResponseDTO<DeviceDTO>> getById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponseDTO<DeviceDTO>> getById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
 
-        // 1. Maps transport data to an application command.
-        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id);
+        // 1. Resolves the authenticated user id from Keycloak token subject.
+        UUID userId = extractUserId(jwt);
 
-        // 2. Delegates retrieval to the application layer.
+        // 2. Maps transport data to an application command.
+        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id, userId);
+
+        // 3. Delegates retrieval to the application layer.
         DeviceResult result = deviceUseCase.getById(command);
 
-        // 3. Maps the application result to the response DTO.
+        // 4. Maps the application result to the response DTO.
         DeviceDTO deviceDTO = DevicePresentationMapper.toDTO(result);
 
         return ResponseEntity.ok(
@@ -125,22 +133,35 @@ public class DeviceController {
      */
     @GetMapping(DEVICES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> getPage(
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(DEVICE_PAGE_NUMBER_PARAM) int pageNumber,
             @RequestParam(DEVICE_PAGE_SIZE_PARAM) int pageSize
     ) {
 
-        // 1. Maps query params to application command.
-        GetDevicePageCommand command = DevicePresentationMapper.toGetPageCommand(pageNumber, pageSize);
+        // 1. Resolves the authenticated user id from Keycloak token subject.
+        UUID userId = extractUserId(jwt);
 
-        // 2. Delegates retrieval of the page to the application layer.
+        // 2. Maps query params to application command.
+        GetDevicePageCommand command = DevicePresentationMapper.toGetPageCommand(pageNumber, pageSize, userId);
+
+        // 3. Delegates retrieval of the page to the application layer.
         PageResult<DeviceResult> result = deviceUseCase.getPage(command);
 
-        // 3. Converts application result to transport DTO.
+        // 4. Converts application result to transport DTO.
         PageDTO<DeviceDTO> pageDTO = DevicePresentationMapper.toPageDTO(result);
 
         return ResponseEntity.ok(
                 new ApiResponseDTO<>("Devices fetched successfully.", pageDTO)
         );
+    }
+
+    private UUID extractUserId(Jwt jwt) {
+
+        // 1. Keycloak stores the user id in token subject claim.
+        String subject = jwt.getSubject();
+
+        // 2. Converts subject to UUID used by application/domain contracts.
+        return UUID.fromString(subject);
     }
 
 }

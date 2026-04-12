@@ -31,6 +31,15 @@ public interface VehiclePersistence {
     Optional<Vehicle> findById(UUID id);
 
     /**
+     * Finds a vehicle by id constrained to the provided owner.
+     *
+     * @param id vehicle identifier.
+     * @param ownerId owner identifier.
+     * @return matching vehicle when found for the owner.
+     */
+    Optional<Vehicle> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    /**
      *
      * Checks whether a vehicle with the provided VIN already exists.
      *
@@ -56,5 +65,15 @@ public interface VehiclePersistence {
      * @return paginated vehicles.
      */
     Page<Vehicle> getPage(int pageNumber, int pageSize);
+
+    /**
+     * Retrieves a one-based page of vehicles constrained to an owner.
+     *
+     * @param pageNumber one-based page number.
+     * @param pageSize amount of items in the page.
+     * @param ownerId owner identifier used to scope the search.
+     * @return paginated vehicles for the owner.
+     */
+    Page<Vehicle> getPageByOwnerId(int pageNumber, int pageSize, UUID ownerId);
 
 }

@@ -16,6 +16,8 @@ import com.github.diogocerqueiralima.presentation.mappers.VehiclePresentationMap
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,15 +52,21 @@ public class VehicleController {
      * @return created vehicle wrapped in an API response.
      */
     @PostMapping(VEHICLES_BASE_URI)
-    public ResponseEntity<ApiResponseDTO<VehicleDTO>> create(@Valid @RequestBody CreateVehicleRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<VehicleDTO>> create(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody CreateVehicleRequestDTO request
+    ) {
 
-        // 1. Map transport data to an application command.
-        CreateVehicleCommand command = VehiclePresentationMapper.toCreateCommand(request);
+        // 1. Resolve the authenticated user id from the jwt
+        UUID userId = extractUserId(jwt);
 
-        // 2. Delegate creation to the application layer.
+        // 2. Map transport data to an application command.
+        CreateVehicleCommand command = VehiclePresentationMapper.toCreateCommand(request, userId);
+
+        // 3. Delegate creation to the application layer.
         VehicleResult result = vehicleUseCase.create(command);
 
-        // 3. Map the application result to the response DTO.
+        // 4. Map the application result to the response DTO.
         VehicleDTO vehicleDTO = VehiclePresentationMapper.toDTO(result);
 
         return ResponseEntity
@@ -76,16 +84,20 @@ public class VehicleController {
     @PutMapping(VEHICLES_ID_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> update(
             @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody UpdateVehicleRequestDTO request
     ) {
 
-        // 1. Map transport data to an application command.
-        UpdateVehicleCommand command = VehiclePresentationMapper.toUpdateCommand(id, request);
+        // 1. Resolve the authenticated user id from the jwt
+        UUID userId = extractUserId(jwt);
 
-        // 2. Delegate update to the application layer.
+        // 2. Map transport data to an application command.
+        UpdateVehicleCommand command = VehiclePresentationMapper.toUpdateCommand(id, request, userId);
+
+        // 3. Delegate update to the application layer.
         VehicleResult result = vehicleUseCase.update(command);
 
-        // 3. Map the application result to the response DTO.
+        // 4. Map the application result to the response DTO.
         VehicleDTO vehicleDTO = VehiclePresentationMapper.toDTO(result);
 
         return ResponseEntity.ok(
@@ -100,15 +112,21 @@ public class VehicleController {
      * @return vehicle wrapped in an API response.
      */
     @GetMapping(VEHICLES_ID_URI)
-    public ResponseEntity<ApiResponseDTO<VehicleDTO>> getById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponseDTO<VehicleDTO>> getById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
 
-        // 1. Map transport data to an application command.
-        GetVehicleByIdCommand command = VehiclePresentationMapper.toGetByIdCommand(id);
+        // 1. Resolve the authenticated user id from the jwt.
+        UUID userId = extractUserId(jwt);
 
-        // 2. Delegate retrieval to the application layer.
+        // 2. Map transport data to an application command.
+        GetVehicleByIdCommand command = VehiclePresentationMapper.toGetByIdCommand(id, userId);
+
+        // 3. Delegate retrieval to the application layer.
         VehicleResult result = vehicleUseCase.getById(command);
 
-        // 3. Map the application result to the response DTO.
+        // 4. Map the application result to the response DTO.
         VehicleDTO vehicleDTO = VehiclePresentationMapper.toDTO(result);
 
         return ResponseEntity.ok(
@@ -125,22 +143,35 @@ public class VehicleController {
      */
     @GetMapping(VEHICLES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> getPage(
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(VEHICLE_PAGE_NUMBER_PARAM) int pageNumber,
             @RequestParam(VEHICLE_PAGE_SIZE_PARAM) int pageSize
     ) {
 
-        // 1. Maps query params to application command.
-        GetVehiclePageCommand command = VehiclePresentationMapper.toGetPageCommand(pageNumber, pageSize);
+        // 1. Resolve the authenticated user id from the jwt
+        UUID userId = extractUserId(jwt);
 
-        // 2. Delegates retrieval of the page to the application layer.
+        // 2. Maps query params to application command.
+        GetVehiclePageCommand command = VehiclePresentationMapper.toGetPageCommand(pageNumber, pageSize, userId);
+
+        // 3. Delegates retrieval of the page to the application layer.
         PageResult<VehicleResult> result = vehicleUseCase.getPage(command);
 
-        // 3. Converts application result to transport DTO.
+        // 4. Converts application result to transport DTO.
         PageDTO<VehicleDTO> pageDTO = VehiclePresentationMapper.toPageDTO(result);
 
         return ResponseEntity.ok(
                 new ApiResponseDTO<>("Vehicles fetched successfully.", pageDTO)
         );
+    }
+
+    private UUID extractUserId(Jwt jwt) {
+
+        // 1. Keycloak stores the user id in the token subject claim.
+        String subject = jwt.getSubject();
+
+        // 2. Converts subject to UUID used by application/domain contracts.
+        return UUID.fromString(subject);
     }
 
 }

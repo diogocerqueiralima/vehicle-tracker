@@ -41,6 +41,13 @@ public class VehiclePersistenceImpl implements VehiclePersistence {
     }
 
     @Override
+    public Optional<Vehicle> findByIdAndOwnerId(UUID id, UUID ownerId) {
+        return vehicleRepository
+                .findByIdAndOwnerId(id, ownerId)
+                .map(VehicleMapper::toDomain);
+    }
+
+    @Override
     public boolean existsByVin(String vin) {
         return vehicleRepository.existsByVin(vin);
     }
@@ -66,6 +73,17 @@ public class VehiclePersistenceImpl implements VehiclePersistence {
         // 2. Loads entity page and maps each entry to the domain model.
 
         return vehicleRepository.findAll(pageRequest)
+                .map(VehicleMapper::toDomain);
+    }
+
+    @Override
+    public Page<Vehicle> getPageByOwnerId(int pageNumber, int pageSize, UUID ownerId) {
+
+        // 1. Converts one-based inbound page number to Spring Data zero-based index.
+        PageRequest pageRequest = PageRequest.of(pageNumber - 1, pageSize);
+
+        // 2. Loads owner-scoped entity page and maps each entry to the domain model.
+        return vehicleRepository.findAllByOwnerId(ownerId, pageRequest)
                 .map(VehicleMapper::toDomain);
     }
 

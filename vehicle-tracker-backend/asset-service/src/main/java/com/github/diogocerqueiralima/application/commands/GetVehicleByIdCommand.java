@@ -10,7 +10,10 @@ import java.util.UUID;
 public record GetVehicleByIdCommand(
 
         @NotNull(message = "id is required")
-        UUID id
+        UUID id,
+
+        @NotNull(message = "userId is required")
+        UUID userId
 
 ) {}
 

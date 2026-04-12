@@ -28,13 +28,14 @@ public final class VehiclePresentationMapper {
      * @param request request payload for vehicle creation.
      * @return command consumed by the application layer.
      */
-    public static CreateVehicleCommand toCreateCommand(CreateVehicleRequestDTO request) {
+    public static CreateVehicleCommand toCreateCommand(CreateVehicleRequestDTO request, UUID userId) {
         return new CreateVehicleCommand(
                 request.vin(),
                 request.plate(),
                 request.model(),
                 request.manufacturer(),
-                request.manufacturingDate()
+                request.manufacturingDate(),
+                userId
         );
     }
 
@@ -46,14 +47,15 @@ public final class VehiclePresentationMapper {
      * @param request request payload for vehicle update.
      * @return command consumed by the application layer.
      */
-    public static UpdateVehicleCommand toUpdateCommand(UUID id, UpdateVehicleRequestDTO request) {
+    public static UpdateVehicleCommand toUpdateCommand(UUID id, UpdateVehicleRequestDTO request, UUID userId) {
         return new UpdateVehicleCommand(
                 id,
                 request.vin(),
                 request.plate(),
                 request.model(),
                 request.manufacturer(),
-                request.manufacturingDate()
+                request.manufacturingDate(),
+                userId
         );
     }
 
@@ -63,8 +65,8 @@ public final class VehiclePresentationMapper {
      * @param id vehicle identifier from the request path.
      * @return command consumed by the application layer.
      */
-    public static GetVehicleByIdCommand toGetByIdCommand(UUID id) {
-        return new GetVehicleByIdCommand(id);
+    public static GetVehicleByIdCommand toGetByIdCommand(UUID id, UUID userId) {
+        return new GetVehicleByIdCommand(id, userId);
     }
 
     /**
@@ -74,8 +76,8 @@ public final class VehiclePresentationMapper {
      * @param pageSize requested page size.
      * @return command consumed by the application layer.
      */
-    public static GetVehiclePageCommand toGetPageCommand(int pageNumber, int pageSize) {
-        return new GetVehiclePageCommand(pageNumber, pageSize);
+    public static GetVehiclePageCommand toGetPageCommand(int pageNumber, int pageSize, UUID userId) {
+        return new GetVehiclePageCommand(pageNumber, pageSize, userId);
     }
 
     /**

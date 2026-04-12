@@ -17,7 +17,14 @@ public class Device extends Asset {
     private final String imei;
 
     public Device(UUID id, Instant createdAt, Instant updatedAt, String serialNumber, String model, String manufacturer, String imei) {
-        super(id, createdAt, updatedAt);
+        this(id, null, createdAt, updatedAt, serialNumber, model, manufacturer, imei);
+    }
+
+    public Device(
+            UUID id, UUID ownerId, Instant createdAt, Instant updatedAt, String serialNumber, String model,
+            String manufacturer, String imei
+    ) {
+        super(id, ownerId, createdAt, updatedAt);
         this.serialNumber = Objects.requireNonNull(serialNumber, "serialNumber cannot be null");
         this.model = Objects.requireNonNull(model, "model cannot be null");
         this.manufacturer = Objects.requireNonNull(manufacturer, "manufacturer cannot be null");

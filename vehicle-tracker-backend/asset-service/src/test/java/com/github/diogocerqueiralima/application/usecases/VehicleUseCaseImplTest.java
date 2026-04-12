@@ -44,13 +44,15 @@ class VehicleUseCaseImplTest {
     @Test
     @DisplayName("Should create vehicle when VIN and plate are unique")
     void should_create_vehicle_when_vin_and_plate_are_unique() {
+        UUID userId = UUID.randomUUID();
 
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
                 "AA-00-AA",
                 "Model 3",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -80,13 +82,15 @@ class VehicleUseCaseImplTest {
     @Test
     @DisplayName("Should fail when VIN already exists")
     void should_fail_when_vin_already_exists() {
+        UUID userId = UUID.randomUUID();
 
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
                 "AA-00-AA",
                 "Model 3",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
         when(vehiclePersistence.existsByVin(command.vin())).thenReturn(true);
@@ -101,13 +105,15 @@ class VehicleUseCaseImplTest {
     @Test
     @DisplayName("Should fail when plate already exists")
     void should_fail_when_plate_already_exists() {
+        UUID userId = UUID.randomUUID();
 
         CreateVehicleCommand command = new CreateVehicleCommand(
                 "1HGCM82633A123456",
                 "AA-00-AA",
                 "Model 3",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
         when(vehiclePersistence.existsByVin(command.vin())).thenReturn(false);
@@ -125,6 +131,7 @@ class VehicleUseCaseImplTest {
     void should_update_vehicle_when_vehicle_exists_and_vin_and_plate_are_unique() {
 
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
 
         Vehicle existingVehicle = new Vehicle(
@@ -144,7 +151,8 @@ class VehicleUseCaseImplTest {
                 "BB-11-BB",
                 "Model Y",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
         Vehicle updatedVehicle = new Vehicle(
@@ -158,7 +166,7 @@ class VehicleUseCaseImplTest {
                 command.manufacturingDate()
         );
 
-        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.of(existingVehicle));
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(existingVehicle));
         when(vehiclePersistence.existsByPlate(command.plate())).thenReturn(false);
         when(vehiclePersistence.save(any(Vehicle.class))).thenReturn(updatedVehicle);
 
@@ -176,16 +184,18 @@ class VehicleUseCaseImplTest {
     void should_fail_updating_when_vehicle_does_not_exist() {
 
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         UpdateVehicleCommand command = new UpdateVehicleCommand(
                 id,
                 "1HGCM82633A123456",
                 "AA-00-AA",
                 "Model 3",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
-        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.empty());
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.empty());
 
         assertThatThrownBy(() -> vehicleUseCase.update(command))
                 .isInstanceOf(VehicleNotFoundException.class)
@@ -199,6 +209,7 @@ class VehicleUseCaseImplTest {
     void should_fail_updating_when_vin_already_exists_in_another_vehicle() {
 
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
         Vehicle existingVehicle = new Vehicle(
                 id,
@@ -217,10 +228,11 @@ class VehicleUseCaseImplTest {
                 "AA-00-AA",
                 "Model 3",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
-        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.of(existingVehicle));
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(existingVehicle));
         when(vehiclePersistence.existsByVin(command.vin())).thenReturn(true);
 
         assertThatThrownBy(() -> vehicleUseCase.update(command))
@@ -235,6 +247,7 @@ class VehicleUseCaseImplTest {
     void should_fail_updating_when_plate_already_exists_in_another_vehicle() {
 
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
         Vehicle existingVehicle = new Vehicle(
                 id,
@@ -253,10 +266,11 @@ class VehicleUseCaseImplTest {
                 "CC-22-CC",
                 "Model 3",
                 "Tesla",
-                LocalDate.of(2024, 1, 15)
+                LocalDate.of(2024, 1, 15),
+                userId
         );
 
-        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.of(existingVehicle));
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(existingVehicle));
         when(vehiclePersistence.existsByPlate(command.plate())).thenReturn(true);
 
         assertThatThrownBy(() -> vehicleUseCase.update(command))
@@ -271,6 +285,7 @@ class VehicleUseCaseImplTest {
     void should_get_vehicle_by_id_when_vehicle_exists() {
 
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
 
         Vehicle vehicle = new Vehicle(
@@ -284,9 +299,9 @@ class VehicleUseCaseImplTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        GetVehicleByIdCommand command = new GetVehicleByIdCommand(id);
+        GetVehicleByIdCommand command = new GetVehicleByIdCommand(id, userId);
 
-        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.of(vehicle));
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(vehicle));
 
         VehicleResult result = vehicleUseCase.getById(command);
 
@@ -300,9 +315,10 @@ class VehicleUseCaseImplTest {
     void should_fail_getting_vehicle_by_id_when_vehicle_does_not_exist() {
 
         UUID id = UUID.randomUUID();
-        GetVehicleByIdCommand command = new GetVehicleByIdCommand(id);
+        UUID userId = UUID.randomUUID();
+        GetVehicleByIdCommand command = new GetVehicleByIdCommand(id, userId);
 
-        when(vehiclePersistence.findById(id)).thenReturn(java.util.Optional.empty());
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.empty());
 
         assertThatThrownBy(() -> vehicleUseCase.getById(command))
                 .isInstanceOf(VehicleNotFoundException.class)
@@ -315,6 +331,7 @@ class VehicleUseCaseImplTest {
 
         int pageNumber = 1;
         int pageSize = 10;
+        UUID userId = UUID.randomUUID();
 
         Vehicle vehicle = new Vehicle(
                 UUID.randomUUID(),
@@ -333,9 +350,9 @@ class VehicleUseCaseImplTest {
                 1
         );
 
-        GetVehiclePageCommand command = new GetVehiclePageCommand(pageNumber, pageSize);
+        GetVehiclePageCommand command = new GetVehiclePageCommand(pageNumber, pageSize, userId);
 
-        when(vehiclePersistence.getPage(pageNumber, pageSize)).thenReturn(vehiclePage);
+        when(vehiclePersistence.getPageByOwnerId(pageNumber, pageSize, userId)).thenReturn(vehiclePage);
 
         PageResult<VehicleResult> result = vehicleUseCase.getPage(command);
 
@@ -346,7 +363,7 @@ class VehicleUseCaseImplTest {
         assertThat(result.data()).hasSize(1);
         assertThat(result.data().getFirst().id()).isEqualTo(vehicle.getId());
 
-        verify(vehiclePersistence).getPage(pageNumber, pageSize);
+        verify(vehiclePersistence).getPageByOwnerId(pageNumber, pageSize, userId);
     }
 
 }

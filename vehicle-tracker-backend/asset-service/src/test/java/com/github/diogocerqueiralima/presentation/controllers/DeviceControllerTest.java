@@ -16,9 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +39,7 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should create device and return created response")
     void should_create_device_and_return_created_response() {
+        UUID ownerId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -57,7 +60,8 @@ class DeviceControllerTest {
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.create(request);
@@ -74,6 +78,7 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should map response data from use case result")
     void should_map_response_data_from_use_case_result() {
+        UUID ownerId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -94,7 +99,8 @@ class DeviceControllerTest {
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
-                "123456789012345"
+                "123456789012345",
+                ownerId
         );
 
         ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.create(request);
@@ -108,6 +114,7 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should update device and return ok response")
     void should_update_device_and_return_ok_response() {
+        UUID ownerId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
@@ -129,7 +136,8 @@ class DeviceControllerTest {
                 "SN-002",
                 "TK-1100",
                 "Teltonika",
-                "223456789012345"
+                "223456789012345",
+                ownerId
         );
 
         ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.update(id, request);
@@ -146,6 +154,7 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should get device by id and return ok response")
     void should_get_device_by_id_and_return_ok_response() {
+        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -162,7 +171,7 @@ class DeviceControllerTest {
 
         when(deviceUseCase.getById(any())).thenReturn(result);
 
-        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(id);
+        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(id, buildJwt(userId));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -175,6 +184,7 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should get device page and return ok response")
     void should_get_device_page_and_return_ok_response() {
+        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
@@ -190,7 +200,7 @@ class DeviceControllerTest {
 
         when(deviceUseCase.getPage(any())).thenReturn(new PageResult<>(1, 10, 1, 1, List.of(deviceResult)));
 
-        ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> response = deviceController.getPage(1, 10);
+        ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> response = deviceController.getPage(buildJwt(userId), 1, 10);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -200,6 +210,16 @@ class DeviceControllerTest {
         assertThat(response.getBody().data().pageSize()).isEqualTo(10);
         assertThat(response.getBody().data().data()).hasSize(1);
         assertThat(response.getBody().data().data().getFirst().id()).isEqualTo(id);
+    }
+
+    private Jwt buildJwt(UUID userId) {
+        return new Jwt(
+                "token-value",
+                Instant.parse("2026-03-15T12:00:00Z"),
+                Instant.parse("2026-03-16T12:00:00Z"),
+                Map.of("alg", "none"),
+                Map.of("sub", userId.toString())
+        );
     }
 
 }
