@@ -3,14 +3,24 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Set up WireGuard Connection
+      uses: niklaskeerl/easy-wireguard-action@v2
+      with:
+        WG_CONFIG_FILE: ${{ secrets.WG_CONFIG_FILE }}
+    - name: Trust Harbor CA in OS
+      run: |
+        echo "${{ secrets.HARBOR_CA_CRT }}" | sudo tee /usr/local/share/ca-certificates/harbor-ca.crt > /dev/null
+        sudo update-ca-certificates
+    - name: Trust Harbor CA in Docker
+      run: |
+        sudo mkdir -p /etc/docker/certs.d/${{ secrets.HARBOR_URL }}
+        echo "${{ secrets.HARBOR_CA_CRT }}" | sudo tee /etc/docker/certs.d/${{ secrets.HARBOR_URL }}/ca.crt > /dev/null
     - name: Login to registry
       uses: docker/login-action@v3
       with:
