@@ -144,7 +144,7 @@ class VehicleAssignmentControllerTest {
     }
 
     private JwtAuthenticationToken buildAuthentication(UUID userId) {
-        Jwt jwt = Jwt.withTokenValue("token")
+        Jwt jwt = Jwt.withTokenValue("test-jwt-token")
                 .header("alg", "none")
                 .claim("sub", userId.toString())
                 .claims(claims -> claims.putAll(Map.of("realm_access", Map.of("roles", List.of()))))

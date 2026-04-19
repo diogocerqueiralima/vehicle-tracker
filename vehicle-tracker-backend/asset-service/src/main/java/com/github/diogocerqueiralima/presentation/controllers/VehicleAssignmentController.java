@@ -98,9 +98,16 @@ public class VehicleAssignmentController {
 
         // 1. Keycloak stores the user id in the token subject claim.
         String subject = authentication.getToken().getSubject();
+        if (subject == null || subject.isBlank()) {
+            throw new IllegalArgumentException("Missing user ID in authentication token.");
+        }
 
         // 2. Converts subject to UUID used by application/domain contracts.
-        return UUID.fromString(subject);
+        try {
+            return UUID.fromString(subject);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Invalid user ID format in authentication token.", exception);
+        }
     }
 
 }
