@@ -22,9 +22,7 @@ public class PlateValidator implements ConstraintValidator<Plate, String> {
             return true;
         }
 
-        String normalizedValue = value.trim().toUpperCase();
-
-        return PT_PLATE_PATTERN.matcher(normalizedValue).matches();
+        return PT_PLATE_PATTERN.matcher(value).matches();
     }
 }
 

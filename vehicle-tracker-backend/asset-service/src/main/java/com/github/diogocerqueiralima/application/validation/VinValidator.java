@@ -19,7 +19,7 @@ public class VinValidator implements ConstraintValidator<VIN, String> {
             return true;
         }
 
-        return VIN_PATTERN.matcher(value.trim().toUpperCase()).matches();
+        return VIN_PATTERN.matcher(value).matches();
     }
 }
 
