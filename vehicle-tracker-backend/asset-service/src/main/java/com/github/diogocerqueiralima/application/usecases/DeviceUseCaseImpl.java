@@ -97,10 +97,14 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
         // 1. Resolves the target id directly from the inbound command.
         UUID id = command.id();
         UUID userId = command.userId();
+        boolean isAdmin = command.isAdmin();
 
-        // 2. Loads owner-scoped device and fails fast when it does not exist.
-        Device device = devicePersistence.findByIdAndOwnerId(id, userId)
-                .orElseThrow(() -> new DeviceNotFoundException(id));
+        // 2. Applies lookup strategy based on access scope (admin can fetch any device).
+        Device device = (
+                isAdmin
+                ? devicePersistence.findById(id)
+                : devicePersistence.findByIdAndOwnerId(id, userId)
+        ).orElseThrow(() -> new DeviceNotFoundException(id));
 
         // 3. Maps the domain object to the response contract.
         return DeviceApplicationMapper.toResult(device);

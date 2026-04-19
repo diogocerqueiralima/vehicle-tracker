@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -66,7 +67,7 @@ class VehicleControllerTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(buildJwt(userId), request);
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(buildAuthentication(userId), request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -106,7 +107,7 @@ class VehicleControllerTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(buildJwt(userId), request);
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.create(buildAuthentication(userId), request);
 
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().data()).isNotNull();
@@ -145,7 +146,7 @@ class VehicleControllerTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.update(id, buildJwt(userId), request);
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.update(id, buildAuthentication(userId), request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -177,7 +178,7 @@ class VehicleControllerTest {
 
         when(vehicleUseCase.getById(any())).thenReturn(result);
 
-        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.getById(id, buildJwt(userId));
+        ResponseEntity<ApiResponseDTO<VehicleDTO>> response = vehicleController.getById(id, buildAuthentication(userId));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -207,7 +208,7 @@ class VehicleControllerTest {
 
         when(vehicleUseCase.getPage(any())).thenReturn(new PageResult<>(1, 10, 1, 1, List.of(vehicleResult)));
 
-        ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> response = vehicleController.getPage(buildJwt(userId), 1, 10);
+        ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> response = vehicleController.getPage(buildAuthentication(userId), 1, 10);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -219,14 +220,16 @@ class VehicleControllerTest {
         assertThat(response.getBody().data().data().getFirst().id()).isEqualTo(id);
     }
 
-    private Jwt buildJwt(UUID userId) {
-        return new Jwt(
+    private JwtAuthenticationToken buildAuthentication(UUID userId) {
+        Jwt jwt = new Jwt(
                 "token-value",
                 Instant.parse("2026-03-15T12:00:00Z"),
                 Instant.parse("2026-03-16T12:00:00Z"),
                 Map.of("alg", "none"),
                 Map.of("sub", userId.toString())
         );
+
+        return new JwtAuthenticationToken(jwt, List.of(), userId.toString());
     }
 
 }

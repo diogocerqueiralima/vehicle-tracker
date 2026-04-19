@@ -17,7 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +38,8 @@ import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.
  */
 @RestController
 public class DeviceController {
+
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
     private final DeviceUseCase deviceUseCase;
 
@@ -104,21 +106,22 @@ public class DeviceController {
     @GetMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> getById(
             @PathVariable UUID id,
-            @AuthenticationPrincipal Jwt jwt
+            JwtAuthenticationToken authentication
     ) {
 
-        // TODO: for now, the admins can not get the device by id, in the future implement this
-
         // 1. Resolves the authenticated user id from Keycloak token subject.
-        UUID userId = extractUserId(jwt);
+        UUID userId = extractUserId(authentication);
 
-        // 2. Maps transport data to an application command.
-        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id, userId);
+        // 2. Detects admin access from mapped Spring Security authorities.
+        boolean isAdmin = hasAdminRole(authentication);
 
-        // 3. Delegates retrieval to the application layer.
+        // 3. Maps transport data to an application command.
+        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id, userId, isAdmin);
+
+        // 4. Delegates retrieval to the application layer.
         DeviceResult result = deviceUseCase.getById(command);
 
-        // 4. Maps the application result to the response DTO.
+        // 5. Maps the application result to the response DTO.
         DeviceDTO deviceDTO = DevicePresentationMapper.toDTO(result);
 
         return ResponseEntity.ok(
@@ -135,13 +138,13 @@ public class DeviceController {
      */
     @GetMapping(DEVICES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> getPage(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal JwtAuthenticationToken authentication,
             @RequestParam(DEVICE_PAGE_NUMBER_PARAM) int pageNumber,
             @RequestParam(DEVICE_PAGE_SIZE_PARAM) int pageSize
     ) {
 
         // 1. Resolves the authenticated user id from Keycloak token subject.
-        UUID userId = extractUserId(jwt);
+        UUID userId = extractUserId(authentication);
 
         // 2. Maps query params to application command.
         GetDevicePageCommand command = DevicePresentationMapper.toGetPageCommand(pageNumber, pageSize, userId);
@@ -157,13 +160,20 @@ public class DeviceController {
         );
     }
 
-    private UUID extractUserId(Jwt jwt) {
+    private UUID extractUserId(JwtAuthenticationToken authentication) {
 
         // 1. Keycloak stores the user id in token subject claim.
-        String subject = jwt.getSubject();
+        String subject = authentication.getToken().getSubject();
 
         // 2. Converts subject to UUID used by application/domain contracts.
         return UUID.fromString(subject);
+    }
+
+    private boolean hasAdminRole(JwtAuthenticationToken authentication) {
+
+        // 1. Uses granted authorities already mapped by SecurityConfig converter.
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> ROLE_ADMIN.equalsIgnoreCase(authority.getAuthority()));
     }
 
 }

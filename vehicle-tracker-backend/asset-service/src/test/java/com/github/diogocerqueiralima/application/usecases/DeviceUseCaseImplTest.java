@@ -289,7 +289,7 @@ class DeviceUseCaseImplTest {
                 "123456789012345"
         );
 
-        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId);
+        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId, false);
 
         when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(device));
 
@@ -298,6 +298,39 @@ class DeviceUseCaseImplTest {
         assertThat(result.id()).isEqualTo(id);
         assertThat(result.serialNumber()).isEqualTo(device.getSerialNumber());
         assertThat(result.imei()).isEqualTo(device.getImei());
+        verify(devicePersistence).findByIdAndOwnerId(id, userId);
+        verify(devicePersistence, never()).findById(id);
+    }
+
+    @Test
+    @DisplayName("Should get device by id as admin when device exists")
+    void should_get_device_by_id_as_admin_when_device_exists() {
+
+        UUID id = UUID.randomUUID();
+        UUID adminUserId = UUID.randomUUID();
+        Instant now = Instant.parse("2026-03-15T12:00:00Z");
+
+        Device device = new Device(
+                id,
+                now,
+                now,
+                "SN-001",
+                "TK-1000",
+                "Teltonika",
+                "123456789012345"
+        );
+
+        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, adminUserId, true);
+
+        when(devicePersistence.findById(id)).thenReturn(Optional.of(device));
+
+        DeviceResult result = deviceUseCase.getById(command);
+
+        assertThat(result.id()).isEqualTo(id);
+        assertThat(result.serialNumber()).isEqualTo(device.getSerialNumber());
+        assertThat(result.imei()).isEqualTo(device.getImei());
+        verify(devicePersistence).findById(id);
+        verify(devicePersistence, never()).findByIdAndOwnerId(id, adminUserId);
     }
 
     @Test
@@ -306,7 +339,7 @@ class DeviceUseCaseImplTest {
 
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId);
+        GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId, false);
 
         when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
 

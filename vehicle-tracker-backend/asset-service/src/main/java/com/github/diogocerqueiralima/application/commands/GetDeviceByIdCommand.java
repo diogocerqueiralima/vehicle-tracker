@@ -13,7 +13,9 @@ public record GetDeviceByIdCommand(
         UUID id,
 
         @NotNull(message = "userId is required")
-        UUID userId
+        UUID userId,
+
+        boolean isAdmin
 
 ) {}
 

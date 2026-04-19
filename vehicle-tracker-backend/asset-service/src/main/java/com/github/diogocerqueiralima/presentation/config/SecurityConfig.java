@@ -68,17 +68,23 @@ public class SecurityConfig {
         public Collection<GrantedAuthority> convert(Jwt jwt) {
 
             Collection<GrantedAuthority> authorities = new ArrayList<>();
-            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            Map<String, Object> realmAccess = jwt.getClaim("resource_access");
 
-            log.info("Extracting roles from JWT: realm_access claim = {}", realmAccess);
+            if (realmAccess != null && realmAccess.get("tracker") instanceof Map<?, ?> resource) {
 
-            if (realmAccess != null && realmAccess.get("roles") instanceof Collection<?> roles) {
-                authorities.addAll(
-                        roles.stream()
-                                .map(Object::toString)
-                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                                .collect(Collectors.toSet())
-                );
+                Object roles = resource.get("roles");
+
+                if (roles instanceof Collection<?> r) {
+                    authorities.addAll(
+                            r.stream()
+                                    .filter(String.class::isInstance)
+                                    .map(String.class::cast)
+                                    .map(role -> "ROLE_" + role.toUpperCase())
+                                    .map(SimpleGrantedAuthority::new)
+                                    .toList()
+                    );
+                }
+
             }
 
             return authorities;

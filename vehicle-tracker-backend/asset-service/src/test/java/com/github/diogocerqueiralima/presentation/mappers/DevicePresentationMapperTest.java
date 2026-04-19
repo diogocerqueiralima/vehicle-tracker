@@ -88,11 +88,13 @@ class DevicePresentationMapperTest {
     void should_map_path_id_to_get_by_id_command() {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
+        boolean isAdmin = true;
 
-        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id, userId);
+        GetDeviceByIdCommand command = DevicePresentationMapper.toGetByIdCommand(id, userId, isAdmin);
 
         assertThat(command.id()).isEqualTo(id);
         assertThat(command.userId()).isEqualTo(userId);
+        assertThat(command.isAdmin()).isTrue();
     }
 
     @Test

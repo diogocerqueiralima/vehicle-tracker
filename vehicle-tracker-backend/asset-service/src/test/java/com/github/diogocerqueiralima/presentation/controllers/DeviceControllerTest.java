@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.presentation.controllers;
 
+import com.github.diogocerqueiralima.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.application.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
 import com.github.diogocerqueiralima.application.results.PageResult;
@@ -13,10 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,6 +30,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -171,7 +177,11 @@ class DeviceControllerTest {
 
         when(deviceUseCase.getById(any())).thenReturn(result);
 
-        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(id, buildJwt(userId));
+        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(id, buildAuthentication(userId));
+
+        ArgumentCaptor<GetDeviceByIdCommand> commandCaptor = ArgumentCaptor.forClass(GetDeviceByIdCommand.class);
+        verify(deviceUseCase).getById(commandCaptor.capture());
+        GetDeviceByIdCommand capturedCommand = commandCaptor.getValue();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -179,6 +189,44 @@ class DeviceControllerTest {
         assertThat(response.getBody().data()).isNotNull();
         assertThat(response.getBody().data().id()).isEqualTo(id);
         assertThat(response.getBody().data().serialNumber()).isEqualTo("SN-001");
+        assertThat(capturedCommand.id()).isEqualTo(id);
+        assertThat(capturedCommand.userId()).isEqualTo(userId);
+        assertThat(capturedCommand.isAdmin()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should get device by id and map admin access to command")
+    void should_get_device_by_id_and_map_admin_access_to_command() {
+        UUID adminUserId = UUID.randomUUID();
+        UUID id = UUID.randomUUID();
+        Instant now = Instant.parse("2026-03-15T12:00:00Z");
+
+        DeviceResult result = new DeviceResult(
+                id,
+                now,
+                now,
+                "SN-ADMIN-001",
+                "TK-ADMIN",
+                "Teltonika",
+                "923456789012345"
+        );
+
+        when(deviceUseCase.getById(any())).thenReturn(result);
+
+        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(
+                id,
+                buildAuthentication(adminUserId, List.of("admin"))
+        );
+
+        ArgumentCaptor<GetDeviceByIdCommand> commandCaptor = ArgumentCaptor.forClass(GetDeviceByIdCommand.class);
+        verify(deviceUseCase).getById(commandCaptor.capture());
+        GetDeviceByIdCommand capturedCommand = commandCaptor.getValue();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(capturedCommand.id()).isEqualTo(id);
+        assertThat(capturedCommand.userId()).isEqualTo(adminUserId);
+        assertThat(capturedCommand.isAdmin()).isTrue();
     }
 
     @Test
@@ -200,7 +248,7 @@ class DeviceControllerTest {
 
         when(deviceUseCase.getPage(any())).thenReturn(new PageResult<>(1, 10, 1, 1, List.of(deviceResult)));
 
-        ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> response = deviceController.getPage(buildJwt(userId), 1, 10);
+        ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> response = deviceController.getPage(buildAuthentication(userId), 1, 10);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -212,14 +260,26 @@ class DeviceControllerTest {
         assertThat(response.getBody().data().data().getFirst().id()).isEqualTo(id);
     }
 
-    private Jwt buildJwt(UUID userId) {
-        return new Jwt(
+    private JwtAuthenticationToken buildAuthentication(UUID userId) {
+        return buildAuthentication(userId, List.of());
+    }
+
+    private JwtAuthenticationToken buildAuthentication(UUID userId, List<String> roles) {
+        Jwt jwt = new Jwt(
                 "token-value",
                 Instant.parse("2026-03-15T12:00:00Z"),
                 Instant.parse("2026-03-16T12:00:00Z"),
                 Map.of("alg", "none"),
                 Map.of("sub", userId.toString())
         );
+
+        List<GrantedAuthority> authorities = roles.stream()
+                .map(role -> "ROLE_" + role.toUpperCase())
+                .map(SimpleGrantedAuthority::new)
+                .map(GrantedAuthority.class::cast)
+                .toList();
+
+        return new JwtAuthenticationToken(jwt, authorities, userId.toString());
     }
 
 }

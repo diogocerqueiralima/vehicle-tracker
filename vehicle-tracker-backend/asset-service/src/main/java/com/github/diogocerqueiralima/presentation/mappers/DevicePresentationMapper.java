@@ -61,10 +61,12 @@ public final class DevicePresentationMapper {
      * Builds a get-by-id command from an HTTP path identifier.
      *
      * @param id device identifier from the request path.
+     * @param userId user identifier from the authenticated request context.
+     * @param isAdmin flag indicating if the user has admin privileges.
      * @return command consumed by the application layer.
      */
-    public static GetDeviceByIdCommand toGetByIdCommand(UUID id, UUID userId) {
-        return new GetDeviceByIdCommand(id, userId);
+    public static GetDeviceByIdCommand toGetByIdCommand(UUID id, UUID userId, boolean isAdmin) {
+        return new GetDeviceByIdCommand(id, userId, isAdmin);
     }
 
     /**
