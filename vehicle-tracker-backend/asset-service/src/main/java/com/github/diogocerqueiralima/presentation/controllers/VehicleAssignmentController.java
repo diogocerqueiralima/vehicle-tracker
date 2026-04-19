@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,7 +40,7 @@ public class VehicleAssignmentController {
      * @param request request payload for assignment.
      * @return created assignment wrapped in an API response.
      */
-    @PostMapping(VEHICLES_ASSIGNMENTS_ASSIGN_URI)
+    @PostMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> assignDeviceToVehicle(
             JwtAuthenticationToken authentication,
             @Valid @RequestBody AssignDeviceToVehicleRequestDTO request
@@ -70,7 +71,7 @@ public class VehicleAssignmentController {
      * @param request request payload for unassignment.
      * @return updated assignment wrapped in an API response.
      */
-    @PostMapping(VEHICLES_ASSIGNMENTS_UNASSIGN_URI)
+    @DeleteMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> unassignDeviceFromVehicle(
             JwtAuthenticationToken authentication,
             @Valid @RequestBody UnassignDeviceFromVehicleRequestDTO request
