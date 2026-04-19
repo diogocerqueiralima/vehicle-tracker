@@ -30,9 +30,3 @@ jobs:
     - name: Push ingestion-service image
       working-directory: vehicle-tracker-backend/ingestion-service/container
       run: ./buildContainer.sh
-    - name: Push processing-service image
-      working-directory: vehicle-tracker-backend/processing-service/container
-      run: ./buildContainer.sh
-    - name: Push vehicle-service image
-      working-directory: vehicle-tracker-backend/vehicle-service/container
-      run: ./buildContainer.sh
