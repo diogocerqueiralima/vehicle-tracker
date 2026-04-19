@@ -12,6 +12,7 @@ import com.github.diogocerqueiralima.presentation.mappers.VehicleAssignmentPrese
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,21 +41,22 @@ public class VehicleAssignmentController {
      */
     @PostMapping(VEHICLES_ASSIGNMENTS_ASSIGN_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> assignDeviceToVehicle(
+            JwtAuthenticationToken authentication,
             @Valid @RequestBody AssignDeviceToVehicleRequestDTO request
     ) {
 
-        // TODO: get the user from authentication context
-        UUID assignedBy = UUID.randomUUID();
+        // 1. Resolve the authenticated user id from the jwt.
+        UUID assignedBy = extractUserId(authentication);
 
-        // 1. Maps transport data to an application command.
+        // 2. Maps transport data to an application command.
         AssignDeviceToVehicleCommand command = VehicleAssignmentPresentationMapper.toAssignDeviceToVehicleCommand(
                 request, assignedBy
         );
 
-        // 2. Delegates assignment creation to the application layer.
+        // 3. Delegates assignment creation to the application layer.
         VehicleAssignmentResult result = vehicleAssignmentUseCase.assignDeviceToVehicle(command);
 
-        // 3. Converts application output into the response payload.
+        // 4. Converts application output into the response payload.
         VehicleAssignmentDTO responseData = VehicleAssignmentPresentationMapper.toDTO(result);
 
         return ResponseEntity
@@ -70,26 +72,35 @@ public class VehicleAssignmentController {
      */
     @PostMapping(VEHICLES_ASSIGNMENTS_UNASSIGN_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> unassignDeviceFromVehicle(
+            JwtAuthenticationToken authentication,
             @Valid @RequestBody UnassignDeviceFromVehicleRequestDTO request
     ) {
 
-        // TODO: get the user from authentication context
-        UUID unassignedBy = UUID.randomUUID();
+        // 1. Resolve the authenticated user id from the jwt.
+        UUID unassignedBy = extractUserId(authentication);
 
-        // 1. Maps transport data to an application command.
+        // 2. Maps transport data to an application command.
         UnassignDeviceFromVehicleCommand command = VehicleAssignmentPresentationMapper.toUnassignDeviceFromVehicleCommand(
                 request,
                 unassignedBy
         );
 
-        // 2. Delegates assignment closure to the application layer.
+        // 3. Delegates assignment closure to the application layer.
         VehicleAssignmentResult result = vehicleAssignmentUseCase.unassignDeviceFromVehicle(command);
 
-        // 3. Converts application output into the response payload.
+        // 4. Converts application output into the response payload.
         VehicleAssignmentDTO responseData = VehicleAssignmentPresentationMapper.toDTO(result);
 
         return ResponseEntity.ok(new ApiResponseDTO<>("Device unassigned from vehicle successfully.", responseData));
     }
 
-}
+    private UUID extractUserId(JwtAuthenticationToken authentication) {
 
+        // 1. Keycloak stores the user id in the token subject claim.
+        String subject = authentication.getToken().getSubject();
+
+        // 2. Converts subject to UUID used by application/domain contracts.
+        return UUID.fromString(subject);
+    }
+
+}
