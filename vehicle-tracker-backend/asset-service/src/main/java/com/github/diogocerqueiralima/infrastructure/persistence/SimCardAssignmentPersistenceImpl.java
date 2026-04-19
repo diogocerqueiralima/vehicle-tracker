@@ -24,7 +24,6 @@ public class SimCardAssignmentPersistenceImpl implements SimCardAssignmentPersis
     }
 
     @Override
-    @Transactional
     public SimCardAssignment save(SimCardAssignment simCardAssignment) {
 
         DeviceEntity deviceEntity = DeviceMapper.toEntity(simCardAssignment.getDevice());
