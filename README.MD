@@ -67,7 +67,8 @@ In folder `docs` you can find more detailed documentation about the architecture
 ## Stack
 
 - **Backend**: Java with Spring Boot
-- **Frontend**: Kotlin with Jetpack Compose for Android
+- **Web Frontend**: Next.js with React and TypeScript
+- **Mobile Frontend**: Kotlin with Jetpack Compose for Android
 - **Database**: PostgreSQL with TimescaleDB and PostGIS extensions
 - **Messaging**: Kafka
 - **Containerization**: Docker (local and cloud deployment)
