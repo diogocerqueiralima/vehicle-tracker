@@ -17,7 +17,7 @@ The backend services are responsible for data ingestion, processing, and storage
 
 All requests from the web and mobile applications pass through the reverse proxy, which acts as a single entry point and routes traffic to the appropriate backend service.
 
-The web application is a React-based Single Page Application (SPA). It is served by a dedicated frontend server running behind the reverse proxy. When a user accesses the application through a browser, the request is first handled by the reverse proxy, which forwards it to the frontend server. The server responds with the React application (static assets), which is then loaded in the browser.
+The web application is a Next.js web application built with React. It is served by a dedicated frontend server running behind the reverse proxy. When a user accesses the application through a browser, the request is first handled by the reverse proxy, which forwards it to the frontend server. The server responds with the web application, which is then loaded in the browser.
 
 Once loaded, the web application communicates directly with the backend APIs via HTTP requests, which again go through the reverse proxy. The reverse proxy routes these API requests to the appropriate backend services. Authentication and authorization are handled via the identity provider (Keycloak), also accessed through the reverse proxy.
 
@@ -38,7 +38,7 @@ flowchart LR
 
     subgraph Platform
         FE[Frontend Server]
-        API[Backend API]
+        API[Backend Services]
         IDP[Keycloak]
         K[Kafka]
         DB[(PostgreSQL<br/>TimescaleDB + PostGIS)]
