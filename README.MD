@@ -13,7 +13,7 @@ and modern system architecture design.
 
 The Vehicle Tracker system consists of a reverse proxy, multiple backend services, Kafka for messaging, a web application, and a mobile application.
 
-The backend services are responsible for data ingestion, processing, and storage, and expose APIs consumed by both the web and mobile applications. More details about each service can be found in `docs/architecture`.
+The backend services are responsible for data ingestion, processing, and storage, and expose APIs consumed by both the web and mobile applications. More details about each service can be found in `docs/`.
 
 All requests from the web and mobile applications pass through the reverse proxy, which acts as a single entry point and routes traffic to the appropriate backend service.
 
