@@ -6,6 +6,8 @@ COPY gradle /app/gradle
 COPY settings.gradle.kts /app/settings.gradle.kts
 COPY gradlew /app/gradlew
 COPY ingestion-service /app/ingestion-service
+COPY asset-service /app/asset-service
+COPY identity-service /app/identity-service
 COPY events /app/events
 COPY schema /app/schema
 
