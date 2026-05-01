@@ -36,7 +36,7 @@ flowchart LR
     APP[Browser / Mobile Client]
     RP[Reverse Proxy]
 
-    subgraph Platform
+    subgraph Vehicle Tracker System
         FE[Frontend Server]
         API[Backend Services]
         IDP[Keycloak]
