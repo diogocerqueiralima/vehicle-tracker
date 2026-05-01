@@ -15,8 +15,10 @@ jobs:
       with:
         WG_CONFIG_FILE: ${{ secrets.WG_CONFIG_FILE }}
     - name: Trust Harbor CA in OS
+      env:
+        HARBOR_CA_CRT: ${{ secrets.HARBOR_CA_CRT }}
       run: |
-        echo "${{ secrets.HARBOR_CA_CRT }}" | sudo tee /usr/local/share/ca-certificates/harbor-ca.crt > /dev/null
+        printf '%s' "$HARBOR_CA_CRT" | sudo tee /usr/local/share/ca-certificates/harbor-ca.crt > /dev/null
         sudo update-ca-certificates
     - name: Login to registry
       uses: docker/login-action@v3
