@@ -99,8 +99,8 @@ class VehicleAssignmentUseCaseImplTest {
                 "Installed in workshop A"
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)).thenReturn(Optional.of(device));
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)).thenReturn(Optional.of(vehicle));
         when(vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
         when(vehicleAssignmentPersistence.existsActiveByVehicleId(vehicleId)).thenReturn(false);
         when(vehicleAssignmentPersistence.save(any(VehicleAssignment.class))).thenReturn(savedAssignment);
@@ -131,7 +131,7 @@ class VehicleAssignmentUseCaseImplTest {
                 null
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
                 .isInstanceOf(DeviceNotFoundException.class)
@@ -165,8 +165,8 @@ class VehicleAssignmentUseCaseImplTest {
                 null
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findById(vehicleId)).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.assignedBy())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
                 .isInstanceOf(VehicleNotFoundException.class)
@@ -211,8 +211,8 @@ class VehicleAssignmentUseCaseImplTest {
                 null
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.assignedBy())).thenReturn(Optional.of(vehicle));
         when(vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(true);
 
         assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
@@ -258,8 +258,8 @@ class VehicleAssignmentUseCaseImplTest {
                 null
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.assignedBy())).thenReturn(Optional.of(vehicle));
         when(vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
         when(vehicleAssignmentPersistence.existsActiveByVehicleId(vehicleId)).thenReturn(true);
 
@@ -332,8 +332,8 @@ class VehicleAssignmentUseCaseImplTest {
                 VehicleRemovalReason.RETIRED
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.unassignedBy())).thenReturn(Optional.of(device));
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.unassignedBy())).thenReturn(Optional.of(vehicle));
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
                 .thenReturn(Optional.of(activeAssignment));
         when(vehicleAssignmentPersistence.save(any(VehicleAssignment.class))).thenReturn(closedAssignment);
@@ -384,8 +384,8 @@ class VehicleAssignmentUseCaseImplTest {
                 VehicleRemovalReason.OTHER
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findById(vehicleId)).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.unassignedBy())).thenReturn(Optional.of(device));
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.unassignedBy())).thenReturn(Optional.of(vehicle));
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
                 .thenReturn(Optional.empty());
 

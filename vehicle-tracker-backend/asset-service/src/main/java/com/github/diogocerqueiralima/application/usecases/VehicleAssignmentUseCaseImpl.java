@@ -54,13 +54,14 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
 
         UUID deviceId = command.deviceId();
         UUID vehicleId = command.vehicleId();
+        UUID assignedBy = command.assignedBy();
 
-        // 1. Loads the device and fails fast if it does not exist.
-        Device device = devicePersistence.findById(deviceId)
+        // 1. Loads the device scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        Device device = devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
-        // 2. Loads the vehicle and fails fast if it does not exist.
-        Vehicle vehicle = vehiclePersistence.findById(vehicleId)
+        // 2. Loads the vehicle scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)
                 .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
 
         // 3. Rejects assignment when the device already has an active assignment.
@@ -99,13 +100,14 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
 
         UUID deviceId = command.deviceId();
         UUID vehicleId = command.vehicleId();
+        UUID unassignedBy = command.unassignedBy();
 
-        // 1. Loads the device and fails fast if it does not exist.
-        devicePersistence.findById(deviceId)
+        // 1. Loads the device scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        Device device = devicePersistence.findByIdAndOwnerId(deviceId, unassignedBy)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
-        // 2. Loads the vehicle and fails fast if it does not exist.
-        vehiclePersistence.findById(vehicleId)
+        // 2. Loads the vehicle scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, unassignedBy)
                 .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
 
         // 3. Loads the active assignment for this exact device/vehicle pair.
