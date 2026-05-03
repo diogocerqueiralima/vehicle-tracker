@@ -185,7 +185,7 @@ class SimCardUseCaseImplTest {
 
     @Test
     @DisplayName("Should get sim card by id when it exists")
-    void should_get_sim_card_by_iccid_when_it_exists() {
+    void should_get_sim_card_by_id_when_it_exists() {
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.now();
@@ -203,7 +203,7 @@ class SimCardUseCaseImplTest {
 
     @Test
     @DisplayName("Should fail getting sim card by id when it does not exist")
-    void should_fail_getting_sim_card_by_iccid_when_it_does_not_exist() {
+    void should_fail_getting_sim_card_by_id_when_it_does_not_exist() {
 
         UUID id = UUID.randomUUID();
         when(simCardPersistence.findById(id)).thenReturn(Optional.empty());
@@ -215,7 +215,7 @@ class SimCardUseCaseImplTest {
 
     @Test
     @DisplayName("Should delete sim card by id when it exists")
-    void should_delete_sim_card_by_iccid_when_it_exists() {
+    void should_delete_sim_card_by_id_when_it_exists() {
 
         UUID id = UUID.randomUUID();
         when(simCardPersistence.existsById(id)).thenReturn(true);
@@ -227,7 +227,7 @@ class SimCardUseCaseImplTest {
 
     @Test
     @DisplayName("Should fail deleting sim card by id when it does not exist")
-    void should_fail_deleting_sim_card_by_iccid_when_it_does_not_exist() {
+    void should_fail_deleting_sim_card_by_id_when_it_does_not_exist() {
 
         UUID id = UUID.randomUUID();
         when(simCardPersistence.existsById(id)).thenReturn(false);

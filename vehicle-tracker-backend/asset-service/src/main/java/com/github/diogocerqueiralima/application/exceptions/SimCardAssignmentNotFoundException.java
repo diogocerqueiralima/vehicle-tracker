@@ -8,7 +8,7 @@ import java.util.UUID;
 public class SimCardAssignmentNotFoundException extends RuntimeException {
 
     public SimCardAssignmentNotFoundException(UUID deviceId, UUID simCardId) {
-        super("Active SIM card assignment not found for device id: " + deviceId + " and sim id: " + simCardId);
+        super("Active SIM card assignment not found for device id: " + deviceId + " and SIM id: " + simCardId);
     }
 
 }

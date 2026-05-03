@@ -23,7 +23,7 @@ public interface SimCardUseCase {
     SimCardResult create(@Valid CreateSimCardCommand command);
 
     /**
-     * Updates an existing SIM card identified by ICCID.
+     * Updates an existing SIM card identified by id.
      *
      * @param command the update SIM card command.
      * @return the updated SIM card result.
@@ -31,7 +31,7 @@ public interface SimCardUseCase {
     SimCardResult update(@Valid UpdateSimCardCommand command);
 
     /**
-     * Retrieves an existing SIM card by ICCID.
+     * Retrieves an existing SIM card by id.
      *
      * @param command the get SIM card by id command.
      * @return the retrieved SIM card result.
@@ -41,7 +41,7 @@ public interface SimCardUseCase {
     /**
      * Deletes an existing SIM card by id.
      *
-     * @param command the delete SIM card by ICCID command.
+     * @param command the delete SIM card by id command.
      */
     void deleteById(@Valid DeleteSimCardByIdCommand command);
 

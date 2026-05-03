@@ -87,7 +87,7 @@ public class SimCardController {
     }
 
     /**
-     * Retrieves a SIM card by ICCID.
+     * Retrieves a SIM card by id.
      *
      * @param id SIM card id.
      * @return SIM card wrapped in an API response.
@@ -108,7 +108,7 @@ public class SimCardController {
     }
 
     /**
-     * Deletes a SIM card by ICCID.
+     * Deletes a SIM card by id.
      *
      * @param id SIM card id.
      * @return success response with no payload.

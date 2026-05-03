@@ -2,7 +2,6 @@ package com.github.diogocerqueiralima.presentation.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.diogocerqueiralima.domain.assignments.SimCardRemovalReason;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
@@ -11,11 +10,9 @@ import java.util.UUID;
  */
 public record UnassignDeviceFromSimCardRequestDTO(
 
-        @NotNull(message = "deviceId is required")
         @JsonProperty("device_id")
         UUID deviceId,
 
-        @NotNull(message = "id is required")
         @JsonProperty("sim_card_id")
         UUID simCardId,
 

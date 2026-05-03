@@ -86,7 +86,7 @@ class SimCardControllerTest {
 
     @Test
     @DisplayName("Should get sim card by id and return ok response")
-    void should_get_sim_card_by_iccid_and_return_ok_response() {
+    void should_get_sim_card_by_id_and_return_ok_response() {
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.now();
@@ -110,7 +110,7 @@ class SimCardControllerTest {
 
     @Test
     @DisplayName("Should delete sim card by id and return ok response")
-    void should_delete_sim_card_by_iccid_and_return_ok_response() {
+    void should_delete_sim_card_by_id_and_return_ok_response() {
 
         UUID id = UUID.randomUUID();
         ResponseEntity<ApiResponseDTO<Void>> response = simCardController.deleteById(id);

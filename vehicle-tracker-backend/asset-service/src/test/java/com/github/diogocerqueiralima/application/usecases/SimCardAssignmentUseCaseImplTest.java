@@ -360,7 +360,7 @@ class SimCardAssignmentUseCaseImplTest {
 
         assertThatThrownBy(() -> simCardAssignmentUseCase.unassignDeviceFromSimCard(command))
                 .isInstanceOf(SimCardAssignmentNotFoundException.class)
-                .hasMessage("Active SIM card assignment not found for device id: " + deviceId + " and sim id: " + simCardId);
+                .hasMessage("Active SIM card assignment not found for device id: " + deviceId + " and SIM id: " + simCardId);
 
         verify(simCardAssignmentPersistence, never()).save(any(SimCardAssignment.class));
     }

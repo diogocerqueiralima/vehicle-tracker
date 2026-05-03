@@ -14,8 +14,6 @@ public interface SimCardRepository extends JpaRepository<SimCardEntity, UUID> {
 
 	boolean existsByIccid(String iccid);
 
-	void deleteById(UUID id);
-
 	boolean existsByMsisdn(String msisdn);
 
 	boolean existsByImsi(String imsi);
