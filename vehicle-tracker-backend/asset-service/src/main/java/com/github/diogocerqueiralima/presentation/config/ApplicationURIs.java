@@ -16,7 +16,7 @@ public class ApplicationURIs {
             DEVICE_PAGE_NUMBER_PARAM = "pageNumber",
             DEVICE_PAGE_SIZE_PARAM = "pageSize";
 
-    public static final String SIM_CARD_ICCID_PARAM = "iccid";
+    public static final String SIM_CARD_ID_PARAM = "id";
 
     // URIs
     public static final String VEHICLES_BASE_URI = "/vehicles",
@@ -27,7 +27,8 @@ public class ApplicationURIs {
             DEVICES_ID_URI = DEVICES_BASE_URI + "/{" + DEVICE_ID_PARAM + "}";
 
     public static final String SIM_CARDS_BASE_URI = "/sim-cards",
-            SIM_CARDS_ICCID_URI = SIM_CARDS_BASE_URI + "/{" + SIM_CARD_ICCID_PARAM + "}";
+            SIM_CARDS_ID_URI = SIM_CARDS_BASE_URI + "/{" + SIM_CARD_ID_PARAM + "}",
+            SIM_CARDS_ASSIGNMENTS_BASE_URI = SIM_CARDS_BASE_URI + "/assignments";
 
 }
 

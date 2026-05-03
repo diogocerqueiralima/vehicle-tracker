@@ -72,6 +72,7 @@ class SimCardRemovalReason {
 
 Asset <|-- Device
 Asset <|-- Vehicle
+Asset <|-- SimCard
 Assignment <|-- VehicleAssignment
 Assignment <|-- SimCardAssignment
 Device "1" -- "0..*" VehicleAssignment : assignment history

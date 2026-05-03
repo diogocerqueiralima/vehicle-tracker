@@ -1,8 +1,8 @@
 package com.github.diogocerqueiralima.infrastructure.mappers;
 
 import com.github.diogocerqueiralima.domain.assignments.SimCardAssignment;
-import com.github.diogocerqueiralima.infrastructure.entities.SimCardEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
+import com.github.diogocerqueiralima.infrastructure.entities.assets.SimCardEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assignments.SimCardAssignmentEntity;
 
 /**

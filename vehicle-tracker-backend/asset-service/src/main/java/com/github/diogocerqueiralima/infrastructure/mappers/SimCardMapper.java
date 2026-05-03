@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.mappers;
 
-import com.github.diogocerqueiralima.domain.SimCard;
-import com.github.diogocerqueiralima.infrastructure.entities.SimCardEntity;
+import com.github.diogocerqueiralima.domain.assets.SimCard;
+import com.github.diogocerqueiralima.infrastructure.entities.assets.SimCardEntity;
 
 /**
  * Mapper for SIM card conversions between domain and persistence layers.
@@ -22,6 +22,10 @@ public class SimCardMapper {
 
         SimCardEntity entity = new SimCardEntity();
 
+        entity.setId(simCard.getId());
+        entity.setOwnerId(simCard.getOwnerId());
+        entity.setCreatedAt(simCard.getCreatedAt());
+        entity.setUpdatedAt(simCard.getUpdatedAt());
         entity.setIccid(simCard.getIccid());
         entity.setMsisdn(simCard.getMsisdn());
         entity.setImsi(simCard.getImsi());
@@ -38,6 +42,10 @@ public class SimCardMapper {
      */
     public static SimCard toDomain(SimCardEntity entity) {
         return new SimCard(
+                entity.getId(),
+                entity.getOwnerId(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt(),
                 entity.getIccid(),
                 entity.getMsisdn(),
                 entity.getImsi()

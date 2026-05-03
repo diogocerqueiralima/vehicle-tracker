@@ -1,8 +1,8 @@
 package com.github.diogocerqueiralima.application.ports.inbound;
 
 import com.github.diogocerqueiralima.application.commands.CreateSimCardCommand;
-import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIccidCommand;
-import com.github.diogocerqueiralima.application.commands.GetSimCardByIccidCommand;
+import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateSimCardCommand;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ public interface SimCardUseCase {
     SimCardResult create(@Valid CreateSimCardCommand command);
 
     /**
-     * Updates an existing SIM card identified by ICCID.
+     * Updates an existing SIM card identified by id.
      *
      * @param command the update SIM card command.
      * @return the updated SIM card result.
@@ -31,19 +31,19 @@ public interface SimCardUseCase {
     SimCardResult update(@Valid UpdateSimCardCommand command);
 
     /**
-     * Retrieves an existing SIM card by ICCID.
+     * Retrieves an existing SIM card by id.
      *
-     * @param command the get SIM card by ICCID command.
+     * @param command the get SIM card by id command.
      * @return the retrieved SIM card result.
      */
-    SimCardResult getByIccid(@Valid GetSimCardByIccidCommand command);
+    SimCardResult getById(@Valid GetSimCardByIdCommand command);
 
     /**
-     * Deletes an existing SIM card by ICCID.
+     * Deletes an existing SIM card by id.
      *
-     * @param command the delete SIM card by ICCID command.
+     * @param command the delete SIM card by id command.
      */
-    void deleteByIccid(@Valid DeleteSimCardByIccidCommand command);
+    void deleteById(@Valid DeleteSimCardByIdCommand command);
 
 }
 
