@@ -13,7 +13,7 @@ public record UnassignDeviceFromSimCardCommand(
         @NotNull(message = "deviceId is required")
         UUID deviceId,
 
-        @NotNull(message = "id is required")
+        @NotNull(message = "simCardId is required")
         UUID simCardId,
 
         @NotNull(message = "unassignedBy is required")

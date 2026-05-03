@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
  */
 public record CreateSimCardCommand(
 
-        @NotBlank(message = "id is required")
+        @NotBlank(message = "iccid is required")
         String iccid,
 
         @NotBlank(message = "msisdn is required")

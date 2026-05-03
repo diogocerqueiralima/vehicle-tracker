@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public record UpdateSimCardRequestDTO(
 
-        @JsonProperty("id")
+        @JsonProperty("iccid")
         String iccid,
 
         @JsonProperty("msisdn")

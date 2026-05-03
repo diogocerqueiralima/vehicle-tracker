@@ -59,32 +59,38 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
 
         UUID id = command.id();
 
-        // 1. Gets the SIM card with the provided ICCID.
+        // 1. Gets the SIM card with the provided id.
         SimCard existingSimCard = simCardPersistence.findById(id)
                 .orElseThrow(() -> new SimCardNotFoundException(id));
 
-        // 2. Checks if exists another SIM card with the given MSISDN.
+        // 2. Checks if exists another SIM card with the given ICCID.
+        if (!existingSimCard.getIccid().equals(command.iccid())
+                && simCardPersistence.existsByIccid(command.iccid())) {
+            throw new SimCardAlreadyExistsException("A SIM card with the provided ICCID already exists.");
+        }
+
+        // 3. Checks if exists another SIM card with the given MSISDN.
         if (!existingSimCard.getMsisdn().equals(command.msisdn())
                 && simCardPersistence.existsByMsisdn(command.msisdn())) {
             throw new SimCardAlreadyExistsException("A SIM card with the provided MSISDN already exists.");
         }
 
-        // 3. Checks if exists another SIM card with the given IMSI.
+        // 4. Checks if exists another SIM card with the given IMSI.
         if (!existingSimCard.getImsi().equals(command.imsi())
                 && simCardPersistence.existsByImsi(command.imsi())) {
             throw new SimCardAlreadyExistsException("A SIM card with the provided IMSI already exists.");
         }
 
-        // 4. Updates and saves the SIM card.
+        // 5. Updates and saves the SIM card.
         SimCard simCardToSave = SimCardApplicationMapper.toDomain(command, existingSimCard, Instant.now());
         SimCard updatedSimCard = simCardPersistence.save(simCardToSave);
 
-        // 5. Builds the result.
+        // 6. Builds the result.
         return SimCardApplicationMapper.toResult(updatedSimCard);
     }
 
     /**
-     * Retrieves a SIM card by ICCID.
+     * Retrieves a SIM card by id.
      *
      * @param command get-by-id payload.
      * @return the matching SIM card as a result object.
@@ -92,10 +98,10 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
     @Override
     public SimCardResult getById(GetSimCardByIdCommand command) {
 
-        // 1. Resolves the target ICCID directly from the inbound command.
+        // 1. Resolves the target id directly from the inbound command.
         UUID id = command.id();
 
-        // 2. Loads by ICCID and fail fast when absent.
+        // 2. Loads by id and fail fast when absent.
         SimCard simCard = simCardPersistence.findById(id)
                 .orElseThrow(() -> new SimCardNotFoundException(id));
 
@@ -104,14 +110,14 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
     }
 
     /**
-     * Deletes a SIM card by ICCID.
+     * Deletes a SIM card by id.
      *
      * @param command delete-by-id payload.
      */
     @Override
     public void deleteById(DeleteSimCardByIdCommand command) {
 
-        // 1. Resolves the target ICCID directly from the inbound command.
+        // 1. Resolves the target id directly from the inbound command.
         UUID id = command.id();
 
         // 2. Fails fast when the SIM card does not exist.

@@ -13,7 +13,7 @@ public record UpdateSimCardCommand(
         @NotNull(message = "id is required")
         UUID id,
 
-        @NotBlank(message = "id is required")
+        @NotBlank(message = "iccid is required")
         String iccid,
 
         @NotBlank(message = "msisdn is required")

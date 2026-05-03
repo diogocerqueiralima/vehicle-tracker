@@ -19,7 +19,7 @@ public class SimCard extends Asset {
 
     public SimCard(UUID id, UUID ownerId, Instant createdAt, Instant updatedAt, String iccid, String msisdn, String imsi) {
         super(id, ownerId, createdAt, updatedAt);
-        this.iccid = Objects.requireNonNull(iccid, "id cannot be null");
+        this.iccid = Objects.requireNonNull(iccid, "iccid cannot be null");
         this.msisdn = Objects.requireNonNull(msisdn, "msisdn cannot be null");
         this.imsi = Objects.requireNonNull(imsi, "imsi cannot be null");
     }

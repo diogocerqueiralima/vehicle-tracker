@@ -140,7 +140,7 @@ class SimCardUseCaseImplTest {
 
         assertThatThrownBy(() -> simCardUseCase.update(command))
                 .isInstanceOf(SimCardNotFoundException.class)
-                .hasMessage("Sim card not found for id: " + id);
+                .hasMessage("SIM card not found for id: " + id);
     }
 
     @Test
@@ -210,7 +210,7 @@ class SimCardUseCaseImplTest {
 
         assertThatThrownBy(() -> simCardUseCase.getById(new GetSimCardByIdCommand(id)))
                 .isInstanceOf(SimCardNotFoundException.class)
-                .hasMessage("Sim card not found for id: " + id);
+                .hasMessage("SIM card not found for id: " + id);
     }
 
     @Test
@@ -234,7 +234,7 @@ class SimCardUseCaseImplTest {
 
         assertThatThrownBy(() -> simCardUseCase.deleteById(new DeleteSimCardByIdCommand(id)))
                 .isInstanceOf(SimCardNotFoundException.class)
-                .hasMessage("Sim card not found for id: " + id);
+                .hasMessage("SIM card not found for id: " + id);
 
         verify(simCardPersistence, never()).deleteById(id);
     }

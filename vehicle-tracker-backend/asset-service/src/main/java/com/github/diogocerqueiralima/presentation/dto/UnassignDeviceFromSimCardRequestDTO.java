@@ -16,7 +16,7 @@ public record UnassignDeviceFromSimCardRequestDTO(
         UUID deviceId,
 
         @NotNull(message = "id is required")
-        @JsonProperty("sim_card_iccid")
+        @JsonProperty("sim_card_id")
         UUID simCardId,
 
         @JsonProperty("removal_reason")
