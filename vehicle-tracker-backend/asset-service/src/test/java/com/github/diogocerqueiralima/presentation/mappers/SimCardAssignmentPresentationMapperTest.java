@@ -46,7 +46,6 @@ class SimCardAssignmentPresentationMapperTest {
 
         UUID deviceId = UUID.randomUUID();
         UUID simCardId = UUID.randomUUID();
-        String iccid = "8991101200003204511";
         UUID assignedBy = UUID.randomUUID();
         Instant assignedAt = Instant.parse("2026-03-20T12:00:00Z");
 

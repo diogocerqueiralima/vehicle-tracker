@@ -44,11 +44,6 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return simCardRepository.existsById(id);
-    }
-
-    @Override
     public boolean existsByIccid(String iccid) {
         return simCardRepository.existsByIccid(iccid);
     }
@@ -64,16 +59,8 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     }
 
     @Override
-    public void deleteById(UUID id) {
-        simCardRepository.deleteById(id);
-    }
-
-    @Override
     public void deleteByIdAndOwnerId(UUID id, UUID ownerId) {
-        // Ensure record exists for owner before deleting to keep semantics similar to vehicle use case
-        if (simCardRepository.existsByIdAndOwnerId(id, ownerId)) {
-            simCardRepository.deleteById(id);
-        }
+        simCardRepository.deleteByIdAndOwnerId(id, ownerId);
     }
 
 }

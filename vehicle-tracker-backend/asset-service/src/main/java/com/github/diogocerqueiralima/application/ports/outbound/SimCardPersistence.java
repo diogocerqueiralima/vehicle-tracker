@@ -40,15 +40,6 @@ public interface SimCardPersistence {
 
     /**
      *
-     * Checks whether a SIM card with the provided id already exists.
-     *
-     * @param id The id to search for.
-     * @return true if a SIM card with the ICCID exists, otherwise false.
-     */
-    boolean existsById(UUID id);
-
-    /**
-     *
      * Checks whether a SIM card with the provided MSISDN already exists.
      *
      * @param msisdn The MSISDN to search for.
@@ -73,14 +64,6 @@ public interface SimCardPersistence {
      * @return true if a SIM card with the ICCID exists, otherwise false.
      */
     boolean existsByIccid(String iccid);
-
-    /**
-     *
-     * Deletes a SIM card from the data store by its id.
-     *
-     * @param id the id of the SIM card to be deleted.
-     */
-    void deleteById(UUID id);
 
     /**
      * Deletes a SIM card by id constrained to the provided owner.

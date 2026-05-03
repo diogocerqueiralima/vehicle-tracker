@@ -21,6 +21,6 @@ public interface SimCardRepository extends JpaRepository<SimCardEntity, UUID> {
 
     Optional<SimCardEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
 
-    boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
+	void deleteByIdAndOwnerId(UUID id, UUID ownerId);
 
 }
