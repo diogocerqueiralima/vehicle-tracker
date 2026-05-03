@@ -8,9 +8,11 @@ import java.util.UUID;
  * Command payload used by the presentation layer to request SIM card deletion by id.
  */
 public record DeleteSimCardByIdCommand(
-
         @NotNull(message = "id is required")
-        UUID id
+        UUID id,
+
+        @NotNull(message = "userId is required")
+        UUID userId
 
 ) {}
 

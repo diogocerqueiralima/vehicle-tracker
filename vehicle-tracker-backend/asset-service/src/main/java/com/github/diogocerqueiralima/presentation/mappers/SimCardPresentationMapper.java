@@ -26,8 +26,8 @@ public final class SimCardPresentationMapper {
      * @param request request payload for SIM card creation.
      * @return command consumed by the application layer.
      */
-    public static CreateSimCardCommand toCreateCommand(CreateSimCardRequestDTO request) {
-        return new CreateSimCardCommand(request.iccid(), request.msisdn(), request.imsi());
+    public static CreateSimCardCommand toCreateCommand(CreateSimCardRequestDTO request, UUID userId) {
+        return new CreateSimCardCommand(request.iccid(), request.msisdn(), request.imsi(), userId);
     }
 
     /**
@@ -38,8 +38,8 @@ public final class SimCardPresentationMapper {
      * @param request request payload for SIM card update.
      * @return command consumed by the application layer.
      */
-    public static UpdateSimCardCommand toUpdateCommand(UUID id, UpdateSimCardRequestDTO request) {
-        return new UpdateSimCardCommand(id, request.iccid(), request.msisdn(), request.imsi());
+    public static UpdateSimCardCommand toUpdateCommand(UUID id, UpdateSimCardRequestDTO request, UUID userId) {
+        return new UpdateSimCardCommand(id, request.iccid(), request.msisdn(), request.imsi(), userId);
     }
 
     /**
@@ -48,8 +48,8 @@ public final class SimCardPresentationMapper {
      * @param id SIM card id from the request path.
      * @return command consumed by the application layer.
      */
-    public static GetSimCardByIdCommand toGetByIdCommand(UUID id) {
-        return new GetSimCardByIdCommand(id);
+    public static GetSimCardByIdCommand toGetByIdCommand(UUID id, UUID userId) {
+        return new GetSimCardByIdCommand(id, userId);
     }
 
     /**
@@ -58,9 +58,10 @@ public final class SimCardPresentationMapper {
      * @param id SIM card id from the request path.
      * @return command consumed by the application layer.
      */
-    public static DeleteSimCardByIdCommand toDeleteByIdCommand(UUID id) {
-        return new DeleteSimCardByIdCommand(id);
+    public static DeleteSimCardByIdCommand toDeleteByIdCommand(UUID id, UUID userId) {
+        return new DeleteSimCardByIdCommand(id, userId);
     }
+
 
     /**
      *

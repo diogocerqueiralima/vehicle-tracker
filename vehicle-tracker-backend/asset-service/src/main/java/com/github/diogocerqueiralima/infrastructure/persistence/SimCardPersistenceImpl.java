@@ -38,6 +38,12 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     }
 
     @Override
+    public Optional<SimCard> findByIdAndOwnerId(UUID id, UUID ownerId) {
+        return simCardRepository.findByIdAndOwnerId(id, ownerId)
+                .map(SimCardMapper::toDomain);
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         return simCardRepository.existsById(id);
     }
@@ -60,6 +66,14 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     @Override
     public void deleteById(UUID id) {
         simCardRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteByIdAndOwnerId(UUID id, UUID ownerId) {
+        // Ensure record exists for owner before deleting to keep semantics similar to vehicle use case
+        if (simCardRepository.existsByIdAndOwnerId(id, ownerId)) {
+            simCardRepository.deleteById(id);
+        }
     }
 
 }

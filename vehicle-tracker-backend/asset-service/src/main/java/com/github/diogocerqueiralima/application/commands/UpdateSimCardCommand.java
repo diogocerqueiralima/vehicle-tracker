@@ -20,7 +20,10 @@ public record UpdateSimCardCommand(
         String msisdn,
 
         @NotBlank(message = "imsi is required")
-        String imsi
+        String imsi,
+
+        @NotNull(message = "userId is required")
+        UUID userId
 
 ) {}
 

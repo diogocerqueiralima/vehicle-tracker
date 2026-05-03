@@ -13,6 +13,7 @@ import com.github.diogocerqueiralima.presentation.dto.UpdateSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.mappers.SimCardPresentationMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,15 +46,21 @@ public class SimCardController {
      * @return created SIM card wrapped in an API response.
      */
     @PostMapping(SIM_CARDS_BASE_URI)
-    public ResponseEntity<ApiResponseDTO<SimCardDTO>> create(@RequestBody CreateSimCardRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<SimCardDTO>> create(
+            JwtAuthenticationToken authentication,
+            @RequestBody CreateSimCardRequestDTO request
+    ) {
 
-        // 1. Maps transport data to an application command.
-        CreateSimCardCommand command = SimCardPresentationMapper.toCreateCommand(request);
+        // 1. Resolve the authenticated user id from the jwt
+        UUID userId = extractUserId(authentication);
 
-        // 2. Delegates creation to the application layer.
+        // 2. Maps transport data to an application command.
+        CreateSimCardCommand command = SimCardPresentationMapper.toCreateCommand(request, userId);
+
+        // 3. Delegates creation to the application layer.
         SimCardResult result = simCardUseCase.create(command);
 
-        // 3. Maps the application result to the response DTO.
+        // 4. Maps the application result to the response DTO.
         SimCardDTO simCardDTO = SimCardPresentationMapper.toDTO(result);
 
         return ResponseEntity
@@ -71,16 +78,20 @@ public class SimCardController {
     @PutMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> update(
             @PathVariable UUID id,
+            JwtAuthenticationToken authentication,
             @RequestBody UpdateSimCardRequestDTO request
     ) {
 
-        // 1. Maps transport data to an application command.
-        UpdateSimCardCommand command = SimCardPresentationMapper.toUpdateCommand(id, request);
+        // 1. Resolve the authenticated user id from the jwt
+        UUID userId = extractUserId(authentication);
 
-        // 2. Delegates update to the application layer.
+        // 2. Maps transport data to an application command.
+        UpdateSimCardCommand command = SimCardPresentationMapper.toUpdateCommand(id, request, userId);
+
+        // 3. Delegates update to the application layer.
         SimCardResult result = simCardUseCase.update(command);
 
-        // 3. Maps the application result to the response DTO.
+        // 4. Maps the application result to the response DTO.
         SimCardDTO simCardDTO = SimCardPresentationMapper.toDTO(result);
 
         return ResponseEntity.ok(new ApiResponseDTO<>("SIM card updated successfully.", simCardDTO));
@@ -93,15 +104,21 @@ public class SimCardController {
      * @return SIM card wrapped in an API response.
      */
     @GetMapping(SIM_CARDS_ID_URI)
-    public ResponseEntity<ApiResponseDTO<SimCardDTO>> getById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponseDTO<SimCardDTO>> getById(
+            @PathVariable UUID id,
+            JwtAuthenticationToken authentication
+    ) {
 
-        // 1. Maps transport data to an application command.
-        GetSimCardByIdCommand command = SimCardPresentationMapper.toGetByIdCommand(id);
+        // 1. Resolve the authenticated user id from the jwt
+        UUID userId = extractUserId(authentication);
 
-        // 2. Delegates retrieval to the application layer.
+        // 2. Maps transport data to an application command.
+        GetSimCardByIdCommand command = SimCardPresentationMapper.toGetByIdCommand(id, userId);
+
+        // 3. Delegates retrieval to the application layer.
         SimCardResult result = simCardUseCase.getById(command);
 
-        // 3. Maps the application result to the response DTO.
+        // 4. Maps the application result to the response DTO.
         SimCardDTO simCardDTO = SimCardPresentationMapper.toDTO(result);
 
         return ResponseEntity.ok(new ApiResponseDTO<>("SIM card fetched successfully.", simCardDTO));
@@ -114,15 +131,26 @@ public class SimCardController {
      * @return success response with no payload.
      */
     @DeleteMapping(SIM_CARDS_ID_URI)
-    public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponseDTO<Void>> deleteById(
+            @PathVariable UUID id,
+            JwtAuthenticationToken authentication
+    ) {
 
-        // 1. Maps transport data to an application command.
-        DeleteSimCardByIdCommand command = SimCardPresentationMapper.toDeleteByIdCommand(id);
+        // 1. Resolve the authenticated user id from the jwt
+        UUID userId = extractUserId(authentication);
 
-        // 2. Delegates deletion to the application layer.
+        // 2. Maps transport data to an application command.
+        DeleteSimCardByIdCommand command = SimCardPresentationMapper.toDeleteByIdCommand(id, userId);
+
+        // 3. Delegates deletion to the application layer.
         simCardUseCase.deleteById(command);
 
         return ResponseEntity.ok(new ApiResponseDTO<>("SIM card deleted successfully.", null));
+    }
+
+    private UUID extractUserId(JwtAuthenticationToken authentication) {
+        String subject = authentication.getToken().getSubject();
+        return UUID.fromString(subject);
     }
 
 }

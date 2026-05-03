@@ -58,9 +58,10 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
     public SimCardResult update(UpdateSimCardCommand command) {
 
         UUID id = command.id();
+        UUID userId = command.userId();
 
-        // 1. Gets the SIM card with the provided id.
-        SimCard existingSimCard = simCardPersistence.findById(id)
+        // 1. Gets the SIM card with the provided id constrained to owner.
+        SimCard existingSimCard = simCardPersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new SimCardNotFoundException(id));
 
         // 2. Checks if exists another SIM card with the given ICCID.
@@ -100,9 +101,10 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
 
         // 1. Resolves the target id directly from the inbound command.
         UUID id = command.id();
+        UUID userId = command.userId();
 
         // 2. Loads by id and fail fast when absent.
-        SimCard simCard = simCardPersistence.findById(id)
+        SimCard simCard = simCardPersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new SimCardNotFoundException(id));
 
         // 3. Maps the domain object to the response contract.
@@ -119,14 +121,15 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
 
         // 1. Resolves the target id directly from the inbound command.
         UUID id = command.id();
+        java.util.UUID userId = command.userId();
 
-        // 2. Fails fast when the SIM card does not exist.
-        if (!simCardPersistence.existsById(id)) {
+        // 2. Fails fast when the SIM card does not exist for the owner.
+        if (simCardPersistence.findByIdAndOwnerId(id, userId).isEmpty()) {
             throw new SimCardNotFoundException(id);
         }
 
-        // 3. Deletes the SIM card from persistence.
-        simCardPersistence.deleteById(id);
+        // 3. Deletes the SIM card from persistence constrained to owner.
+        simCardPersistence.deleteByIdAndOwnerId(id, userId);
     }
 
 }

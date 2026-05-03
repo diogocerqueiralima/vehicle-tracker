@@ -30,6 +30,15 @@ public interface SimCardPersistence {
     Optional<SimCard> findById(UUID id);
 
     /**
+     * Finds a SIM card by id constrained to the provided owner.
+     *
+     * @param id sim card identifier.
+     * @param ownerId owner identifier.
+     * @return matching sim card when found for the owner.
+     */
+    Optional<SimCard> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    /**
      *
      * Checks whether a SIM card with the provided id already exists.
      *
@@ -72,5 +81,14 @@ public interface SimCardPersistence {
      * @param id the id of the SIM card to be deleted.
      */
     void deleteById(UUID id);
+
+    /**
+     * Deletes a SIM card by id constrained to the provided owner.
+     * Implementations should ensure the deletion only occurs when the owner matches.
+     *
+     * @param id sim card identifier.
+     * @param ownerId owner identifier.
+     */
+    void deleteByIdAndOwnerId(UUID id, UUID ownerId);
 
 }

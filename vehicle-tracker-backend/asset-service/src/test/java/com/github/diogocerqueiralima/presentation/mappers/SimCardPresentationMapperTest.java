@@ -23,7 +23,7 @@ class SimCardPresentationMapperTest {
     void should_map_create_request_to_command() {
 
         CreateSimCardRequestDTO request = new CreateSimCardRequestDTO("8901000000000000001", "351910000001", "268010000000001");
-        CreateSimCardCommand command = SimCardPresentationMapper.toCreateCommand(request);
+        CreateSimCardCommand command = SimCardPresentationMapper.toCreateCommand(request, UUID.randomUUID());
 
         assertThat(command.iccid()).isEqualTo(request.iccid());
         assertThat(command.msisdn()).isEqualTo(request.msisdn());
@@ -35,7 +35,7 @@ class SimCardPresentationMapperTest {
     void should_map_update_request_to_command() {
 
         UpdateSimCardRequestDTO request = new UpdateSimCardRequestDTO("8901000000000000001", "351910000002", "268010000000002");
-        UpdateSimCardCommand command = SimCardPresentationMapper.toUpdateCommand(UUID.randomUUID(), request);
+        UpdateSimCardCommand command = SimCardPresentationMapper.toUpdateCommand(UUID.randomUUID(), request, UUID.randomUUID());
 
         assertThat(command.iccid()).isEqualTo(request.iccid());
         assertThat(command.msisdn()).isEqualTo(request.msisdn());
@@ -47,7 +47,7 @@ class SimCardPresentationMapperTest {
     void should_map_id_to_get_command() {
 
         UUID id = UUID.randomUUID();
-        GetSimCardByIdCommand command = SimCardPresentationMapper.toGetByIdCommand(id);
+        GetSimCardByIdCommand command = SimCardPresentationMapper.toGetByIdCommand(id, UUID.randomUUID());
 
         assertThat(command.id()).isEqualTo(id);
     }
@@ -57,7 +57,7 @@ class SimCardPresentationMapperTest {
     void should_map_id_to_delete_command() {
 
         UUID id = UUID.randomUUID();
-        DeleteSimCardByIdCommand command = SimCardPresentationMapper.toDeleteByIdCommand(id);
+        DeleteSimCardByIdCommand command = SimCardPresentationMapper.toDeleteByIdCommand(id, UUID.randomUUID());
 
         assertThat(command.id()).isEqualTo(id);
     }

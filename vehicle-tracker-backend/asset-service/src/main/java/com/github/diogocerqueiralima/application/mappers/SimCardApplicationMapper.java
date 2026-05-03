@@ -26,6 +26,7 @@ public final class SimCardApplicationMapper {
     public static SimCard toDomain(CreateSimCardCommand command, Instant now) {
         return new SimCard(
                 UUID.randomUUID(),
+                command.userId(),
                 now,
                 now,
                 command.iccid(),

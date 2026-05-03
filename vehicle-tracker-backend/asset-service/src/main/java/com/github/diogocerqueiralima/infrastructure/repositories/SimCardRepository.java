@@ -4,6 +4,7 @@ import com.github.diogocerqueiralima.infrastructure.entities.assets.SimCardEntit
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -17,5 +18,9 @@ public interface SimCardRepository extends JpaRepository<SimCardEntity, UUID> {
 	boolean existsByMsisdn(String msisdn);
 
 	boolean existsByImsi(String imsi);
+
+    Optional<SimCardEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
 
 }
