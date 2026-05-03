@@ -25,9 +25,11 @@ CREATE TABLE IF NOT EXISTS devices (
 );
 
 CREATE TABLE IF NOT EXISTS sim_cards (
-    iccid VARCHAR(32) PRIMARY KEY,
+    id UUID PRIMARY KEY,
+    iccid VARCHAR(32) UNIQUE NOT NULL,
     msisdn VARCHAR(32) UNIQUE NOT NULL,
-    imsi VARCHAR(32) UNIQUE NOT NULL
+    imsi VARCHAR(32) UNIQUE NOT NULL,
+    CONSTRAINT fk_sim_cards_assets FOREIGN KEY (id) REFERENCES assets(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS assignments (
@@ -54,11 +56,11 @@ CREATE TABLE IF NOT EXISTS vehicle_assignments (
 CREATE TABLE IF NOT EXISTS sim_card_assignments (
     id BIGSERIAL PRIMARY KEY,
     device_id UUID NOT NULL,
-    sim_card_iccid VARCHAR(32) NOT NULL,
+    sim_card_id UUID NOT NULL,
     removal_reason VARCHAR(255),
     CONSTRAINT fk_sim_card_assignments_assignments FOREIGN KEY (id) REFERENCES assignments(id) ON DELETE CASCADE,
     CONSTRAINT fk_sim_card_assignments_devices FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE,
-    CONSTRAINT fk_sim_card_assignments_sim_cards FOREIGN KEY (sim_card_iccid) REFERENCES sim_cards(iccid) ON DELETE CASCADE
+    CONSTRAINT fk_sim_card_assignments_sim_cards FOREIGN KEY (sim_card_id) REFERENCES sim_cards(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS certificates (

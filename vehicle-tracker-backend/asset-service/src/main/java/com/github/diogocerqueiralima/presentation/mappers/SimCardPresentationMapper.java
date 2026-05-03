@@ -1,13 +1,15 @@
 package com.github.diogocerqueiralima.presentation.mappers;
 
 import com.github.diogocerqueiralima.application.commands.CreateSimCardCommand;
-import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIccidCommand;
-import com.github.diogocerqueiralima.application.commands.GetSimCardByIccidCommand;
+import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateSimCardCommand;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
 import com.github.diogocerqueiralima.presentation.dto.CreateSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.SimCardDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateSimCardRequestDTO;
+
+import java.util.UUID;
 
 /**
  * Mapper for SIM card conversions in the presentation layer.
@@ -32,32 +34,32 @@ public final class SimCardPresentationMapper {
      *
      * Builds an update command from an HTTP path identifier and a request payload.
      *
-     * @param iccid SIM card ICCID from the request path.
+     * @param id SIM card id from the request path.
      * @param request request payload for SIM card update.
      * @return command consumed by the application layer.
      */
-    public static UpdateSimCardCommand toUpdateCommand(String iccid, UpdateSimCardRequestDTO request) {
-        return new UpdateSimCardCommand(iccid, request.msisdn(), request.imsi());
+    public static UpdateSimCardCommand toUpdateCommand(UUID id, UpdateSimCardRequestDTO request) {
+        return new UpdateSimCardCommand(id, request.iccid(), request.msisdn(), request.imsi());
     }
 
     /**
-     * Builds a get-by-iccid command from an HTTP path identifier.
+     * Builds a get-by-id command from an HTTP path identifier.
      *
-     * @param iccid SIM card ICCID from the request path.
+     * @param id SIM card id from the request path.
      * @return command consumed by the application layer.
      */
-    public static GetSimCardByIccidCommand toGetByIccidCommand(String iccid) {
-        return new GetSimCardByIccidCommand(iccid);
+    public static GetSimCardByIdCommand toGetByIdCommand(UUID id) {
+        return new GetSimCardByIdCommand(id);
     }
 
     /**
-     * Builds a delete-by-iccid command from an HTTP path identifier.
+     * Builds a delete-by-id command from an HTTP path identifier.
      *
-     * @param iccid SIM card ICCID from the request path.
+     * @param id SIM card id from the request path.
      * @return command consumed by the application layer.
      */
-    public static DeleteSimCardByIccidCommand toDeleteByIccidCommand(String iccid) {
-        return new DeleteSimCardByIccidCommand(iccid);
+    public static DeleteSimCardByIdCommand toDeleteByIdCommand(UUID id) {
+        return new DeleteSimCardByIdCommand(id);
     }
 
     /**
@@ -68,7 +70,7 @@ public final class SimCardPresentationMapper {
      * @return SIM card DTO payload.
      */
     public static SimCardDTO toDTO(SimCardResult result) {
-        return new SimCardDTO(result.iccid(), result.msisdn(), result.imsi());
+        return new SimCardDTO(result.id(), result.createdAt(), result.updatedAt(), result.iccid(), result.msisdn(), result.imsi());
     }
 
 }

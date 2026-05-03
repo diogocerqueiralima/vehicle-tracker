@@ -15,6 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -32,7 +35,11 @@ class SimCardControllerTest {
     @Test
     @DisplayName("Should create sim card and return created response")
     void should_create_sim_card_and_return_created_response() {
-        SimCardResult result = new SimCardResult("8901000000000000001", "351910000001", "268010000000001");
+
+        UUID id = UUID.randomUUID();
+        Instant createdAt = Instant.now();
+        Instant updatedAt = Instant.now();
+        SimCardResult result = new SimCardResult(id, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
         when(simCardUseCase.create(any())).thenReturn(result);
 
         CreateSimCardRequestDTO request = new CreateSimCardRequestDTO("8901000000000000001", "351910000001", "268010000000001");
@@ -43,47 +50,72 @@ class SimCardControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("SIM card created successfully.");
         assertThat(response.getBody().data()).isNotNull();
+        assertThat(response.getBody().data().id()).isEqualTo(result.id());
+        assertThat(response.getBody().data().createdAt()).isEqualTo(result.createdAt());
+        assertThat(response.getBody().data().updatedAt()).isEqualTo(result.updatedAt());
         assertThat(response.getBody().data().iccid()).isEqualTo(result.iccid());
+        assertThat(response.getBody().data().msisdn()).isEqualTo(result.msisdn());
+        assertThat(response.getBody().data().imsi()).isEqualTo(result.imsi());
     }
 
     @Test
     @DisplayName("Should update sim card and return ok response")
     void should_update_sim_card_and_return_ok_response() {
-        SimCardResult result = new SimCardResult("8901000000000000001", "351910000002", "268010000000002");
+
+        UUID id = UUID.randomUUID();
+        Instant createdAt = Instant.now();
+        Instant updatedAt = Instant.now();
+        SimCardResult result = new SimCardResult(id, createdAt, updatedAt, "8901000000000000001", "351910000002", "268010000000002");
         when(simCardUseCase.update(any())).thenReturn(result);
 
-        UpdateSimCardRequestDTO request = new UpdateSimCardRequestDTO("351910000002", "268010000000002");
+        UpdateSimCardRequestDTO request = new UpdateSimCardRequestDTO("8901000000000000001", "351910000002", "268010000000002");
 
-        ResponseEntity<ApiResponseDTO<SimCardDTO>> response = simCardController.update("8901000000000000001", request);
+        ResponseEntity<ApiResponseDTO<SimCardDTO>> response = simCardController.update(id, request);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("SIM card updated successfully.");
         assertThat(response.getBody().data()).isNotNull();
+        assertThat(response.getBody().data().id()).isEqualTo(result.id());
+        assertThat(response.getBody().data().createdAt()).isEqualTo(result.createdAt());
+        assertThat(response.getBody().data().updatedAt()).isEqualTo(result.updatedAt());
+        assertThat(response.getBody().data().iccid()).isEqualTo(result.iccid());
         assertThat(response.getBody().data().msisdn()).isEqualTo("351910000002");
+        assertThat(response.getBody().data().imsi()).isEqualTo("268010000000002");
     }
 
     @Test
-    @DisplayName("Should get sim card by iccid and return ok response")
+    @DisplayName("Should get sim card by id and return ok response")
     void should_get_sim_card_by_iccid_and_return_ok_response() {
-        SimCardResult result = new SimCardResult("8901000000000000001", "351910000001", "268010000000001");
-        when(simCardUseCase.getByIccid(any())).thenReturn(result);
 
-        ResponseEntity<ApiResponseDTO<SimCardDTO>> response = simCardController.getByIccid("8901000000000000001");
+        UUID id = UUID.randomUUID();
+        Instant createdAt = Instant.now();
+        Instant updatedAt = Instant.now();
+        SimCardResult result = new SimCardResult(id, createdAt, updatedAt, "8901000000000000001", "351910000002", "268010000000002");
+        when(simCardUseCase.getById(any())).thenReturn(result);
+
+        ResponseEntity<ApiResponseDTO<SimCardDTO>> response = simCardController.getById(id);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("SIM card fetched successfully.");
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().imsi()).isEqualTo(result.imsi());
+        assertThat(response.getBody().data().id()).isEqualTo(result.id());
+        assertThat(response.getBody().data().createdAt()).isEqualTo(result.createdAt());
+        assertThat(response.getBody().data().updatedAt()).isEqualTo(result.updatedAt());
+        assertThat(response.getBody().data().iccid()).isEqualTo(result.iccid());
+        assertThat(response.getBody().data().msisdn()).isEqualTo("351910000002");
+        assertThat(response.getBody().data().imsi()).isEqualTo("268010000000002");
     }
 
     @Test
-    @DisplayName("Should delete sim card by iccid and return ok response")
+    @DisplayName("Should delete sim card by id and return ok response")
     void should_delete_sim_card_by_iccid_and_return_ok_response() {
-        ResponseEntity<ApiResponseDTO<Void>> response = simCardController.deleteByIccid("8901000000000000001");
 
-        verify(simCardUseCase).deleteByIccid(any());
+        UUID id = UUID.randomUUID();
+        ResponseEntity<ApiResponseDTO<Void>> response = simCardController.deleteById(id);
+
+        verify(simCardUseCase).deleteById(any());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("SIM card deleted successfully.");

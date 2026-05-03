@@ -1,13 +1,19 @@
 package com.github.diogocerqueiralima.application.commands;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
 
 /**
  * Command payload used by the presentation layer to request SIM card update.
  */
 public record UpdateSimCardCommand(
 
-        @NotBlank(message = "iccid is required")
+        @NotNull(message = "id is required")
+        UUID id,
+
+        @NotBlank(message = "id is required")
         String iccid,
 
         @NotBlank(message = "msisdn is required")

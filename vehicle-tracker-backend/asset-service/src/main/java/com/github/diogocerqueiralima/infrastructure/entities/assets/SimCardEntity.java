@@ -1,16 +1,16 @@
-package com.github.diogocerqueiralima.infrastructure.entities;
+package com.github.diogocerqueiralima.infrastructure.entities.assets;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "sim_cards")
-public class SimCardEntity {
+@PrimaryKeyJoinColumn(name = "id")
+public class SimCardEntity extends AssetEntity {
 
-    @Id
-    @Column(name = "iccid", nullable = false, updatable = false, length = 32)
+    @Column(name = "iccid", nullable = false, unique = true, length = 32)
     private String iccid;
 
     @Column(name = "msisdn", nullable = false, unique = true, length = 32)
@@ -46,4 +46,5 @@ public class SimCardEntity {
     }
 
 }
+
 

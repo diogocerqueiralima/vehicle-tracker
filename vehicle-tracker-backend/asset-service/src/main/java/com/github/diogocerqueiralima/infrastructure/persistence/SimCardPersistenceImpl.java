@@ -1,13 +1,14 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
-import com.github.diogocerqueiralima.domain.SimCard;
+import com.github.diogocerqueiralima.domain.assets.SimCard;
 import com.github.diogocerqueiralima.application.ports.outbound.SimCardPersistence;
-import com.github.diogocerqueiralima.infrastructure.entities.SimCardEntity;
+import com.github.diogocerqueiralima.infrastructure.entities.assets.SimCardEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.SimCardMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.SimCardRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.github.diogocerqueiralima.infrastructure.mappers.SimCardMapper.toDomain;
 import static com.github.diogocerqueiralima.infrastructure.mappers.SimCardMapper.toEntity;
@@ -31,15 +32,19 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     }
 
     @Override
-    public Optional<SimCard> findByIccid(String iccid) {
-        return simCardRepository
-                .findById(iccid)
+    public Optional<SimCard> findById(UUID id) {
+        return simCardRepository.findById(id)
                 .map(SimCardMapper::toDomain);
     }
 
     @Override
+    public boolean existsById(UUID id) {
+        return simCardRepository.existsById(id);
+    }
+
+    @Override
     public boolean existsByIccid(String iccid) {
-        return simCardRepository.existsById(iccid);
+        return simCardRepository.existsByIccid(iccid);
     }
 
     @Override
@@ -53,8 +58,8 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     }
 
     @Override
-    public void deleteByIccid(String iccid) {
-        simCardRepository.deleteById(iccid);
+    public void deleteById(UUID id) {
+        simCardRepository.deleteById(id);
     }
 
 }

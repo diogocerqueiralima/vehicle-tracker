@@ -2,7 +2,7 @@ package com.github.diogocerqueiralima.infrastructure.entities.assignments;
 
 import com.github.diogocerqueiralima.domain.assignments.SimCardRemovalReason;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
-import com.github.diogocerqueiralima.infrastructure.entities.SimCardEntity;
+import com.github.diogocerqueiralima.infrastructure.entities.assets.SimCardEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,7 +23,7 @@ public class SimCardAssignmentEntity extends AssignmentEntity {
     private DeviceEntity device;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "sim_card_iccid", nullable = false)
+    @JoinColumn(name = "sim_card_id", nullable = false)
     private SimCardEntity simCard;
 
     @Enumerated(EnumType.STRING)

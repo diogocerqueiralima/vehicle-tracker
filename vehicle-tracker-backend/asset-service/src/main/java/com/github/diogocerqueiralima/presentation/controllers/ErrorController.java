@@ -4,6 +4,8 @@ import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsE
 import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyExistsException;
+import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyAssignedException;
+import com.github.diogocerqueiralima.application.exceptions.SimCardAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
@@ -68,7 +70,7 @@ public class ErrorController {
     @ExceptionHandler({
             VehicleAlreadyExistsException.class, DeviceAlreadyExistsException.class,
             DeviceAlreadyAssignedException.class, VehicleAlreadyAssignedException.class,
-            SimCardAlreadyExistsException.class
+            SimCardAlreadyExistsException.class, SimCardAlreadyAssignedException.class
     })
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(Exception exception) {
 
@@ -86,7 +88,7 @@ public class ErrorController {
      */
     @ExceptionHandler({
             VehicleNotFoundException.class, DeviceNotFoundException.class, VehicleAssignmentNotFoundException.class,
-            SimCardNotFoundException.class
+            SimCardNotFoundException.class, SimCardAssignmentNotFoundException.class
     })
     public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(Exception exception) {
 

@@ -1,8 +1,9 @@
 package com.github.diogocerqueiralima.application.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.SimCard;
+import com.github.diogocerqueiralima.domain.assets.SimCard;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Interface for SIM card persistence operations.
@@ -21,21 +22,21 @@ public interface SimCardPersistence {
 
     /**
      *
-     * Finds a SIM card by its ICCID.
+     * Finds a SIM card by its id.
      *
-     * @param iccid The ICCID of the SIM card to be retrieved.
+     * @param id The id of the SIM card to be retrieved.
      * @return An Optional containing the SIM card if found, or an empty Optional if not found.
      */
-    Optional<SimCard> findByIccid(String iccid);
+    Optional<SimCard> findById(UUID id);
 
     /**
      *
-     * Checks whether a SIM card with the provided ICCID already exists.
+     * Checks whether a SIM card with the provided id already exists.
      *
-     * @param iccid The ICCID to search for.
+     * @param id The id to search for.
      * @return true if a SIM card with the ICCID exists, otherwise false.
      */
-    boolean existsByIccid(String iccid);
+    boolean existsById(UUID id);
 
     /**
      *
@@ -57,10 +58,19 @@ public interface SimCardPersistence {
 
     /**
      *
-     * Deletes a SIM card from the data store by its ICCID.
+     * Checks whether a SIM card with the provided ICCID already exists.
      *
-     * @param iccid the ICCID of the SIM card to be deleted.
+     * @param iccid The ICCID to search for.
+     * @return true if a SIM card with the ICCID exists, otherwise false.
      */
-    void deleteByIccid(String iccid);
+    boolean existsByIccid(String iccid);
+
+    /**
+     *
+     * Deletes a SIM card from the data store by its id.
+     *
+     * @param id the id of the SIM card to be deleted.
+     */
+    void deleteById(UUID id);
 
 }

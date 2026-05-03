@@ -1,8 +1,8 @@
 package com.github.diogocerqueiralima.presentation.controllers;
 
 import com.github.diogocerqueiralima.application.commands.CreateSimCardCommand;
-import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIccidCommand;
-import com.github.diogocerqueiralima.application.commands.GetSimCardByIccidCommand;
+import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateSimCardCommand;
 import com.github.diogocerqueiralima.application.ports.inbound.SimCardUseCase;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.SIM_CARDS_BASE_URI;
-import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.SIM_CARDS_ICCID_URI;
+import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.SIM_CARDS_ID_URI;
 
 /**
  * REST endpoints for SIM card operations.
@@ -62,18 +64,18 @@ public class SimCardController {
     /**
      * Updates an existing SIM card.
      *
-     * @param iccid SIM card ICCID.
+     * @param id SIM card id.
      * @param request request payload for SIM card update.
      * @return updated SIM card wrapped in an API response.
      */
-    @PutMapping(SIM_CARDS_ICCID_URI)
+    @PutMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> update(
-            @PathVariable String iccid,
+            @PathVariable UUID id,
             @RequestBody UpdateSimCardRequestDTO request
     ) {
 
         // 1. Maps transport data to an application command.
-        UpdateSimCardCommand command = SimCardPresentationMapper.toUpdateCommand(iccid, request);
+        UpdateSimCardCommand command = SimCardPresentationMapper.toUpdateCommand(id, request);
 
         // 2. Delegates update to the application layer.
         SimCardResult result = simCardUseCase.update(command);
@@ -87,17 +89,17 @@ public class SimCardController {
     /**
      * Retrieves a SIM card by ICCID.
      *
-     * @param iccid SIM card ICCID.
+     * @param id SIM card id.
      * @return SIM card wrapped in an API response.
      */
-    @GetMapping(SIM_CARDS_ICCID_URI)
-    public ResponseEntity<ApiResponseDTO<SimCardDTO>> getByIccid(@PathVariable String iccid) {
+    @GetMapping(SIM_CARDS_ID_URI)
+    public ResponseEntity<ApiResponseDTO<SimCardDTO>> getById(@PathVariable UUID id) {
 
         // 1. Maps transport data to an application command.
-        GetSimCardByIccidCommand command = SimCardPresentationMapper.toGetByIccidCommand(iccid);
+        GetSimCardByIdCommand command = SimCardPresentationMapper.toGetByIdCommand(id);
 
         // 2. Delegates retrieval to the application layer.
-        SimCardResult result = simCardUseCase.getByIccid(command);
+        SimCardResult result = simCardUseCase.getById(command);
 
         // 3. Maps the application result to the response DTO.
         SimCardDTO simCardDTO = SimCardPresentationMapper.toDTO(result);
@@ -108,17 +110,17 @@ public class SimCardController {
     /**
      * Deletes a SIM card by ICCID.
      *
-     * @param iccid SIM card ICCID.
+     * @param id SIM card id.
      * @return success response with no payload.
      */
-    @DeleteMapping(SIM_CARDS_ICCID_URI)
-    public ResponseEntity<ApiResponseDTO<Void>> deleteByIccid(@PathVariable String iccid) {
+    @DeleteMapping(SIM_CARDS_ID_URI)
+    public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
 
         // 1. Maps transport data to an application command.
-        DeleteSimCardByIccidCommand command = SimCardPresentationMapper.toDeleteByIccidCommand(iccid);
+        DeleteSimCardByIdCommand command = SimCardPresentationMapper.toDeleteByIdCommand(id);
 
         // 2. Delegates deletion to the application layer.
-        simCardUseCase.deleteByIccid(command);
+        simCardUseCase.deleteById(command);
 
         return ResponseEntity.ok(new ApiResponseDTO<>("SIM card deleted successfully.", null));
     }
