@@ -3,6 +3,8 @@ package com.github.diogocerqueiralima.presentation.controllers;
 import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
+import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyExistsException;
+import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
@@ -65,7 +67,8 @@ public class ErrorController {
      */
     @ExceptionHandler({
             VehicleAlreadyExistsException.class, DeviceAlreadyExistsException.class,
-            DeviceAlreadyAssignedException.class, VehicleAlreadyAssignedException.class
+            DeviceAlreadyAssignedException.class, VehicleAlreadyAssignedException.class,
+            SimCardAlreadyExistsException.class
     })
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(Exception exception) {
 
@@ -81,7 +84,10 @@ public class ErrorController {
      * @param exception not found exception.
      * @return not found response.
      */
-    @ExceptionHandler({VehicleNotFoundException.class, DeviceNotFoundException.class, VehicleAssignmentNotFoundException.class})
+    @ExceptionHandler({
+            VehicleNotFoundException.class, DeviceNotFoundException.class, VehicleAssignmentNotFoundException.class,
+            SimCardNotFoundException.class
+    })
     public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(Exception exception) {
 
         String message = exception.getMessage() == null ? "Not found" : exception.getMessage();

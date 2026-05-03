@@ -37,5 +37,25 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
                 .map(SimCardMapper::toDomain);
     }
 
+    @Override
+    public boolean existsByIccid(String iccid) {
+        return simCardRepository.existsById(iccid);
+    }
+
+    @Override
+    public boolean existsByMsisdn(String msisdn) {
+        return simCardRepository.existsByMsisdn(msisdn);
+    }
+
+    @Override
+    public boolean existsByImsi(String imsi) {
+        return simCardRepository.existsByImsi(imsi);
+    }
+
+    @Override
+    public void deleteByIccid(String iccid) {
+        simCardRepository.deleteById(iccid);
+    }
+
 }
 

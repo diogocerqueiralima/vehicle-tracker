@@ -8,4 +8,10 @@ import org.springframework.stereotype.Repository;
  * Repository interface for managing {@link SimCardEntity} instances in the database.
  */
 @Repository
-public interface SimCardRepository extends JpaRepository<SimCardEntity, String> {}
+public interface SimCardRepository extends JpaRepository<SimCardEntity, String> {
+
+	boolean existsByMsisdn(String msisdn);
+
+	boolean existsByImsi(String imsi);
+
+}
