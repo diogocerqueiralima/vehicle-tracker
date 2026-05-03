@@ -11,7 +11,6 @@ import com.github.diogocerqueiralima.presentation.dto.CreateSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.SimCardDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.mappers.SimCardPresentationMapper;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,7 +43,7 @@ public class SimCardController {
      * @return created SIM card wrapped in an API response.
      */
     @PostMapping(SIM_CARDS_BASE_URI)
-    public ResponseEntity<ApiResponseDTO<SimCardDTO>> create(@Valid @RequestBody CreateSimCardRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<SimCardDTO>> create(@RequestBody CreateSimCardRequestDTO request) {
 
         // 1. Maps transport data to an application command.
         CreateSimCardCommand command = SimCardPresentationMapper.toCreateCommand(request);
@@ -70,7 +69,7 @@ public class SimCardController {
     @PutMapping(SIM_CARDS_ICCID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> update(
             @PathVariable String iccid,
-            @Valid @RequestBody UpdateSimCardRequestDTO request
+            @RequestBody UpdateSimCardRequestDTO request
     ) {
 
         // 1. Maps transport data to an application command.

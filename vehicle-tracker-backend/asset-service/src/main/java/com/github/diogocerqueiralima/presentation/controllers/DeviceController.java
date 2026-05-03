@@ -13,7 +13,6 @@ import com.github.diogocerqueiralima.presentation.dto.DeviceDTO;
 import com.github.diogocerqueiralima.presentation.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateDeviceRequestDTO;
 import com.github.diogocerqueiralima.presentation.mappers.DevicePresentationMapper;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -54,7 +53,7 @@ public class DeviceController {
      * @return created device wrapped in an API response.
      */
     @PostMapping(DEVICES_BASE_URI)
-    public ResponseEntity<ApiResponseDTO<DeviceDTO>> create(@Valid @RequestBody CreateDeviceRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<DeviceDTO>> create(@RequestBody CreateDeviceRequestDTO request) {
 
         // 1. Maps transport data to an application command.
         CreateDeviceCommand command = DevicePresentationMapper.toCreateCommand(request);
@@ -80,7 +79,7 @@ public class DeviceController {
     @PutMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> update(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateDeviceRequestDTO request
+            @RequestBody UpdateDeviceRequestDTO request
     ) {
 
         // 1. Maps transport data to an application command.

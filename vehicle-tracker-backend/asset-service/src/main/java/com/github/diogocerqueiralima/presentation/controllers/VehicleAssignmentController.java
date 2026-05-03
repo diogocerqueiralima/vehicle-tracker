@@ -9,7 +9,6 @@ import com.github.diogocerqueiralima.presentation.dto.AssignDeviceToVehicleReque
 import com.github.diogocerqueiralima.presentation.dto.UnassignDeviceFromVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.VehicleAssignmentDTO;
 import com.github.diogocerqueiralima.presentation.mappers.VehicleAssignmentPresentationMapper;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -43,7 +42,7 @@ public class VehicleAssignmentController {
     @PostMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> assignDeviceToVehicle(
             JwtAuthenticationToken authentication,
-            @Valid @RequestBody AssignDeviceToVehicleRequestDTO request
+            @RequestBody AssignDeviceToVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
@@ -74,7 +73,7 @@ public class VehicleAssignmentController {
     @DeleteMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> unassignDeviceFromVehicle(
             JwtAuthenticationToken authentication,
-            @Valid @RequestBody UnassignDeviceFromVehicleRequestDTO request
+            @RequestBody UnassignDeviceFromVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
