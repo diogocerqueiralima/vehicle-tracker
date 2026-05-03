@@ -54,13 +54,14 @@ public class SimCardAssignmentUseCaseImpl implements SimCardAssignmentUseCase {
 
         UUID deviceId = command.deviceId();
         UUID simCardId = command.simCardId();
+        UUID assignedBy = command.assignedBy();
 
-        // 1. Loads the device and fails fast if it does not exist.
-        Device device = devicePersistence.findById(deviceId)
+        // 1. Loads the device scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        Device device = devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
-        // 2. Loads the SIM card and fails fast if it does not exist.
-        SimCard simCard = simCardPersistence.findById(simCardId)
+        // 2. Loads the SIM card scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        SimCard simCard = simCardPersistence.findByIdAndOwnerId(simCardId, assignedBy)
                 .orElseThrow(() -> new SimCardNotFoundException(simCardId));
 
         // 3. Rejects assignment when the device already has an active SIM card assignment.
@@ -99,13 +100,14 @@ public class SimCardAssignmentUseCaseImpl implements SimCardAssignmentUseCase {
 
         UUID deviceId = command.deviceId();
         UUID simCardId = command.simCardId();
+        UUID unassignedBy = command.unassignedBy();
 
-        // 1. Loads the device and fails fast if it does not exist.
-        devicePersistence.findById(deviceId)
+        // 1. Loads the device scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        devicePersistence.findByIdAndOwnerId(deviceId, unassignedBy)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
-        // 2. Loads the SIM card and fails fast if it does not exist.
-        simCardPersistence.findById(simCardId)
+        // 2. Loads the SIM card scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        simCardPersistence.findByIdAndOwnerId(simCardId, unassignedBy)
                 .orElseThrow(() -> new SimCardNotFoundException(simCardId));
 
         // 3. Loads the active assignment for this exact device/SIM card pair.

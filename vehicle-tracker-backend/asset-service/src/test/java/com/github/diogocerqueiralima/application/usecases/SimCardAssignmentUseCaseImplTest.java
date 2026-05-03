@@ -91,8 +91,8 @@ class SimCardAssignmentUseCaseImplTest {
                 null
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(simCardPersistence.findById(simCardId)).thenReturn(Optional.of(simCard));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)).thenReturn(Optional.of(device));
+        when(simCardPersistence.findByIdAndOwnerId(simCardId, assignedBy)).thenReturn(Optional.of(simCard));
         when(simCardAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
         when(simCardAssignmentPersistence.existsActiveBySimCardId(simCardId)).thenReturn(false);
         when(simCardAssignmentPersistence.save(any(SimCardAssignment.class))).thenReturn(savedAssignment);
@@ -120,7 +120,7 @@ class SimCardAssignmentUseCaseImplTest {
                 UUID.randomUUID()
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> simCardAssignmentUseCase.assignDeviceToSimCard(command))
                 .isInstanceOf(DeviceNotFoundException.class)
@@ -152,8 +152,8 @@ class SimCardAssignmentUseCaseImplTest {
                 UUID.randomUUID()
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(simCardPersistence.findById(simCardId)).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
+        when(simCardPersistence.findByIdAndOwnerId(simCardId, command.assignedBy())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> simCardAssignmentUseCase.assignDeviceToSimCard(command))
                 .isInstanceOf(SimCardNotFoundException.class)
@@ -194,8 +194,8 @@ class SimCardAssignmentUseCaseImplTest {
                 UUID.randomUUID()
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(simCardPersistence.findById(simCardId)).thenReturn(Optional.of(simCard));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
+        when(simCardPersistence.findByIdAndOwnerId(simCardId, command.assignedBy())).thenReturn(Optional.of(simCard));
         when(simCardAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(true);
 
         assertThatThrownBy(() -> simCardAssignmentUseCase.assignDeviceToSimCard(command))
@@ -237,8 +237,8 @@ class SimCardAssignmentUseCaseImplTest {
                 UUID.randomUUID()
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(simCardPersistence.findById(simCardId)).thenReturn(Optional.of(simCard));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
+        when(simCardPersistence.findByIdAndOwnerId(simCardId, command.assignedBy())).thenReturn(Optional.of(simCard));
         when(simCardAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
         when(simCardAssignmentPersistence.existsActiveBySimCardId(simCardId)).thenReturn(true);
 
@@ -304,8 +304,8 @@ class SimCardAssignmentUseCaseImplTest {
                 SimCardRemovalReason.OTHER
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(simCardPersistence.findById(simCardId)).thenReturn(Optional.of(simCard));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.unassignedBy())).thenReturn(Optional.of(device));
+        when(simCardPersistence.findByIdAndOwnerId(simCardId, command.unassignedBy())).thenReturn(Optional.of(simCard));
         when(simCardAssignmentPersistence.findActiveByDeviceIdAndSimCardId(deviceId, simCardId))
                 .thenReturn(Optional.of(activeAssignment));
         when(simCardAssignmentPersistence.save(any(SimCardAssignment.class))).thenReturn(closedAssignment);
@@ -353,8 +353,8 @@ class SimCardAssignmentUseCaseImplTest {
                 SimCardRemovalReason.UPGRADE
         );
 
-        when(devicePersistence.findById(deviceId)).thenReturn(Optional.of(device));
-        when(simCardPersistence.findById(simCardId)).thenReturn(Optional.of(simCard));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.unassignedBy())).thenReturn(Optional.of(device));
+        when(simCardPersistence.findByIdAndOwnerId(simCardId, command.unassignedBy())).thenReturn(Optional.of(simCard));
         when(simCardAssignmentPersistence.findActiveByDeviceIdAndSimCardId(deviceId, simCardId))
                 .thenReturn(Optional.empty());
 
