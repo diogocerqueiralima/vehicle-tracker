@@ -19,7 +19,6 @@ import org.springframework.http.HttpMethod;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.DEVICES_BASE_URI;
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.DEVICES_ID_URI;

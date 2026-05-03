@@ -28,4 +28,39 @@ public interface SimCardPersistence {
      */
     Optional<SimCard> findByIccid(String iccid);
 
+    /**
+     *
+     * Checks whether a SIM card with the provided ICCID already exists.
+     *
+     * @param iccid The ICCID to search for.
+     * @return true if a SIM card with the ICCID exists, otherwise false.
+     */
+    boolean existsByIccid(String iccid);
+
+    /**
+     *
+     * Checks whether a SIM card with the provided MSISDN already exists.
+     *
+     * @param msisdn The MSISDN to search for.
+     * @return true if a SIM card with the MSISDN exists, otherwise false.
+     */
+    boolean existsByMsisdn(String msisdn);
+
+    /**
+     *
+     * Checks whether a SIM card with the provided IMSI already exists.
+     *
+     * @param imsi The IMSI to search for.
+     * @return true if a SIM card with the IMSI exists, otherwise false.
+     */
+    boolean existsByImsi(String imsi);
+
+    /**
+     *
+     * Deletes a SIM card from the data store by its ICCID.
+     *
+     * @param iccid the ICCID of the SIM card to be deleted.
+     */
+    void deleteByIccid(String iccid);
+
 }

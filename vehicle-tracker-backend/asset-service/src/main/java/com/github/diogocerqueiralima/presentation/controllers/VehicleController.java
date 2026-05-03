@@ -13,7 +13,6 @@ import com.github.diogocerqueiralima.presentation.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.dto.VehicleDTO;
 import com.github.diogocerqueiralima.presentation.mappers.VehiclePresentationMapper;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -53,7 +52,7 @@ public class VehicleController {
     @PostMapping(VEHICLES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> create(
             JwtAuthenticationToken authentication,
-            @Valid @RequestBody CreateVehicleRequestDTO request
+            @RequestBody CreateVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
@@ -84,7 +83,7 @@ public class VehicleController {
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> update(
             @PathVariable UUID id,
             JwtAuthenticationToken authentication,
-            @Valid @RequestBody UpdateVehicleRequestDTO request
+            @RequestBody UpdateVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
