@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.serialization)
 }
@@ -26,10 +25,10 @@ android {
         manifestPlaceholders["redirectHost"] = "oauth"
         manifestPlaceholders["redirectPath"] = "/callback"
 
-        buildConfigField("String", "AUTHORIZATION_URI", "\"https://auth.mytracker.pt/realms/vehicle-tracker/protocol/openid-connect/auth\"")
+        buildConfigField("String", "AUTHORIZATION_URI", "\"https://auth.tracker.homelab/realms/vehicle-tracker/protocol/openid-connect/auth\"")
         buildConfigField("String", "CLIENT_ID", "\"tracker\"")
         buildConfigField("String", "REDIRECT_URI", "\"mytracker://oauth/callback\"")
-        buildConfigField("String", "TOKEN_URI", "\"https://auth.mytracker.pt/realms/vehicle-tracker/protocol/openid-connect/token\"")
+        buildConfigField("String", "TOKEN_URI", "\"https://auth.tracker.homelab/realms/vehicle-tracker/protocol/openid-connect/token\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
