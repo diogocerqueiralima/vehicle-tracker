@@ -52,5 +52,12 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
         return vehicleAssignmentRepository.findByDeviceIdAndVehicleIdAndUnassignedAtIsNull(deviceId, vehicleId)
                 .map(VehicleAssignmentMapper::toDomain);
     }
+
+    @Override
+    public Optional<VehicleAssignment> findActiveByDeviceId(UUID deviceId) {
+        return vehicleAssignmentRepository.findByDeviceIdAndUnassignedAtIsNull(deviceId)
+                .map(VehicleAssignmentMapper::toDomain);
+    }
+
 }
 

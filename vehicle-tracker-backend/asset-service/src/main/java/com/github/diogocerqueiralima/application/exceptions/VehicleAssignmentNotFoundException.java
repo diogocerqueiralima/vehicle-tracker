@@ -11,5 +11,9 @@ public class VehicleAssignmentNotFoundException extends RuntimeException {
         super("Active vehicle assignment not found for device id: " + deviceId + " and vehicle id: " + vehicleId);
     }
 
+    public VehicleAssignmentNotFoundException(UUID deviceId) {
+        super("Active vehicle assignment not found for device id: " + deviceId);
+    }
+
 }
 
