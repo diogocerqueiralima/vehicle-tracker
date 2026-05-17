@@ -53,10 +53,21 @@ public final class VehicleAssignmentGrpcMapper {
         }
 
         if (result.removalReason() != null) {
-            builder.setRemovalReason(VehicleRemovalReason.valueOf(result.removalReason().name()));
+            builder.setRemovalReason(toProtoRemovalReason(result.removalReason()));
         }
 
         return builder.build();
+    }
+
+    private static VehicleRemovalReason toProtoRemovalReason(
+            com.github.diogocerqueiralima.domain.assignments.VehicleRemovalReason removalReason) {
+        return switch (removalReason) {
+            case UPGRADE -> VehicleRemovalReason.VEHICLE_REMOVAL_REASON_UPGRADE;
+            case LOSS -> VehicleRemovalReason.VEHICLE_REMOVAL_REASON_LOSS;
+            case SOLD -> VehicleRemovalReason.VEHICLE_REMOVAL_REASON_SOLD;
+            case RETIRED -> VehicleRemovalReason.VEHICLE_REMOVAL_REASON_RETIRED;
+            case OTHER -> VehicleRemovalReason.VEHICLE_REMOVAL_REASON_OTHER;
+        };
     }
 
 }
