@@ -4,6 +4,9 @@ import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentBy
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.proto.DeviceId;
 import com.github.diogocerqueiralima.proto.VehicleAssignmentResponse;
+import com.github.diogocerqueiralima.proto.VehicleRemovalReason;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Timestamps;
 
 import java.util.UUID;
 
@@ -32,9 +35,28 @@ public final class VehicleAssignmentGrpcMapper {
      * @return gRPC response carrying the assigned vehicle identifier.
      */
     public static VehicleAssignmentResponse toResponse(VehicleAssignmentResult result) {
-        return VehicleAssignmentResponse.newBuilder()
+        VehicleAssignmentResponse.Builder builder = VehicleAssignmentResponse.newBuilder()
                 .setVehicleId(result.vehicleId().toString())
-                .build();
+                .setDeviceId(result.deviceId().toString())
+                .setAssignedAt(Timestamps.fromMillis(result.assignedAt().toEpochMilli()))
+                .setAssignedBy(result.assignedBy().toString())
+                .setInstalledBy(result.installedBy().toString())
+                .setActive(result.active())
+                .setNotes(result.notes());
+
+        if (result.unassignedAt() != null) {
+            builder.setUnassignedAt(Timestamps.fromMillis(result.unassignedAt().toEpochMilli()));
+        }
+
+        if (result.unassignedBy() != null) {
+            builder.setUnassignedBy(result.unassignedBy().toString());
+        }
+
+        if (result.removalReason() != null) {
+            builder.setRemovalReason(VehicleRemovalReason.valueOf(result.removalReason().name()));
+        }
+
+        return builder.build();
     }
 
 }

@@ -36,9 +36,9 @@ message VehicleAssignmentResponse {
   string vehicle_id = 2;
   google.protobuf.Timestamp assigned_at = 3;
   string assigned_by = 4;
-  google.protobuf.Timestamp unassigned_at = 5;
-  string unassigned_by = 6;
-  VehicleRemovalReason removal_reason = 7;
+  optional google.protobuf.Timestamp unassigned_at = 5;
+  optional string unassigned_by = 6;
+  optional VehicleRemovalReason removal_reason = 7;
   string installed_by = 8;
   string notes = 9;
   bool active = 10;

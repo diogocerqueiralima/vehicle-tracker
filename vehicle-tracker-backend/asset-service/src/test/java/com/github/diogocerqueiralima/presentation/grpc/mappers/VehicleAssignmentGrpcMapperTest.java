@@ -4,13 +4,14 @@ import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentBy
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.proto.DeviceId;
 import com.github.diogocerqueiralima.proto.VehicleAssignmentResponse;
+import com.google.protobuf.util.Timestamps;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 class VehicleAssignmentGrpcMapperTest {
 
@@ -27,7 +28,7 @@ class VehicleAssignmentGrpcMapperTest {
         GetVehicleAssignmentByDeviceIdCommand command =
                 VehicleAssignmentGrpcMapper.toGetVehicleAssignmentByDeviceIdCommand(request);
 
-        assertThat(command.deviceId()).isEqualTo(deviceId);
+        assertEquals(deviceId, command.deviceId());
     }
 
     @Test
@@ -55,7 +56,17 @@ class VehicleAssignmentGrpcMapperTest {
 
         VehicleAssignmentResponse response = VehicleAssignmentGrpcMapper.toResponse(result);
 
-        assertThat(response.getVehicleId()).isEqualTo(vehicleId.toString());
+        assertEquals(vehicleId.toString(), response.getVehicleId());
+        assertEquals(deviceId.toString(), response.getDeviceId());
+        assertEquals(installedBy.toString(), response.getInstalledBy());
+        assertEquals(assignedAt.toEpochMilli(), Timestamps.toMillis(response.getAssignedAt()));
+        assertEquals(assignedBy.toString(), response.getAssignedBy());
+        assertFalse(response.hasUnassignedAt());
+        assertFalse(response.hasUnassignedBy());
+        assertFalse(response.hasRemovalReason());
+        assertEquals(installedBy.toString(), response.getInstalledBy());
+        assertEquals(result.notes(), response.getNotes());
+
     }
 
 }
