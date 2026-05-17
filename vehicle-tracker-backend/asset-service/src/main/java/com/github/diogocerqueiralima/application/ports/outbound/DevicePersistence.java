@@ -41,6 +41,16 @@ public interface DevicePersistence {
 
     /**
      *
+     * Checks whether a device with the provided id exists and is owned by the provided owner id.
+     *
+     * @param id device identifier.
+     * @param ownerId owner identifier.
+     * @return true when the device exists and is owned by the owner, otherwise false.
+     */
+    boolean isOwner(UUID id, UUID ownerId);
+
+    /**
+     *
      * Checks whether a device with the provided serial number already exists.
      *
      * @param serialNumber The serial number to search for.

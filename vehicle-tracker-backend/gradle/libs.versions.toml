@@ -2,10 +2,11 @@
 spring-boot = "4.0.1"
 spring-dependency-management = "1.1.7"
 paho-client-mqttv3 = "1.2.5"
-protobuf = "4.33.2"
+protobuf = "4.35.0-RC2"
 jackson = "3.0.3"
 postgresql = "42.7.8"
 grpc = "1.76.0"
+spring-grpc-dependencies = "1.0.3"
 hibernate = "6.6.29.Final"
 bouncy-castle = "1.83"
 springdoc = "3.0.1"
@@ -19,6 +20,7 @@ spring-boot-starter-validation = { module = "org.springframework.boot:spring-boo
 spring-integration-mqtt = { module = "org.springframework.integration:spring-integration-mqtt" }
 spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-starter-amqp" }
 spring-boot-grpc = { module = "org.springframework.grpc:spring-grpc-spring-boot-starter" }
+spring-grpc-dependencies = { module = "org.springframework.grpc:spring-grpc-dependencies", version.ref = "spring-grpc-dependencies" }
 paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho-client-mqttv3" }
 protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 jackson-core = { module = "tools.jackson.core:jackson-core", version.ref = "jackson" }
@@ -28,6 +30,7 @@ spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-star
 grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
 grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
 grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
+protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobuf" }
 hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial", version.ref = "hibernate" }
 bouncy-castle-provider = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncy-castle" }
 bouncy-castle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncy-castle" }

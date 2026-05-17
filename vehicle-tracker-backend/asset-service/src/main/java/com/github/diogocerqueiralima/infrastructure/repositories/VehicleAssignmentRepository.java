@@ -38,4 +38,13 @@ public interface VehicleAssignmentRepository extends JpaRepository<VehicleAssign
 	 */
 	Optional<VehicleAssignmentEntity> findByDeviceIdAndVehicleIdAndUnassignedAtIsNull(UUID deviceId, UUID vehicleId);
 
+	/**
+	 *
+	 * Finds an active assignment for a specific device.
+	 *
+	 * @param deviceId device unique identifier.
+	 * @return active assignment when found, otherwise empty.
+	 */
+	Optional<VehicleAssignmentEntity> findByDeviceIdAndUnassignedAtIsNull(UUID deviceId);
+
 }

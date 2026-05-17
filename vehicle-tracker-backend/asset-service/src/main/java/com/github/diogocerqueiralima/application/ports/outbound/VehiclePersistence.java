@@ -41,6 +41,16 @@ public interface VehiclePersistence {
 
     /**
      *
+     * Checks whether a vehicle with the provided id exists and is owned by the provided owner id.
+     *
+     * @param id vehicle identifier.
+     * @param ownerId owner identifier.
+     * @return true when the vehicle exists and is owned by the owner, otherwise false.
+     */
+    boolean isOwner(UUID id, UUID ownerId);
+
+    /**
+     *
      * Checks whether a vehicle with the provided VIN already exists.
      *
      * @param vin The VIN to search for.

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package com.github.diogocerqueiralima.proto;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "com.github.diogocerqueiralima.proto";
+option java_outer_classname = "VehicleProto";
+
+service VehicleAssignmentService {
+
+  rpc GetVehicleAssignmentByDeviceId(DeviceId) returns (VehicleAssignmentResponse);
+
+}
+
+message DeviceId {
+
+  string id = 1;
+
+}
+
+enum VehicleRemovalReason {
+
+  VEHICLE_REMOVAL_REASON_UNSPECIFIED = 0;
+  VEHICLE_REMOVAL_REASON_UPGRADE = 1;
+  VEHICLE_REMOVAL_REASON_LOSS = 2;
+  VEHICLE_REMOVAL_REASON_SOLD = 3;
+  VEHICLE_REMOVAL_REASON_RETIRED = 4;
+  VEHICLE_REMOVAL_REASON_OTHER = 5;
+
+}
+
+message VehicleAssignmentResponse {
+
+  string device_id = 1;
+  string vehicle_id = 2;
+  google.protobuf.Timestamp assigned_at = 3;
+  string assigned_by = 4;
+  optional google.protobuf.Timestamp unassigned_at = 5;
+  optional string unassigned_by = 6;
+  optional VehicleRemovalReason removal_reason = 7;
+  string installed_by = 8;
+  string notes = 9;
+  bool active = 10;
+
+}

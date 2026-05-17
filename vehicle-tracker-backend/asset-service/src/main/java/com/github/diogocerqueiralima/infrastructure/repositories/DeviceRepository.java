@@ -16,6 +16,16 @@ import java.util.UUID;
 public interface DeviceRepository extends JpaRepository<DeviceEntity, UUID> {
 
 	/**
+	 *
+	 * Checks whether a device with the provided id exists and is owned by the provided owner id.
+	 *
+	 * @param id device identifier.
+	 * @param ownerId owner identifier.
+	 * @return true when the device exists and is owned by the owner, otherwise false.
+	 */
+	boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
+
+	/**
 	 * Checks whether a device with the provided serial number exists.
 	 *
 	 * @param serialNumber the serial number to lookup.

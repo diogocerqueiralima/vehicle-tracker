@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.ports.inbound;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentByDeviceIdCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import jakarta.validation.Valid;
@@ -27,6 +28,15 @@ public interface VehicleAssignmentUseCase {
      * @return updated assignment result.
      */
     VehicleAssignmentResult unassignDeviceFromVehicle(@Valid UnassignDeviceFromVehicleCommand command);
+
+    /**
+     *
+     * Retrieves an active vehicle assignment by device id.
+     *
+     * @param command the get assignment by device id command.
+     * @return the retrieved assignment result.
+     */
+    VehicleAssignmentResult getVehicleAssignmentByDeviceId(@Valid GetVehicleAssignmentByDeviceIdCommand command);
 
 }
 

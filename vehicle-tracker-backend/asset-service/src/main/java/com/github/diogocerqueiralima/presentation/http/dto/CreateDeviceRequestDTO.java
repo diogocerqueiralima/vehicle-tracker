@@ -1,0 +1,28 @@
+package com.github.diogocerqueiralima.presentation.http.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.UUID;
+
+/**
+ * Request DTO for device creation.
+ */
+public record CreateDeviceRequestDTO(
+
+        @JsonProperty("serial_number")
+        String serialNumber,
+
+        @JsonProperty("model")
+        String model,
+
+        @JsonProperty("manufacturer")
+        String manufacturer,
+
+        @JsonProperty("imei")
+        String imei,
+
+        @JsonProperty("owner_id")
+        UUID ownerId
+
+) {}
+

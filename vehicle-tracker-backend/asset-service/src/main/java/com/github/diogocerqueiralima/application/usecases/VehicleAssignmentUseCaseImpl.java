@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentByDeviceIdCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
 import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
@@ -42,12 +43,6 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         this.vehicleAssignmentPersistence = vehicleAssignmentPersistence;
     }
 
-    /**
-     * Assigns a device to a vehicle after validating asset existence and active-assignment constraints.
-     *
-     * @param command assignment payload.
-     * @return created assignment result.
-     */
     @Override
     @Transactional
     public VehicleAssignmentResult assignDeviceToVehicle(AssignDeviceToVehicleCommand command) {
@@ -88,43 +83,48 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         return VehicleAssignmentApplicationMapper.toResult(savedAssignment);
     }
 
-    /**
-     * Unassigns a device from a vehicle after validating assets and locating an active assignment.
-     *
-     * @param command unassignment payload.
-     * @return updated assignment result.
-     */
     @Override
     @Transactional
     public VehicleAssignmentResult unassignDeviceFromVehicle(UnassignDeviceFromVehicleCommand command) {
 
         UUID deviceId = command.deviceId();
         UUID vehicleId = command.vehicleId();
-        UUID unassignedBy = command.unassignedBy();
 
-        // 1. Loads the device scoped to the authenticated owner and fails fast if it does not exist or is not owned.
-        Device device = devicePersistence.findByIdAndOwnerId(deviceId, unassignedBy)
-                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
-
-        // 2. Loads the vehicle scoped to the authenticated owner and fails fast if it does not exist or is not owned.
-        Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, unassignedBy)
-                .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
-
-        // 3. Loads the active assignment for this exact device/vehicle pair.
+        // 1. Loads the active assignment for this exact device/vehicle pair.
         VehicleAssignment activeAssignment = vehicleAssignmentPersistence
                 .findActiveByDeviceIdAndVehicleId(deviceId, vehicleId)
                 .orElseThrow(() -> new VehicleAssignmentNotFoundException(deviceId, vehicleId));
 
-        // 4. Creates the updated assignment aggregate with unassignment metadata.
+        // 2. Check if the user is the owner of the vehicle
+        if (!vehiclePersistence.isOwner(vehicleId, command.unassignedBy())) {
+            throw new VehicleNotFoundException(vehicleId);
+        }
+
+        // 3. Check if the user is the owner of the device
+        if (!devicePersistence.isOwner(deviceId, command.unassignedBy())) {
+            throw new DeviceNotFoundException(deviceId);
+        }
+
+        // 2. Creates the updated assignment aggregate with unassignment metadata.
         VehicleAssignment assignmentToSave = VehicleAssignmentApplicationMapper.toDomain(
                 command,
                 activeAssignment,
                 Instant.now()
         );
 
-        // 5. Persists the closed assignment and maps it to the application output contract.
+        // 3. Persists the closed assignment and maps it to the application output contract.
         VehicleAssignment savedAssignment = vehicleAssignmentPersistence.save(assignmentToSave);
         return VehicleAssignmentApplicationMapper.toResult(savedAssignment);
+    }
+
+    @Override
+    public VehicleAssignmentResult getVehicleAssignmentByDeviceId(GetVehicleAssignmentByDeviceIdCommand command) {
+
+        UUID deviceId = command.deviceId();
+
+        return vehicleAssignmentPersistence.findActiveByDeviceId(deviceId)
+                .map(VehicleAssignmentApplicationMapper::toResult)
+                .orElseThrow(() -> new VehicleAssignmentNotFoundException(deviceId));
     }
 
 }

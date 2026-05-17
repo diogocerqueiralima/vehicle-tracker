@@ -282,6 +282,7 @@ class VehicleAssignmentUseCaseImplTest {
 
         Device device = new Device(
                 deviceId,
+                unassignedBy,
                 Instant.parse("2026-03-10T10:00:00Z"),
                 Instant.parse("2026-03-10T10:00:00Z"),
                 "SN-001",
@@ -292,6 +293,7 @@ class VehicleAssignmentUseCaseImplTest {
 
         Vehicle vehicle = new Vehicle(
                 vehicleId,
+                unassignedBy,
                 Instant.parse("2026-03-10T10:00:00Z"),
                 Instant.parse("2026-03-10T10:00:00Z"),
                 "1HGCM82633A123456",
@@ -332,8 +334,8 @@ class VehicleAssignmentUseCaseImplTest {
                 VehicleRemovalReason.RETIRED
         );
 
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.unassignedBy())).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.unassignedBy())).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.isOwner(deviceId, command.unassignedBy())).thenReturn(true);
+        when(vehiclePersistence.isOwner(vehicleId, command.unassignedBy())).thenReturn(true);
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
                 .thenReturn(Optional.of(activeAssignment));
         when(vehicleAssignmentPersistence.save(any(VehicleAssignment.class))).thenReturn(closedAssignment);
@@ -384,8 +386,8 @@ class VehicleAssignmentUseCaseImplTest {
                 VehicleRemovalReason.OTHER
         );
 
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.unassignedBy())).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.unassignedBy())).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.isOwner(deviceId, command.unassignedBy())).thenReturn(true);
+        when(vehiclePersistence.isOwner(vehicleId, command.unassignedBy())).thenReturn(true);
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
                 .thenReturn(Optional.empty());
 

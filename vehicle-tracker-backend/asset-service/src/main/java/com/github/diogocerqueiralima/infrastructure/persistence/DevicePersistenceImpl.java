@@ -48,6 +48,11 @@ public class DevicePersistenceImpl implements DevicePersistence {
     }
 
     @Override
+    public boolean isOwner(UUID id, UUID ownerId) {
+        return deviceRepository.existsByIdAndOwnerId(id, ownerId);
+    }
+
+    @Override
     public boolean existsBySerialNumber(String serialNumber) {
         return deviceRepository.existsBySerialNumber(serialNumber);
     }
