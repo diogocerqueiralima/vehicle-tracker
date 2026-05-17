@@ -51,23 +51,23 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         UUID vehicleId = command.vehicleId();
         UUID assignedBy = command.assignedBy();
 
-        // 1. Rejects assignment when the device already has an active assignment.
+        // 1. Loads the device scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        Device device = devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
+
+        // 2. Loads the vehicle scoped to the authenticated owner and fails fast if it does not exist or is not owned.
+        Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)
+                .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
+
+        // 3. Rejects assignment when the device already has an active assignment.
         if (vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)) {
             throw new DeviceAlreadyAssignedException(deviceId);
         }
 
-        // 2. Rejects assignment when the vehicle already has an active assignment.
+        // 4. Rejects assignment when the vehicle already has an active assignment.
         if (vehicleAssignmentPersistence.existsActiveByVehicleId(vehicleId)) {
             throw new VehicleAlreadyAssignedException(vehicleId);
         }
-
-        // 3. Loads the device scoped to the authenticated owner and fails fast if it does not exist or is not owned.
-        Device device = devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)
-                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
-
-        // 4. Loads the vehicle scoped to the authenticated owner and fails fast if it does not exist or is not owned.
-        Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)
-                .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
 
         // 5. Builds and saves the new assignment.
         VehicleAssignment assignmentToSave = VehicleAssignmentApplicationMapper.toDomain(
@@ -94,6 +94,16 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         VehicleAssignment activeAssignment = vehicleAssignmentPersistence
                 .findActiveByDeviceIdAndVehicleId(deviceId, vehicleId)
                 .orElseThrow(() -> new VehicleAssignmentNotFoundException(deviceId, vehicleId));
+
+        // 2. Check if the user is the owner of the vehicle
+        if (!vehiclePersistence.isOwner(vehicleId, command.unassignedBy())) {
+            throw new VehicleNotFoundException(vehicleId);
+        }
+
+        // 3. Check if the user is the owner of the device
+        if (!devicePersistence.isOwner(deviceId, command.unassignedBy())) {
+            throw new DeviceNotFoundException(deviceId);
+        }
 
         // 2. Creates the updated assignment aggregate with unassignment metadata.
         VehicleAssignment assignmentToSave = VehicleAssignmentApplicationMapper.toDomain(

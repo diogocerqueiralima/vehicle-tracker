@@ -48,6 +48,11 @@ public class VehiclePersistenceImpl implements VehiclePersistence {
     }
 
     @Override
+    public boolean isOwner(UUID id, UUID ownerId) {
+        return vehicleRepository.existsByIdAndOwnerId(id, ownerId);
+    }
+
+    @Override
     public boolean existsByVin(String vin) {
         return vehicleRepository.existsByVin(vin);
     }

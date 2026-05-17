@@ -56,9 +56,16 @@ public class GrpcVehicleAssignmentService extends VehicleAssignmentServiceGrpc.V
                     new StatusRuntimeException(Status.NOT_FOUND.withDescription(e.getMessage()))
             );
 
+        } catch (IllegalArgumentException e) {
+
+            // 6. Returns an INVALID_ARGUMENT error for any validation errors in the input data.
+            responseObserver.onError(
+                    new StatusRuntimeException(Status.INVALID_ARGUMENT.withDescription(e.getMessage()))
+            );
+
         } catch (Exception e) {
 
-            // 6. Returns an INTERNAL error for any unexpected exceptions.
+            // 7. Returns an INTERNAL error for any unexpected exceptions.
             responseObserver.onError(
                     new StatusRuntimeException(Status.INTERNAL.withDescription(e.getMessage()))
             );

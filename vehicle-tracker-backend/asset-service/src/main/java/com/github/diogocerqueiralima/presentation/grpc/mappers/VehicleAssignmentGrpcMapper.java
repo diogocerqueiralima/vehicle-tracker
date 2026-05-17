@@ -40,9 +40,7 @@ public final class VehicleAssignmentGrpcMapper {
                 .setDeviceId(result.deviceId().toString())
                 .setAssignedAt(Timestamps.fromMillis(result.assignedAt().toEpochMilli()))
                 .setAssignedBy(result.assignedBy().toString())
-                .setInstalledBy(result.installedBy().toString())
-                .setActive(result.active())
-                .setNotes(result.notes());
+                .setActive(result.active());
 
         if (result.unassignedAt() != null) {
             builder.setUnassignedAt(Timestamps.fromMillis(result.unassignedAt().toEpochMilli()));
@@ -54,6 +52,14 @@ public final class VehicleAssignmentGrpcMapper {
 
         if (result.removalReason() != null) {
             builder.setRemovalReason(VehicleRemovalReason.valueOf(result.removalReason().name()));
+        }
+
+        if (result.installedBy() != null) {
+            builder.setInstalledBy(result.installedBy().toString());
+        }
+
+        if (result.notes() != null) {
+            builder.setNotes(result.notes());
         }
 
         return builder.build();

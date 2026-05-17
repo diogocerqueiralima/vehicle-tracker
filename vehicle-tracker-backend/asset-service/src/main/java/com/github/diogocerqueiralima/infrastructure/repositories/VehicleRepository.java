@@ -16,6 +16,16 @@ import java.util.UUID;
 public interface VehicleRepository extends JpaRepository<VehicleEntity, UUID> {
 
 	/**
+	 *
+	 * Checks whether a vehicle with the provided id exists and is owned by the provided owner id.
+	 *
+	 * @param id vehicle identifier.
+	 * @param ownerId owner identifier.
+	 * @return true when the vehicle exists and is owned by the owner, otherwise false.
+	 */
+	boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
+
+	/**
 	 * Checks whether a vehicle with the provided VIN exists.
 	 *
 	 * @param vin the VIN to lookup.

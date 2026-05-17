@@ -64,7 +64,7 @@ class VehicleAssignmentGrpcMapperTest {
         assertFalse(response.hasUnassignedAt());
         assertFalse(response.hasUnassignedBy());
         assertFalse(response.hasRemovalReason());
-        assertEquals(installedBy.toString(), response.getInstalledBy());
+        assertTrue(response.getActive());
         assertEquals(result.notes(), response.getNotes());
 
     }
