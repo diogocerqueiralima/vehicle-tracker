@@ -4,6 +4,7 @@ import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentBy
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.proto.DeviceId;
 import com.github.diogocerqueiralima.proto.VehicleAssignmentResponse;
+import com.github.diogocerqueiralima.proto.VehicleRemovalReason;
 import com.google.protobuf.util.Timestamps;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,7 @@ class VehicleAssignmentGrpcMapperTest {
         assertFalse(response.hasUnassignedAt());
         assertFalse(response.hasUnassignedBy());
         assertFalse(response.hasRemovalReason());
+        assertEquals(installedBy.toString(), response.getInstalledBy());
         assertTrue(response.getActive());
         assertEquals(result.notes(), response.getNotes());
 
