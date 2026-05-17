@@ -4,7 +4,6 @@ import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentBy
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.proto.DeviceId;
 import com.github.diogocerqueiralima.proto.VehicleAssignmentResponse;
-import com.github.diogocerqueiralima.proto.VehicleRemovalReason;
 import com.google.protobuf.util.Timestamps;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
