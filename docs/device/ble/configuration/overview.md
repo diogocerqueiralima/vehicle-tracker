@@ -20,14 +20,15 @@ The configuration parameters are categorized into several groups based on their 
 - **MQTT Reconnection Interval**: The interval at which the device will attempt to reconnect to the MQTT broker if the connection is lost. This is typically measured in seconds.
 - **MQTT Topic**: The topic to which the device will publish its data.
 
-### Authentication Parameters
-
-- **MQTT Certificate**: The certificate issued by the Identity Service and installed on the device to authenticate with the MQTT broker. The device exposes a CSR generation operation via BLE so the user can obtain the CSR, submit it to the Identity Service, and install the resulting certificate back on the device.
-
 ### GPS Parameters
 
 - **GPS Update Interval**: The frequency at which the device will update its GPS location. This is typically measured in seconds. A shorter interval means more frequent updates, which can provide more accurate tracking but may consume more battery power. The device will only update its location if it is moving, which helps to conserve battery life when the vehicle is stationary.
 - **GPS Timeout**: The maximum amount of time the device will wait for a GPS fix before giving up and sending an error message. This is typically measured in seconds.
+
+### Authentication Parameters
+
+- **Certificate Signing Request (CSR)**: The device can generate a CSR that can be submitted to the Identity Service to obtain a certificate for authenticating with the MQTT broker. The device exposes a CSR generation operation via BLE, allowing users to easily obtain the CSR and install the resulting certificate back on the device.
+- **Certificate**: The certificate issued by the Identity Service and installed on the device to authenticate with the MQTT broker. The device exposes a CSR generation operation via BLE so the user can obtain the CSR, submit it to the Identity Service, and install the resulting certificate back on the device.
 
 ## BLE Configuration
 
