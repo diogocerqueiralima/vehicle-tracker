@@ -57,7 +57,7 @@ The following diagram illustrates the Certificate usage:
 
 ```mermaid
 sequenceDiagram
-    title Certificate Lifecycle
+    title Certificate Usage
 
     participant User
     participant Device
