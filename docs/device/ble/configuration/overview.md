@@ -32,4 +32,4 @@ The configuration parameters are categorized into several groups based on their 
 
 ## BLE Configuration
 
-Device parameters can be configured via BLE. For more information on the BLE protocol and the Configuration Service, refer to the [BLE Overview](../overview.md) and the [BLE Configuration Service](protocol-specification.md).
+Device parameters can be configured via BLE. For more information on the BLE protocol and the Configuration Service, refer to the [BLE Overview](../overview.md) and the [BLE Configuration Service](service.md).
