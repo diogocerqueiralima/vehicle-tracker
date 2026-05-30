@@ -1,6 +1,6 @@
-# Configuration Service Protocol Specification
+# Configuration Service
 
-This document describes the protocol used to configure devices in the vehicle-tracker system via BLE. It defines the GATT service structure, message format, and expected device behavior.
+This document describes the BLE GATT service used to configure devices in the vehicle-tracker system, defining the service structure and characteristics.
 
 > **Note**: This document is still under development. The protocol may change as the system evolves.
 
