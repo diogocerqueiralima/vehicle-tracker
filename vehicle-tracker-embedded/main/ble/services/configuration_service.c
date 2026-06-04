@@ -12,7 +12,6 @@ static const ble_uuid128_t configuration_mqtt_broker_uuid =
     BLE_UUID128_INIT(0x01, 0x45, 0xc1, 0x9e, 0x02, 0xe9, 0xf5, 0x9e, 0x60, 0x4d, 0xb9, 0x2f, 0x25, 0xe7, 0x45, 0x13);
 
 static int configure_mqtt_broker(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
-    ESP_LOGI(LOG_TAG, "Configuring MQTT Broker...");
 
     switch (ctxt->op) {
 
