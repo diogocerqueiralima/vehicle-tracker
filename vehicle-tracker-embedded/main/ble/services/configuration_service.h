@@ -2,6 +2,8 @@
 
 #define CONFIGURATION_SERVICE_H
 
+#define MQTT_BROKER_NAMESPACE "mqtt_broker"
+
 #include "host/ble_gatt.h"
 
 /**

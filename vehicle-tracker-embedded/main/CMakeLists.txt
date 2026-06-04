@@ -1,5 +1,5 @@
 idf_component_register(
-        SRCS         "main.c" "ble/ble_manager.c" "ble/services/configuration_service.c"
+        SRCS         "main.c" "ble/ble_manager.c" "ble/services/configuration_service.c" "storage/storage.c"
         INCLUDE_DIRS "."
-        REQUIRES "bt"
+        REQUIRES "bt" "nvs_flash"
 )

@@ -1,6 +1,7 @@
 #include "configuration_service.h"
 
 #include "esp_log.h"
+#include "storage/storage.h"
 
 static const char *LOG_TAG = "configuration_service";
 
@@ -12,6 +13,61 @@ static const ble_uuid128_t configuration_mqtt_broker_uuid =
 
 static int configure_mqtt_broker(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
     ESP_LOGI(LOG_TAG, "Configuring MQTT Broker...");
+
+    switch (ctxt->op) {
+
+    case BLE_GATT_ACCESS_OP_READ_CHR: {
+
+            ESP_LOGI(LOG_TAG, "Reading MQTT broker configuration");
+
+            // 1. Discover the exact size of the stored value
+            size_t len = 0;
+            esp_err_t err = get_data_size(MQTT_BROKER_NAMESPACE, &len);
+            if (err != ESP_OK) {
+                ESP_LOGE(LOG_TAG, "Failed to get MQTT broker configuration size: %s", esp_err_to_name(err));
+                return BLE_ATT_ERR_UNLIKELY;
+            }
+
+            // 2. Load the stored value into a local buffer
+            char buf[len];
+            err = load_data(MQTT_BROKER_NAMESPACE, buf, len);
+            if (err != ESP_OK) {
+                ESP_LOGE(LOG_TAG, "Failed to load MQTT broker configuration: %s", esp_err_to_name(err));
+                return BLE_ATT_ERR_UNLIKELY;
+            }
+
+            // 3. Append the loaded value into the response mbuf
+            if (os_mbuf_append(ctxt->om, buf, len) != 0) {
+                return BLE_ATT_ERR_INSUFFICIENT_RES;
+            }
+
+            ESP_LOGI(LOG_TAG, "Successfully read MQTT broker configuration");
+            break;
+    }
+    case BLE_GATT_ACCESS_OP_WRITE_CHR: {
+
+            ESP_LOGI(LOG_TAG, "Writing MQTT broker configuration");
+
+            // 1. Copy the full mbuf chain into a local buffer
+            const uint16_t len = OS_MBUF_PKTLEN(ctxt->om);
+            char buf[len];
+            os_mbuf_copydata(ctxt->om, 0, len, buf);
+
+            // 2. Persist the received value
+            const esp_err_t err = save_data(MQTT_BROKER_NAMESPACE, buf, len);
+            if (err != ESP_OK) {
+                ESP_LOGE(LOG_TAG, "Failed to save MQTT broker configuration: %s", esp_err_to_name(err));
+                return BLE_ATT_ERR_UNLIKELY;
+            }
+
+            ESP_LOGI(LOG_TAG, "Successfully saved MQTT broker configuration");
+            break;
+    }
+    default:
+        ESP_LOGI(LOG_TAG, "Unsupported GATT access operation: %d", ctxt->op);
+        break;
+    }
+
     return 0;
 }
 
