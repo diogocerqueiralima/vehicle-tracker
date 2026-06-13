@@ -1,5 +1,6 @@
 #include "ble_manager.h"
 
+#include <stdlib.h>
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 
@@ -7,6 +8,7 @@ static struct ble_gatt_svc_def *gatt_services_defs = nullptr;
 static int service_count = 0;
 
 static void ble_host_task(void *param) {
+    (void) param;
     nimble_port_run();
     nimble_port_freertos_deinit();
 }
@@ -41,6 +43,7 @@ static void on_sync(void) {
 }
 
 static void on_reset(int reason) {
+    (void) reason;
     // Host reset; re-synchronization will trigger on_sync again
 }
 

@@ -135,6 +135,9 @@ static int configure_gatt_characteristic(
     uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg
 ) {
 
+    (void) conn_handle;
+    (void) attr_handle;
+
     const gatt_handler_context_t *ctx = (gatt_handler_context_t *) arg;
 
     switch (ctxt->op) {
@@ -150,7 +153,13 @@ static int configure_gatt_characteristic(
                 return BLE_ATT_ERR_UNLIKELY;
             }
 
-            // 2. Read the stored value.
+            // 2. Handle the case where no value is stored yet (len == 0) by returning an error to indicate that the value is not available.
+            if (len == 0) {
+                ESP_LOGE(LOG_TAG, "Stored %s value is empty", ctx->name);
+                return BLE_ATT_ERR_UNLIKELY;
+            }
+
+            // 3. Read the stored value.
             char buf[len];
             err = load_data(ctx->namespace, buf, len);
             if (err != ESP_OK) {
@@ -158,7 +167,7 @@ static int configure_gatt_characteristic(
                 return BLE_ATT_ERR_UNLIKELY;
             }
 
-            // 3. Append the value to the response buffer to be sent back to the client.
+            // 4. Append the value to the response buffer to be sent back to the client.
             if (os_mbuf_append(ctxt->om, buf, len) != 0) {
                 return BLE_ATT_ERR_INSUFFICIENT_RES;
             }
@@ -170,19 +179,24 @@ static int configure_gatt_characteristic(
 
             ESP_LOGI(LOG_TAG, "Writing %s configuration", ctx->name);
 
-            // 4. Extract the value being written from the request buffer.
+            // 5. Check if the length of the incoming data is valid
             const uint16_t len = OS_MBUF_PKTLEN(ctxt->om);
+            if (len <= 0) {
+                return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
+            }
+
+            // 6. Copy the incoming data from the mbuf into a local buffer for validation and storage.
             char buf[len];
             os_mbuf_copydata(ctxt->om, 0, len, buf);
 
-            // 5. Validate the value using the provided validation function, if any.
+            // 7. Validate the value using the provided validation function, if any.
             if (ctx->validate != NULL && !ctx->validate(buf, len)) {
                 ESP_LOGE(LOG_TAG, "Invalid value for %s:", ctx->name);
                 ESP_LOG_BUFFER_HEX_LEVEL(LOG_TAG, buf, len, ESP_LOG_ERROR);
                 return BLE_ATT_ERR_VALUE_NOT_ALLOWED;
             }
 
-            // 6. Save the value to NVS for persistent storage.
+            // 8. Save the value to NVS for persistent storage.
             const esp_err_t err = save_data(ctx->namespace, buf, len);
             if (err != ESP_OK) {
                 ESP_LOGE(LOG_TAG, "Failed to save %s: %s", ctx->name, esp_err_to_name(err));

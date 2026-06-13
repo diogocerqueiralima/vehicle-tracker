@@ -29,8 +29,8 @@ esp_err_t save_data(const char* key, const char* value, size_t len) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 2. Check for non-positive length
-    if (len <= 0) {
+    // 2. Check for null value or non-positive length
+    if (value == NULL || len <= 0) {
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -59,8 +59,8 @@ esp_err_t save_data(const char* key, const char* value, size_t len) {
 
 esp_err_t get_data_size(const char* key, size_t* out_len) {
 
-    // 1. Check for null key or key length exceeding maximum allowed size
-    if (key == NULL || strlen(key) >= NVS_KEY_NAME_MAX_SIZE) {
+    // 1. Check for null key/out_len or key length exceeding maximum allowed size
+    if (key == NULL || out_len == NULL || strlen(key) >= NVS_KEY_NAME_MAX_SIZE) {
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -82,8 +82,8 @@ esp_err_t get_data_size(const char* key, size_t* out_len) {
 
 esp_err_t load_data(const char* key, char* value, size_t len) {
 
-    // 1. Check for null key or key length exceeding maximum allowed size
-    if (key == NULL || strlen(key) >= NVS_KEY_NAME_MAX_SIZE) {
+    // 1. Check for null key/value or key length exceeding maximum allowed size
+    if (key == NULL || value == NULL || strlen(key) >= NVS_KEY_NAME_MAX_SIZE) {
         return ESP_ERR_INVALID_ARG;
     }
 
