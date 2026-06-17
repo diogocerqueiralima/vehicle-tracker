@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.domain.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.model.RegularCertificate;
+import com.github.diogocerqueiralima.domain.model.certificate.RegularCertificate;
 
 import java.math.BigInteger;
 import java.util.Optional;

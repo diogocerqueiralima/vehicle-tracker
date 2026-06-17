@@ -2,10 +2,9 @@ package com.github.diogocerqueiralima.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToSimCardCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromSimCardCommand;
-import com.github.diogocerqueiralima.application.ports.inbound.SimCardAssignmentUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.SimCardAssignmentUseCase;
 import com.github.diogocerqueiralima.application.results.SimCardAssignmentResult;
 import com.github.diogocerqueiralima.domain.assignments.SimCardRemovalReason;
-import com.github.diogocerqueiralima.presentation.http.controllers.SimCardAssignmentController;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.SimCardAssignmentDTO;

@@ -71,6 +71,7 @@ public final class DeviceApplicationMapper {
     public static DeviceResult toResult(Device device) {
         return new DeviceResult(
                 device.getId(),
+                device.getOwnerId(),
                 device.getCreatedAt(),
                 device.getUpdatedAt(),
                 device.getSerialNumber(),

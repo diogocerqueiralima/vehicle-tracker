@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.domain.ports.outbound;
 
-import com.github.diogocerqueiralima.domain.model.CertificateSigningRequest;
+import com.github.diogocerqueiralima.domain.model.certificate.CertificateSigningRequest;
 
 /**
  * Port to interact with the certificate signing request reader implementation.

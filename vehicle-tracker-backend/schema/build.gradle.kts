@@ -14,10 +14,9 @@ repositories {
 
 dependencies {
 
-    implementation(libs.protobuf)
-    implementation(libs.grpc.netty.shaded)
-    implementation(libs.grpc.protobuf)
     implementation(libs.grpc.stub)
+    implementation(libs.grpc.protobuf)
+    implementation(libs.protobuf)
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

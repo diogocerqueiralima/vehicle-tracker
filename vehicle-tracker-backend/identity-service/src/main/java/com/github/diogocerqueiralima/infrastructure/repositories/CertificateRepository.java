@@ -6,5 +6,8 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigInteger;
 
+/**
+ * Repository interface for managing {@link CertificateEntity} instances in the database.
+ */
 @Repository
 public interface CertificateRepository extends JpaRepository<CertificateEntity, BigInteger> {}
