@@ -10,7 +10,6 @@ import com.github.diogocerqueiralima.presentation.http.dto.CreateDeviceRequestDT
 import com.github.diogocerqueiralima.presentation.http.dto.DeviceDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UpdateDeviceRequestDTO;
-import com.github.diogocerqueiralima.presentation.http.mappers.DeviceHttpMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DeviceHttpMapperTest {
 
@@ -36,9 +35,9 @@ class DeviceHttpMapperTest {
 
         CreateDeviceCommand command = DeviceHttpMapper.toCreateCommand(request);
 
-        assertThat(command.serialNumber()).isEqualTo(request.serialNumber());
-        assertThat(command.imei()).isEqualTo(request.imei());
-        assertThat(command.ownerId()).isEqualTo(ownerId);
+        assertEquals(request.serialNumber(), command.serialNumber());
+        assertEquals(request.imei(), command.imei());
+        assertEquals(ownerId, command.ownerId());
     }
 
     @Test
@@ -56,19 +55,22 @@ class DeviceHttpMapperTest {
 
         UpdateDeviceCommand command = DeviceHttpMapper.toUpdateCommand(id, request);
 
-        assertThat(command.id()).isEqualTo(id);
-        assertThat(command.serialNumber()).isEqualTo(request.serialNumber());
-        assertThat(command.model()).isEqualTo(request.model());
-        assertThat(command.ownerId()).isEqualTo(ownerId);
+        assertEquals(id, command.id());
+        assertEquals(request.serialNumber(), command.serialNumber());
+        assertEquals(request.model(), command.model());
+        assertEquals(ownerId, command.ownerId());
     }
 
     @Test
     @DisplayName("Should map result to dto")
     void should_map_result_to_dto() {
+
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
         DeviceResult result = new DeviceResult(
                 id,
+                ownerId,
                 now,
                 now,
                 "SN-001",
@@ -79,23 +81,25 @@ class DeviceHttpMapperTest {
 
         DeviceDTO dto = DeviceHttpMapper.toDTO(result);
 
-        assertThat(dto.id()).isEqualTo(result.id());
-        assertThat(dto.serialNumber()).isEqualTo(result.serialNumber());
-        assertThat(dto.manufacturer()).isEqualTo(result.manufacturer());
+        assertEquals(result.id(), dto.id());
+        assertEquals(ownerId, result.ownerId());
+        assertEquals(result.serialNumber(), dto.serialNumber());
+        assertEquals(result.manufacturer(), dto.manufacturer());
     }
 
     @Test
     @DisplayName("Should map path id to get by id command")
     void should_map_path_id_to_get_by_id_command() {
+
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         boolean isAdmin = true;
 
         GetDeviceByIdCommand command = DeviceHttpMapper.toGetByIdCommand(id, userId, isAdmin);
 
-        assertThat(command.id()).isEqualTo(id);
-        assertThat(command.userId()).isEqualTo(userId);
-        assertThat(command.isAdmin()).isTrue();
+        assertEquals(id, command.id());
+        assertEquals(userId, command.userId());
+        assertTrue(command.isAdmin());
     }
 
     @Test
@@ -105,9 +109,9 @@ class DeviceHttpMapperTest {
 
         GetDevicePageCommand command = DeviceHttpMapper.toGetPageCommand(2, 15, userId);
 
-        assertThat(command.pageNumber()).isEqualTo(2);
-        assertThat(command.pageSize()).isEqualTo(15);
-        assertThat(command.userId()).isEqualTo(userId);
+        assertEquals(2, command.pageNumber());
+        assertEquals(15, command.pageSize());
+        assertEquals(userId, command.userId());
     }
 
     @Test
@@ -115,9 +119,11 @@ class DeviceHttpMapperTest {
     void should_map_page_result_to_page_dto() {
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
         DeviceResult deviceResult = new DeviceResult(
                 id,
+                ownerId,
                 now,
                 now,
                 "SN-001",
@@ -129,11 +135,11 @@ class DeviceHttpMapperTest {
         PageResult<DeviceResult> result = new PageResult<>(1, 10, 1, 1, List.of(deviceResult));
         PageDTO<DeviceDTO> dto = DeviceHttpMapper.toPageDTO(result);
 
-        assertThat(dto.pageNumber()).isEqualTo(1);
-        assertThat(dto.pageSize()).isEqualTo(10);
-        assertThat(dto.totalElements()).isEqualTo(1);
-        assertThat(dto.data()).hasSize(1);
-        assertThat(dto.data().getFirst().id()).isEqualTo(id);
+        assertEquals(1, dto.pageNumber());
+        assertEquals(10, dto.pageSize());
+        assertEquals(1, dto.totalElements());
+        assertEquals(1, dto.data().size());
+        assertEquals(id, dto.data().getFirst().id());
     }
 
 }

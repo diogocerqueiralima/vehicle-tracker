@@ -6,7 +6,7 @@ import com.github.diogocerqueiralima.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateSimCardCommand;
 import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
-import com.github.diogocerqueiralima.application.ports.outbound.SimCardPersistence;
+import com.github.diogocerqueiralima.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
 import com.github.diogocerqueiralima.domain.assets.SimCard;
 import org.junit.jupiter.api.DisplayName;

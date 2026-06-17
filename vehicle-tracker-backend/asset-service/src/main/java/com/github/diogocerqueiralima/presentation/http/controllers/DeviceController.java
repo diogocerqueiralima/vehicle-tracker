@@ -4,7 +4,7 @@ import com.github.diogocerqueiralima.application.commands.CreateDeviceCommand;
 import com.github.diogocerqueiralima.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetDevicePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateDeviceCommand;
-import com.github.diogocerqueiralima.application.ports.inbound.DeviceUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;

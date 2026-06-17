@@ -4,7 +4,7 @@ import com.github.diogocerqueiralima.application.commands.CertificateSigningRequ
 import com.github.diogocerqueiralima.application.commands.LookupCertificateBySerialNumberCommand;
 import com.github.diogocerqueiralima.application.results.CertificateSigningRequestResult;
 import com.github.diogocerqueiralima.application.services.CertificateService;
-import com.github.diogocerqueiralima.domain.model.factories.RegularCertificateFactory;
+import com.github.diogocerqueiralima.domain.model.certificate.factories.RegularCertificateFactory;
 import com.github.diogocerqueiralima.domain.ports.inbound.CertificateUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.CertificatePersistence;
 import org.springframework.stereotype.Service;

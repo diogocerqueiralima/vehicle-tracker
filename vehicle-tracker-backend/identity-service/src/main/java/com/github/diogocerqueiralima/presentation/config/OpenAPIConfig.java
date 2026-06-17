@@ -1,6 +1,5 @@
 package com.github.diogocerqueiralima.presentation.config;
 
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.security.SecuritySchemes;
@@ -18,18 +17,6 @@ import org.springframework.context.annotation.Configuration;
                         type = SecuritySchemeType.HTTP,
                         scheme = "bearer",
                         bearerFormat = "JWT"
-                ),
-                @SecurityScheme(
-                        name = "certificateAuth",
-                        type = SecuritySchemeType.APIKEY,
-                        in = SecuritySchemeIn.HEADER,
-                        paramName = "X-Client-Cert-CN"
-                ),
-                @SecurityScheme(
-                        name = "certificateSerialAuth",
-                        type = SecuritySchemeType.APIKEY,
-                        in = SecuritySchemeIn.HEADER,
-                        paramName = "X-Client-Cert-Serial"
                 )
         }
 )

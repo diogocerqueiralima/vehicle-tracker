@@ -9,7 +9,7 @@ import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundExcep
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
-import com.github.diogocerqueiralima.application.ports.outbound.VehiclePersistence;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

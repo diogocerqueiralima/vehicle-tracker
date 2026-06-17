@@ -1,5 +1,11 @@
 package com.github.diogocerqueiralima.application.commands;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
-public record CertificateSigningRequestCommand(@NotEmpty byte[] value) {}
+import java.util.UUID;
+
+public record CertificateSigningRequestCommand(
+        @NotEmpty(message = "csr is required") byte[] value,
+        @NotNull(message = "userId is required") UUID userId
+) {}

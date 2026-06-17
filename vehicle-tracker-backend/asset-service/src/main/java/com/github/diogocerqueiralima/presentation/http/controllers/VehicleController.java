@@ -6,7 +6,7 @@ import com.github.diogocerqueiralima.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
-import com.github.diogocerqueiralima.application.ports.inbound.VehicleUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.CreateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
