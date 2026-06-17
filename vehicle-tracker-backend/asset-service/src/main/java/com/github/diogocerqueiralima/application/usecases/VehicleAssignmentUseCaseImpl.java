@@ -57,7 +57,7 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)
                 .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
 
-        // 5. Builds and saves the new assignment.
+        // 3. Builds and saves the new assignment.
         VehicleAssignment assignmentToSave = VehicleAssignmentApplicationMapper.toDomain(
                 command,
                 device,
@@ -67,7 +67,7 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
 
         VehicleAssignment savedAssignment = vehicleAssignmentPersistence.save(assignmentToSave);
 
-        // 6. Maps persisted assignment to application response contract.
+        // 4. Maps persisted assignment to application response contract.
         return VehicleAssignmentApplicationMapper.toResult(savedAssignment);
     }
 
