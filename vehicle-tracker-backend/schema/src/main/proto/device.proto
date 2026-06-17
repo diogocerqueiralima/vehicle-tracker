@@ -23,7 +23,7 @@ message DeviceId {
 message DeviceResponse {
 
   string id = 1;
-  string ownerId = 2;
+  string owner_id = 2;
   google.protobuf.Timestamp created_at = 3;
   google.protobuf.Timestamp updated_at = 4;
   string serial_number = 5;

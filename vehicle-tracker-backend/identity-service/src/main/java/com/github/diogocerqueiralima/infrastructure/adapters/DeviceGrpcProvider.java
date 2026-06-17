@@ -48,7 +48,7 @@ public class DeviceGrpcProvider implements DeviceProvider {
 
         } catch (StatusRuntimeException e) {
 
-            if (e.getStatus() == Status.NOT_FOUND) {
+            if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 return Optional.empty();
             }
 
