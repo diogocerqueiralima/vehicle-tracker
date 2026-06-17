@@ -4,7 +4,6 @@ import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
-import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.VehicleApplicationMapper;
 import com.github.diogocerqueiralima.application.results.PageResult;
@@ -14,6 +13,7 @@ import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -33,17 +33,7 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
     @Override
     public VehicleResult create(CreateVehicleCommand command) {
 
-        // 1. Checks if exists a vehicle with the provided vin
-        if (vehiclePersistence.existsByVin(command.vin())) {
-            throw new VehicleAlreadyExistsException("A vehicle with the provided VIN already exists.");
-        }
-
-        // 2. Checks if exists a vehicle with the provided plate
-        if (vehiclePersistence.existsByPlate(command.plate())) {
-            throw new VehicleAlreadyExistsException("A vehicle with the provided plate already exists.");
-        }
-
-        // 3. Create a new vehicle
+        // 1. Create a new vehicle
         Instant now = Instant.now();
         Vehicle vehicle = VehicleApplicationMapper.toDomain(command, now);
 
@@ -55,6 +45,7 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
     }
 
     @Override
+    @Transactional
     public VehicleResult update(UpdateVehicleCommand command) {
 
         UUID id = command.id();
@@ -64,17 +55,7 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
         Vehicle existingVehicle = vehiclePersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new VehicleNotFoundException(id));
 
-        // 2. Check if exists a vehicle with the given VIN
-        if (!existingVehicle.getVin().equals(command.vin()) && vehiclePersistence.existsByVin(command.vin())) {
-            throw new VehicleAlreadyExistsException("A vehicle with the provided VIN already exists.");
-        }
-
-        // 3. Check if exists a vehicle with the given plate
-        if (!existingVehicle.getPlate().equals(command.plate()) && vehiclePersistence.existsByPlate(command.plate())) {
-            throw new VehicleAlreadyExistsException("A vehicle with the provided plate already exists.");
-        }
-
-        // 4. Update the vehicle
+        // 2. Update the vehicle
         Vehicle vehicleToSave = VehicleApplicationMapper.toDomain(command, existingVehicle, Instant.now());
 
         // 5. Save the vehicle

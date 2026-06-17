@@ -47,16 +47,6 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
     }
 
     @Override
-    public boolean existsActiveByDeviceId(UUID deviceId) {
-        return vehicleAssignmentRepository.existsByDeviceIdAndUnassignedAtIsNull(deviceId);
-    }
-
-    @Override
-    public boolean existsActiveByVehicleId(UUID vehicleId) {
-        return vehicleAssignmentRepository.existsByVehicleIdAndUnassignedAtIsNull(vehicleId);
-    }
-
-    @Override
     public Optional<VehicleAssignment> findActiveByDeviceIdAndVehicleId(UUID deviceId, UUID vehicleId) {
         return vehicleAssignmentRepository.findByDeviceIdAndVehicleIdAndUnassignedAtIsNull(deviceId, vehicleId)
                 .map(VehicleAssignmentMapper::toDomain);

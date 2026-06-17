@@ -1,10 +1,12 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.assets.Device;
+import com.github.diogocerqueiralima.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.DeviceMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.DeviceRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,14 @@ public class DevicePersistenceImpl implements DevicePersistence {
     @Override
     public Device save(Device device) {
 
-        DeviceEntity entity = toEntity(device);
-        DeviceEntity savedEntity = deviceRepository.save(entity);
+        try {
+            DeviceEntity entity = toEntity(device);
+            DeviceEntity savedEntity = deviceRepository.save(entity);
 
-        return toDomain(savedEntity);
+            return toDomain(savedEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new DeviceAlreadyExistsException();
+        }
     }
 
     @Override
@@ -50,16 +56,6 @@ public class DevicePersistenceImpl implements DevicePersistence {
     @Override
     public boolean isOwner(UUID id, UUID ownerId) {
         return deviceRepository.existsByIdAndOwnerId(id, ownerId);
-    }
-
-    @Override
-    public boolean existsBySerialNumber(String serialNumber) {
-        return deviceRepository.existsBySerialNumber(serialNumber);
-    }
-
-    @Override
-    public boolean existsByImei(String imei) {
-        return deviceRepository.existsByImei(imei);
     }
 
     @Override

@@ -1,14 +1,14 @@
 package com.github.diogocerqueiralima.presentation.http.controllers;
 
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
-import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
-import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
+import com.github.diogocerqueiralima.domain.exceptions.DeviceAlreadyExistsException;
+import com.github.diogocerqueiralima.domain.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.exceptions.SimCardAssignmentFailedException;
+import com.github.diogocerqueiralima.domain.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.exceptions.VehicleAssignmentFailedException;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import jakarta.validation.ConstraintViolation;

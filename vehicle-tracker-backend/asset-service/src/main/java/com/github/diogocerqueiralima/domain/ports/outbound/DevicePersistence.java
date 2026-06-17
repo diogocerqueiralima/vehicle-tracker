@@ -50,24 +50,6 @@ public interface DevicePersistence {
     boolean isOwner(UUID id, UUID ownerId);
 
     /**
-     *
-     * Checks whether a device with the provided serial number already exists.
-     *
-     * @param serialNumber The serial number to search for.
-     * @return true if a device with the serial number exists, otherwise false.
-     */
-    boolean existsBySerialNumber(String serialNumber);
-
-    /**
-     *
-     * Checks whether a device with the provided IMEI already exists.
-     *
-     * @param imei The IMEI to search for.
-     * @return true if a device with the IMEI exists, otherwise false.
-     */
-    boolean existsByImei(String imei);
-
-    /**
      * Retrieves a one-based page of devices.
      *
      * @param pageNumber one-based page number.

@@ -4,7 +4,6 @@ import com.github.diogocerqueiralima.application.commands.CreateDeviceCommand;
 import com.github.diogocerqueiralima.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetDevicePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateDeviceCommand;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.DeviceApplicationMapper;
 import com.github.diogocerqueiralima.domain.ports.inbound.DeviceUseCase;
@@ -14,6 +13,7 @@ import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.domain.assets.Device;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -33,17 +33,7 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
     @Override
     public DeviceResult create(CreateDeviceCommand command) {
 
-        // 1. Checks if exists a device with the provided serial number.
-        if (devicePersistence.existsBySerialNumber(command.serialNumber())) {
-            throw new DeviceAlreadyExistsException("A device with the provided serial number already exists.");
-        }
-
-        // 2. Checks if exists a device with the provided IMEI.
-        if (devicePersistence.existsByImei(command.imei())) {
-            throw new DeviceAlreadyExistsException("A device with the provided IMEI already exists.");
-        }
-
-        // 3. Creates a new device.
+        // 1. Creates a new device.
         Instant now = Instant.now();
         Device device = DeviceApplicationMapper.toDomain(command, now);
 
@@ -55,6 +45,7 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
     }
 
     @Override
+    @Transactional
     public DeviceResult update(UpdateDeviceCommand command) {
 
         UUID id = command.id();
@@ -63,19 +54,7 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
         Device existingDevice = devicePersistence.findById(id)
                 .orElseThrow(() -> new DeviceNotFoundException(id));
 
-        // 2. Checks if exists another device with the given serial number.
-        if (!existingDevice.getSerialNumber().equals(command.serialNumber())
-                && devicePersistence.existsBySerialNumber(command.serialNumber())) {
-            throw new DeviceAlreadyExistsException("A device with the provided serial number already exists.");
-        }
-
-        // 3. Checks if exists another device with the given IMEI.
-        if (!existingDevice.getImei().equals(command.imei())
-                && devicePersistence.existsByImei(command.imei())) {
-            throw new DeviceAlreadyExistsException("A device with the provided IMEI already exists.");
-        }
-
-        // 4. Updates the device preserving identity and creation timestamp.
+        // 2. Updates the device preserving identity and creation timestamp.
         Device deviceToSave = DeviceApplicationMapper.toDomain(command, existingDevice, Instant.now());
 
         // 5. Saves the device.

@@ -4,11 +4,11 @@ import com.github.diogocerqueiralima.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateVehicleCommand;
-import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
+import com.github.diogocerqueiralima.domain.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,8 +68,6 @@ class VehicleUseCaseImplTest {
                 command.manufacturingDate()
         );
 
-        when(vehiclePersistence.existsByVin(command.vin())).thenReturn(false);
-        when(vehiclePersistence.existsByPlate(command.plate())).thenReturn(false);
         when(vehiclePersistence.save(any(Vehicle.class))).thenReturn(savedVehicle);
 
         VehicleResult result = vehicleUseCase.create(command);
@@ -80,8 +79,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should fail when VIN already exists")
-    void should_fail_when_vin_already_exists() {
+    @DisplayName("Should fail creating when VIN or plate already exists")
+    void should_fail_creating_when_vin_or_plate_already_exists() {
         UUID userId = UUID.randomUUID();
 
         CreateVehicleCommand command = new CreateVehicleCommand(
@@ -93,37 +92,12 @@ class VehicleUseCaseImplTest {
                 userId
         );
 
-        when(vehiclePersistence.existsByVin(command.vin())).thenReturn(true);
+        when(vehiclePersistence.save(any(Vehicle.class))).thenThrow(new VehicleAlreadyExistsException());
 
         assertThatThrownBy(() -> vehicleUseCase.create(command))
-                .isInstanceOf(VehicleAlreadyExistsException.class)
-                .hasMessage("A vehicle with the provided VIN already exists.");
+                .isInstanceOf(VehicleAlreadyExistsException.class);
 
-        verify(vehiclePersistence, never()).save(any(Vehicle.class));
-    }
-
-    @Test
-    @DisplayName("Should fail when plate already exists")
-    void should_fail_when_plate_already_exists() {
-        UUID userId = UUID.randomUUID();
-
-        CreateVehicleCommand command = new CreateVehicleCommand(
-                "1HGCM82633A123456",
-                "AA-00-AA",
-                "Model 3",
-                "Tesla",
-                LocalDate.of(2024, 1, 15),
-                userId
-        );
-
-        when(vehiclePersistence.existsByVin(command.vin())).thenReturn(false);
-        when(vehiclePersistence.existsByPlate(command.plate())).thenReturn(true);
-
-        assertThatThrownBy(() -> vehicleUseCase.create(command))
-                .isInstanceOf(VehicleAlreadyExistsException.class)
-                .hasMessage("A vehicle with the provided plate already exists.");
-
-        verify(vehiclePersistence, never()).save(any(Vehicle.class));
+        verify(vehiclePersistence).save(any(Vehicle.class));
     }
 
     @Test
@@ -166,8 +140,7 @@ class VehicleUseCaseImplTest {
                 command.manufacturingDate()
         );
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(existingVehicle));
-        when(vehiclePersistence.existsByPlate(command.plate())).thenReturn(false);
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(existingVehicle));
         when(vehiclePersistence.save(any(Vehicle.class))).thenReturn(updatedVehicle);
 
         VehicleResult result = vehicleUseCase.update(command);
@@ -195,7 +168,7 @@ class VehicleUseCaseImplTest {
                 userId
         );
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.empty());
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> vehicleUseCase.update(command))
                 .isInstanceOf(VehicleNotFoundException.class)
@@ -205,8 +178,8 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should fail updating when VIN already exists in another vehicle")
-    void should_fail_updating_when_vin_already_exists_in_another_vehicle() {
+    @DisplayName("Should fail updating when VIN or plate already exists in another vehicle")
+    void should_fail_updating_when_vin_or_plate_already_exists_in_another_vehicle() {
 
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -225,44 +198,6 @@ class VehicleUseCaseImplTest {
         UpdateVehicleCommand command = new UpdateVehicleCommand(
                 id,
                 "1HGCM82633A999999",
-                "AA-00-AA",
-                "Model 3",
-                "Tesla",
-                LocalDate.of(2024, 1, 15),
-                userId
-        );
-
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(existingVehicle));
-        when(vehiclePersistence.existsByVin(command.vin())).thenReturn(true);
-
-        assertThatThrownBy(() -> vehicleUseCase.update(command))
-                .isInstanceOf(VehicleAlreadyExistsException.class)
-                .hasMessage("A vehicle with the provided VIN already exists.");
-
-        verify(vehiclePersistence, never()).save(any(Vehicle.class));
-    }
-
-    @Test
-    @DisplayName("Should fail updating when plate already exists in another vehicle")
-    void should_fail_updating_when_plate_already_exists_in_another_vehicle() {
-
-        UUID id = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
-        Vehicle existingVehicle = new Vehicle(
-                id,
-                createdAt,
-                createdAt,
-                "1HGCM82633A123456",
-                "AA-00-AA",
-                "Model 3",
-                "Tesla",
-                LocalDate.of(2024, 1, 15)
-        );
-
-        UpdateVehicleCommand command = new UpdateVehicleCommand(
-                id,
-                "1HGCM82633A123456",
                 "CC-22-CC",
                 "Model 3",
                 "Tesla",
@@ -270,14 +205,11 @@ class VehicleUseCaseImplTest {
                 userId
         );
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(existingVehicle));
-        when(vehiclePersistence.existsByPlate(command.plate())).thenReturn(true);
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(existingVehicle));
+        when(vehiclePersistence.save(any(Vehicle.class))).thenThrow(new VehicleAlreadyExistsException());
 
         assertThatThrownBy(() -> vehicleUseCase.update(command))
-                .isInstanceOf(VehicleAlreadyExistsException.class)
-                .hasMessage("A vehicle with the provided plate already exists.");
-
-        verify(vehiclePersistence, never()).save(any(Vehicle.class));
+                .isInstanceOf(VehicleAlreadyExistsException.class);
     }
 
     @Test
@@ -301,7 +233,7 @@ class VehicleUseCaseImplTest {
 
         GetVehicleByIdCommand command = new GetVehicleByIdCommand(id, userId);
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.of(vehicle));
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(vehicle));
 
         VehicleResult result = vehicleUseCase.getById(command);
 
@@ -318,7 +250,7 @@ class VehicleUseCaseImplTest {
         UUID userId = UUID.randomUUID();
         GetVehicleByIdCommand command = new GetVehicleByIdCommand(id, userId);
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(java.util.Optional.empty());
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> vehicleUseCase.getById(command))
                 .isInstanceOf(VehicleNotFoundException.class)
@@ -367,4 +299,3 @@ class VehicleUseCaseImplTest {
     }
 
 }
-

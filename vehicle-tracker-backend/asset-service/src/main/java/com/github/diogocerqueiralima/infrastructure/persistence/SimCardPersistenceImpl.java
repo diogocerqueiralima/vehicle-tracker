@@ -1,10 +1,12 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.assets.SimCard;
+import com.github.diogocerqueiralima.domain.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.SimCardEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.SimCardMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.SimCardRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,10 +27,14 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     @Override
     public SimCard save(SimCard simCard) {
 
-        SimCardEntity entity = toEntity(simCard);
-        SimCardEntity savedEntity = simCardRepository.save(entity);
+        try {
+            SimCardEntity entity = toEntity(simCard);
+            SimCardEntity savedEntity = simCardRepository.save(entity);
 
-        return toDomain(savedEntity);
+            return toDomain(savedEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new SimCardAlreadyExistsException();
+        }
     }
 
     @Override
@@ -41,21 +47,6 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     public Optional<SimCard> findByIdAndOwnerId(UUID id, UUID ownerId) {
         return simCardRepository.findByIdAndOwnerId(id, ownerId)
                 .map(SimCardMapper::toDomain);
-    }
-
-    @Override
-    public boolean existsByIccid(String iccid) {
-        return simCardRepository.existsByIccid(iccid);
-    }
-
-    @Override
-    public boolean existsByMsisdn(String msisdn) {
-        return simCardRepository.existsByMsisdn(msisdn);
-    }
-
-    @Override
-    public boolean existsByImsi(String imsi) {
-        return simCardRepository.existsByImsi(imsi);
     }
 
     @Override

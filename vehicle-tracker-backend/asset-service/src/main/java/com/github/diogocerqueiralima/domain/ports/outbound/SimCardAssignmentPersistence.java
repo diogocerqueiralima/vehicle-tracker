@@ -22,24 +22,6 @@ public interface SimCardAssignmentPersistence {
 
     /**
      *
-     * Checks whether a device already has an active SIM card assignment.
-     *
-     * @param deviceId device unique identifier.
-     * @return true when the device has an active assignment.
-     */
-    boolean existsActiveByDeviceId(UUID deviceId);
-
-    /**
-     *
-     * Checks whether a SIM card already has an active device assignment.
-     *
-     * @param id SIM card id.
-     * @return true when the SIM card has an active assignment.
-     */
-    boolean existsActiveBySimCardId(UUID id);
-
-    /**
-     *
      * Finds an active assignment for a specific device and SIM card pair.
      *
      * @param deviceId device unique identifier.
