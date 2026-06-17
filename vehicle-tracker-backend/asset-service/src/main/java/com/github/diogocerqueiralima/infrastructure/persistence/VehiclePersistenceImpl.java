@@ -1,10 +1,12 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
+import com.github.diogocerqueiralima.domain.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
 import com.github.diogocerqueiralima.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.VehicleRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,14 @@ public class VehiclePersistenceImpl implements VehiclePersistence {
     @Override
     public Vehicle save(Vehicle vehicle) {
 
-        VehicleEntity entity = toEntity(vehicle);
-        VehicleEntity savedEntity = vehicleRepository.save(entity);
+        try {
+            VehicleEntity entity = toEntity(vehicle);
+            VehicleEntity savedEntity = vehicleRepository.save(entity);
 
-        return toDomain(savedEntity);
+            return toDomain(savedEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new VehicleAlreadyExistsException();
+        }
     }
 
     @Override
@@ -50,16 +56,6 @@ public class VehiclePersistenceImpl implements VehiclePersistence {
     @Override
     public boolean isOwner(UUID id, UUID ownerId) {
         return vehicleRepository.existsByIdAndOwnerId(id, ownerId);
-    }
-
-    @Override
-    public boolean existsByVin(String vin) {
-        return vehicleRepository.existsByVin(vin);
-    }
-
-    @Override
-    public boolean existsByPlate(String plate) {
-        return vehicleRepository.existsByPlate(plate);
     }
 
     /**

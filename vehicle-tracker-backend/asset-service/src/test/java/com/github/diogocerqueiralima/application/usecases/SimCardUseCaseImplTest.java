@@ -4,8 +4,8 @@ import com.github.diogocerqueiralima.application.commands.CreateSimCardCommand;
 import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateSimCardCommand;
-import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
+import com.github.diogocerqueiralima.domain.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
 import com.github.diogocerqueiralima.domain.assets.SimCard;
@@ -47,9 +47,6 @@ class SimCardUseCaseImplTest {
         CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", ownerId);
         SimCard saved = new SimCard(id, ownerId, createdAt, updatedAt, command.iccid(), command.msisdn(), command.imsi());
 
-        when(simCardPersistence.existsByIccid(command.iccid())).thenReturn(false);
-        when(simCardPersistence.existsByMsisdn(command.msisdn())).thenReturn(false);
-        when(simCardPersistence.existsByImsi(command.imsi())).thenReturn(false);
         when(simCardPersistence.save(any(SimCard.class))).thenReturn(saved);
 
         SimCardResult result = simCardUseCase.create(command);
@@ -61,50 +58,14 @@ class SimCardUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should fail creating when ICCID already exists")
-    void should_fail_creating_when_iccid_already_exists() {
+    @DisplayName("Should fail creating when ICCID, MSISDN or IMSI already exists")
+    void should_fail_creating_when_unique_field_already_exists() {
 
         CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", null);
-        when(simCardPersistence.existsByIccid(command.iccid())).thenReturn(true);
+        when(simCardPersistence.save(any(SimCard.class))).thenThrow(new SimCardAlreadyExistsException());
 
         assertThatThrownBy(() -> simCardUseCase.create(command))
-                .isInstanceOf(SimCardAlreadyExistsException.class)
-                .hasMessage("A SIM card with the provided ICCID already exists.");
-
-        verify(simCardPersistence, never()).save(any(SimCard.class));
-    }
-
-    @Test
-    @DisplayName("Should fail creating when MSISDN already exists")
-    void should_fail_creating_when_msisdn_already_exists() {
-
-        CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", null);
-
-        when(simCardPersistence.existsByIccid(command.iccid())).thenReturn(false);
-        when(simCardPersistence.existsByMsisdn(command.msisdn())).thenReturn(true);
-
-        assertThatThrownBy(() -> simCardUseCase.create(command))
-                .isInstanceOf(SimCardAlreadyExistsException.class)
-                .hasMessage("A SIM card with the provided MSISDN already exists.");
-
-        verify(simCardPersistence, never()).save(any(SimCard.class));
-    }
-
-    @Test
-    @DisplayName("Should fail creating when IMSI already exists")
-    void should_fail_creating_when_imsi_already_exists() {
-
-        CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", null);
-
-        when(simCardPersistence.existsByIccid(command.iccid())).thenReturn(false);
-        when(simCardPersistence.existsByMsisdn(command.msisdn())).thenReturn(false);
-        when(simCardPersistence.existsByImsi(command.imsi())).thenReturn(true);
-
-        assertThatThrownBy(() -> simCardUseCase.create(command))
-                .isInstanceOf(SimCardAlreadyExistsException.class)
-                .hasMessage("A SIM card with the provided IMSI already exists.");
-
-        verify(simCardPersistence, never()).save(any(SimCard.class));
+                .isInstanceOf(SimCardAlreadyExistsException.class);
     }
 
     @Test
@@ -120,8 +81,6 @@ class SimCardUseCaseImplTest {
         SimCard updated = new SimCard(id, ownerId, createdAt, updatedAt, command.iccid(), command.msisdn(), command.imsi());
 
         when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.of(existing));
-        when(simCardPersistence.existsByMsisdn(command.msisdn())).thenReturn(false);
-        when(simCardPersistence.existsByImsi(command.imsi())).thenReturn(false);
         when(simCardPersistence.save(any(SimCard.class))).thenReturn(updated);
 
         SimCardResult result = simCardUseCase.update(command);
@@ -147,45 +106,23 @@ class SimCardUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should fail updating when MSISDN belongs to another sim card")
-    void should_fail_updating_when_msisdn_belongs_to_another_sim_card() {
+    @DisplayName("Should fail updating when MSISDN or IMSI belongs to another sim card")
+    void should_fail_updating_when_unique_field_belongs_to_another_sim_card() {
 
         UUID id = UUID.randomUUID();
         Instant createdAt = Instant.now();
         Instant updatedAt = Instant.now();
         UUID ownerId = UUID.randomUUID();
         SimCard existing = new SimCard(id, ownerId, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
-        UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000002", "268010000000001", ownerId);
+        UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000002", "268010000000002", ownerId);
 
         when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.of(existing));
-        when(simCardPersistence.existsByMsisdn(command.msisdn())).thenReturn(true);
+        when(simCardPersistence.save(any(SimCard.class))).thenThrow(new SimCardAlreadyExistsException());
 
         assertThatThrownBy(() -> simCardUseCase.update(command))
-                .isInstanceOf(SimCardAlreadyExistsException.class)
-                .hasMessage("A SIM card with the provided MSISDN already exists.");
+                .isInstanceOf(SimCardAlreadyExistsException.class);
 
-        verify(simCardPersistence, never()).save(any(SimCard.class));
-    }
-
-    @Test
-    @DisplayName("Should fail updating when IMSI belongs to another sim card")
-    void should_fail_updating_when_imsi_belongs_to_another_sim_card() {
-
-        UUID id = UUID.randomUUID();
-        Instant createdAt = Instant.now();
-        Instant updatedAt = Instant.now();
-        UUID ownerId = UUID.randomUUID();
-        SimCard existing = new SimCard(id, ownerId, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
-        UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000001", "268010000000002", ownerId);
-
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.of(existing));
-        when(simCardPersistence.existsByImsi(command.imsi())).thenReturn(true);
-
-        assertThatThrownBy(() -> simCardUseCase.update(command))
-                .isInstanceOf(SimCardAlreadyExistsException.class)
-                .hasMessage("A SIM card with the provided IMSI already exists.");
-
-        verify(simCardPersistence, never()).save(any(SimCard.class));
+        verify(simCardPersistence).save(any(SimCard.class));
     }
 
     @Test
@@ -251,4 +188,3 @@ class SimCardUseCaseImplTest {
     }
 
 }
-

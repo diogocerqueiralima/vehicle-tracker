@@ -50,24 +50,6 @@ public interface VehiclePersistence {
     boolean isOwner(UUID id, UUID ownerId);
 
     /**
-     *
-     * Checks whether a vehicle with the provided VIN already exists.
-     *
-     * @param vin The VIN to search for.
-     * @return true if a vehicle with the VIN exists, otherwise false.
-     */
-    boolean existsByVin(String vin);
-
-    /**
-     *
-     * Checks whether a vehicle with the provided plate already exists.
-     *
-     * @param plate The plate to search for.
-     * @return true if a vehicle with the plate exists, otherwise false.
-     */
-    boolean existsByPlate(String plate);
-
-    /**
      * Retrieves a one-based page of vehicles.
      *
      * @param pageNumber one-based page number.

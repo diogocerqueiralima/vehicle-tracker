@@ -4,8 +4,8 @@ import com.github.diogocerqueiralima.application.commands.CreateDeviceCommand;
 import com.github.diogocerqueiralima.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetDevicePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateDeviceCommand;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
+import com.github.diogocerqueiralima.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
 import com.github.diogocerqueiralima.application.results.PageResult;
@@ -65,8 +65,6 @@ class DeviceUseCaseImplTest {
                 command.imei()
         );
 
-        when(devicePersistence.existsBySerialNumber(command.serialNumber())).thenReturn(false);
-        when(devicePersistence.existsByImei(command.imei())).thenReturn(false);
         when(devicePersistence.save(any(Device.class))).thenReturn(savedDevice);
 
         DeviceResult result = deviceUseCase.create(command);
@@ -78,8 +76,8 @@ class DeviceUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should fail when serial number already exists")
-    void should_fail_when_serial_number_already_exists() {
+    @DisplayName("Should fail creating when serial number or IMEI already exists")
+    void should_fail_creating_when_serial_number_or_imei_already_exists() {
         UUID ownerId = UUID.randomUUID();
 
         CreateDeviceCommand command = new CreateDeviceCommand(
@@ -90,36 +88,10 @@ class DeviceUseCaseImplTest {
                 ownerId
         );
 
-        when(devicePersistence.existsBySerialNumber(command.serialNumber())).thenReturn(true);
+        when(devicePersistence.save(any(Device.class))).thenThrow(new DeviceAlreadyExistsException());
 
         assertThatThrownBy(() -> deviceUseCase.create(command))
-                .isInstanceOf(DeviceAlreadyExistsException.class)
-                .hasMessage("A device with the provided serial number already exists.");
-
-        verify(devicePersistence, never()).save(any(Device.class));
-    }
-
-    @Test
-    @DisplayName("Should fail when IMEI already exists")
-    void should_fail_when_imei_already_exists() {
-        UUID ownerId = UUID.randomUUID();
-
-        CreateDeviceCommand command = new CreateDeviceCommand(
-                "SN-001",
-                "TK-1000",
-                "Teltonika",
-                "123456789012345",
-                ownerId
-        );
-
-        when(devicePersistence.existsBySerialNumber(command.serialNumber())).thenReturn(false);
-        when(devicePersistence.existsByImei(command.imei())).thenReturn(true);
-
-        assertThatThrownBy(() -> deviceUseCase.create(command))
-                .isInstanceOf(DeviceAlreadyExistsException.class)
-                .hasMessage("A device with the provided IMEI already exists.");
-
-        verify(devicePersistence, never()).save(any(Device.class));
+                .isInstanceOf(DeviceAlreadyExistsException.class);
     }
 
     @Test
@@ -160,8 +132,6 @@ class DeviceUseCaseImplTest {
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
-        when(devicePersistence.existsBySerialNumber(command.serialNumber())).thenReturn(false);
-        when(devicePersistence.existsByImei(command.imei())).thenReturn(false);
         when(devicePersistence.save(any(Device.class))).thenReturn(updatedDevice);
 
         DeviceResult result = deviceUseCase.update(command);
@@ -198,8 +168,8 @@ class DeviceUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should fail updating when serial number already exists in another device")
-    void should_fail_updating_when_serial_number_already_exists_in_another_device() {
+    @DisplayName("Should fail updating when serial number or IMEI already exists in another device")
+    void should_fail_updating_when_serial_number_or_imei_already_exists_in_another_device() {
 
         UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
@@ -220,55 +190,15 @@ class DeviceUseCaseImplTest {
                 "SN-002",
                 "TK-1100",
                 "Teltonika",
-                "123456789012345",
-                ownerId
-        );
-
-        when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
-        when(devicePersistence.existsBySerialNumber(command.serialNumber())).thenReturn(true);
-
-        assertThatThrownBy(() -> deviceUseCase.update(command))
-                .isInstanceOf(DeviceAlreadyExistsException.class)
-                .hasMessage("A device with the provided serial number already exists.");
-
-        verify(devicePersistence, never()).save(any(Device.class));
-    }
-
-    @Test
-    @DisplayName("Should fail updating when IMEI already exists in another device")
-    void should_fail_updating_when_imei_already_exists_in_another_device() {
-
-        UUID id = UUID.randomUUID();
-        UUID ownerId = UUID.randomUUID();
-        Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
-
-        Device existingDevice = new Device(
-                id,
-                createdAt,
-                createdAt,
-                "SN-001",
-                "TK-1000",
-                "Teltonika",
-                "123456789012345"
-        );
-
-        UpdateDeviceCommand command = new UpdateDeviceCommand(
-                id,
-                "SN-001",
-                "TK-1100",
-                "Teltonika",
                 "223456789012345",
                 ownerId
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
-        when(devicePersistence.existsByImei(command.imei())).thenReturn(true);
+        when(devicePersistence.save(any(Device.class))).thenThrow(new DeviceAlreadyExistsException());
 
         assertThatThrownBy(() -> deviceUseCase.update(command))
-                .isInstanceOf(DeviceAlreadyExistsException.class)
-                .hasMessage("A device with the provided IMEI already exists.");
-
-        verify(devicePersistence, never()).save(any(Device.class));
+                .isInstanceOf(DeviceAlreadyExistsException.class);
     }
 
     @Test
@@ -389,4 +319,3 @@ class DeviceUseCaseImplTest {
     }
 
 }
-

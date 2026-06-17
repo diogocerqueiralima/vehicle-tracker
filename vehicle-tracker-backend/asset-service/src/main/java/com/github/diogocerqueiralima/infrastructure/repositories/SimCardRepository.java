@@ -13,12 +13,6 @@ import java.util.UUID;
 @Repository
 public interface SimCardRepository extends JpaRepository<SimCardEntity, UUID> {
 
-	boolean existsByIccid(String iccid);
-
-	boolean existsByMsisdn(String msisdn);
-
-	boolean existsByImsi(String imsi);
-
     Optional<SimCardEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
 
 	void deleteByIdAndOwnerId(UUID id, UUID ownerId);

@@ -39,33 +39,6 @@ public interface SimCardPersistence {
     Optional<SimCard> findByIdAndOwnerId(UUID id, UUID ownerId);
 
     /**
-     *
-     * Checks whether a SIM card with the provided MSISDN already exists.
-     *
-     * @param msisdn The MSISDN to search for.
-     * @return true if a SIM card with the MSISDN exists, otherwise false.
-     */
-    boolean existsByMsisdn(String msisdn);
-
-    /**
-     *
-     * Checks whether a SIM card with the provided IMSI already exists.
-     *
-     * @param imsi The IMSI to search for.
-     * @return true if a SIM card with the IMSI exists, otherwise false.
-     */
-    boolean existsByImsi(String imsi);
-
-    /**
-     *
-     * Checks whether a SIM card with the provided ICCID already exists.
-     *
-     * @param iccid The ICCID to search for.
-     * @return true if a SIM card with the ICCID exists, otherwise false.
-     */
-    boolean existsByIccid(String iccid);
-
-    /**
      * Deletes a SIM card by id constrained to the provided owner.
      * Implementations should ensure the deletion only occurs when the owner matches.
      *

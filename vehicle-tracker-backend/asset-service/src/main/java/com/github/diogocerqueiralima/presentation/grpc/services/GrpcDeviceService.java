@@ -1,8 +1,8 @@
 package com.github.diogocerqueiralima.presentation.grpc.services;
 
 import com.github.diogocerqueiralima.application.commands.GetDeviceByIdCommand;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
+import com.github.diogocerqueiralima.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
 import com.github.diogocerqueiralima.presentation.grpc.mappers.DeviceGrpcMapper;

@@ -26,22 +26,6 @@ public interface DeviceRepository extends JpaRepository<DeviceEntity, UUID> {
 	boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
 
 	/**
-	 * Checks whether a device with the provided serial number exists.
-	 *
-	 * @param serialNumber the serial number to lookup.
-	 * @return true when a record with the serial number exists.
-	 */
-	boolean existsBySerialNumber(String serialNumber);
-
-	/**
-	 * Checks whether a device with the provided IMEI exists.
-	 *
-	 * @param imei the IMEI to lookup.
-	 * @return true when a record with the IMEI exists.
-	 */
-	boolean existsByImei(String imei);
-
-	/**
 	 * Finds a device by id and owner id.
 	 *
 	 * @param id device identifier.
