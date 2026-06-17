@@ -13,6 +13,7 @@ import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
