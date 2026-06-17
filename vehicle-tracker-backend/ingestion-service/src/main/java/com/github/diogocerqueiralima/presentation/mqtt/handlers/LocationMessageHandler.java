@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-import static location.LocationOuterClass.Location;
-
 import location.LocationOuterClass;
 
 @Component
@@ -43,7 +41,7 @@ public class LocationMessageHandler {
 
                 log.info("Received location message for device id: {}", UUID.fromString("e29df66b-568e-47af-a866-fc1b6dc321f0"));
 
-                Location location = Location.parseFrom((byte[]) message.getPayload());
+                LocationOuterClass.Location location = LocationOuterClass.Location.parseFrom((byte[]) message.getPayload());
                 ReceiveLocationCommand command = new ReceiveLocationCommand(
                         location.getTime(),
                         location.getDate(),

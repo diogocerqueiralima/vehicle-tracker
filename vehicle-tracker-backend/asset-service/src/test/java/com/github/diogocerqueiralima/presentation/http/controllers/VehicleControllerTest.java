@@ -2,8 +2,7 @@ package com.github.diogocerqueiralima.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
-import com.github.diogocerqueiralima.application.ports.inbound.VehicleUseCase;
-import com.github.diogocerqueiralima.presentation.http.controllers.VehicleController;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.CreateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;

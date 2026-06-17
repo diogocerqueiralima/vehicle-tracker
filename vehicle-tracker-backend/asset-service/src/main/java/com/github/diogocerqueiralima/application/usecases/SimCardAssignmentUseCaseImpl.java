@@ -8,10 +8,10 @@ import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyAssign
 import com.github.diogocerqueiralima.application.exceptions.SimCardAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.SimCardAssignmentApplicationMapper;
-import com.github.diogocerqueiralima.application.ports.inbound.SimCardAssignmentUseCase;
-import com.github.diogocerqueiralima.application.ports.outbound.DevicePersistence;
-import com.github.diogocerqueiralima.application.ports.outbound.SimCardAssignmentPersistence;
-import com.github.diogocerqueiralima.application.ports.outbound.SimCardPersistence;
+import com.github.diogocerqueiralima.domain.ports.inbound.SimCardAssignmentUseCase;
+import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
+import com.github.diogocerqueiralima.domain.ports.outbound.SimCardAssignmentPersistence;
+import com.github.diogocerqueiralima.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.application.results.SimCardAssignmentResult;
 import com.github.diogocerqueiralima.domain.assets.SimCard;
 import com.github.diogocerqueiralima.domain.assignments.SimCardAssignment;

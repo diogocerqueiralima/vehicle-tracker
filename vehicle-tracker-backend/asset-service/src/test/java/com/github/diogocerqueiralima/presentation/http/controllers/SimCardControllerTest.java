@@ -1,8 +1,7 @@
 package com.github.diogocerqueiralima.presentation.http.controllers;
 
-import com.github.diogocerqueiralima.application.ports.inbound.SimCardUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.SimCardUseCase;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
-import com.github.diogocerqueiralima.presentation.http.controllers.SimCardController;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.CreateSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.SimCardDTO;

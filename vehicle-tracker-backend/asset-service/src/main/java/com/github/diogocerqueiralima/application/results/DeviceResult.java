@@ -8,6 +8,7 @@ import java.util.UUID;
  */
 public record DeviceResult(
         UUID id,
+        UUID ownerId,
         Instant createdAt,
         Instant updatedAt,
         String serialNumber,

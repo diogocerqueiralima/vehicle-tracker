@@ -6,7 +6,7 @@ import com.github.diogocerqueiralima.application.commands.GetDevicePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateDeviceCommand;
 import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
-import com.github.diogocerqueiralima.application.ports.outbound.DevicePersistence;
+import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.domain.assets.Device;

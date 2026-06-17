@@ -2,10 +2,9 @@ package com.github.diogocerqueiralima.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
-import com.github.diogocerqueiralima.application.ports.inbound.VehicleAssignmentUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.domain.assignments.VehicleRemovalReason;
-import com.github.diogocerqueiralima.presentation.http.controllers.VehicleAssignmentController;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UnassignDeviceFromVehicleRequestDTO;

@@ -10,8 +10,8 @@ import com.github.diogocerqueiralima.application.mappers.VehicleApplicationMappe
 import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleResult;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
-import com.github.diogocerqueiralima.application.ports.inbound.VehicleUseCase;
-import com.github.diogocerqueiralima.application.ports.outbound.VehiclePersistence;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 

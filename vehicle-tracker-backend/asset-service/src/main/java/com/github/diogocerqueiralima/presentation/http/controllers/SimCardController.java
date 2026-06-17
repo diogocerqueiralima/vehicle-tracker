@@ -4,7 +4,7 @@ import com.github.diogocerqueiralima.application.commands.CreateSimCardCommand;
 import com.github.diogocerqueiralima.application.commands.DeleteSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateSimCardCommand;
-import com.github.diogocerqueiralima.application.ports.inbound.SimCardUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.SimCardUseCase;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.CreateSimCardRequestDTO;

@@ -1,10 +1,9 @@
 package com.github.diogocerqueiralima.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.application.commands.GetDeviceByIdCommand;
-import com.github.diogocerqueiralima.application.ports.inbound.DeviceUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
 import com.github.diogocerqueiralima.application.results.PageResult;
-import com.github.diogocerqueiralima.presentation.http.controllers.DeviceController;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.CreateDeviceRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.DeviceDTO;

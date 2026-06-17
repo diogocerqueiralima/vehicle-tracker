@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.presentation.grpc.services;
 
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
-import com.github.diogocerqueiralima.application.ports.inbound.VehicleAssignmentUseCase;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.presentation.grpc.mappers.VehicleAssignmentGrpcMapper;
 import com.github.diogocerqueiralima.proto.DeviceId;
@@ -35,37 +35,36 @@ public class GrpcVehicleAssignmentService extends VehicleAssignmentServiceGrpc.V
 
         try {
 
-            // 1. Maps the gRPC request to an application command.
-            // 2. Retrieves the active vehicle assignment for the provided device id.
+            // 1. Retrieves the active vehicle assignment for the provided device id.
             VehicleAssignmentResult result = vehicleAssignmentUseCase
                     .getVehicleAssignmentByDeviceId(
                             VehicleAssignmentGrpcMapper.toGetVehicleAssignmentByDeviceIdCommand(request)
                     );
 
-            // 3. Maps the application result to a gRPC response and sends it.
+            // 2. Maps the application result to a gRPC response and sends it.
             VehicleAssignmentResponse response = VehicleAssignmentGrpcMapper.toResponse(result);
 
-            // 4. Sends the response and completes the RPC call.
+            // 3. Sends the response and completes the RPC call.
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
         } catch (VehicleAssignmentNotFoundException e) {
 
-            // 5. Returns a NOT_FOUND error if no active assignment is found for the provided device id.
+            // 4. Returns a NOT_FOUND error if no active assignment is found for the provided device id.
             responseObserver.onError(
                     new StatusRuntimeException(Status.NOT_FOUND.withDescription(e.getMessage()))
             );
 
         } catch (IllegalArgumentException e) {
 
-            // 6. Returns an INVALID_ARGUMENT error for any validation errors in the input data.
+            // 5. Returns an INVALID_ARGUMENT error for any validation errors in the input data.
             responseObserver.onError(
                     new StatusRuntimeException(Status.INVALID_ARGUMENT.withDescription(e.getMessage()))
             );
 
         } catch (Exception e) {
 
-            // 7. Returns an INTERNAL error for any unexpected exceptions.
+            // 6. Returns an INTERNAL error for any unexpected exceptions.
             responseObserver.onError(
                     new StatusRuntimeException(Status.INTERNAL.withDescription(e.getMessage()))
             );

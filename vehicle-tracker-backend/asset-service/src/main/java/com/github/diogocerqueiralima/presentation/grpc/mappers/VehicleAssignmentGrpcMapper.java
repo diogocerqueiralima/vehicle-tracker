@@ -5,7 +5,6 @@ import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult
 import com.github.diogocerqueiralima.proto.DeviceId;
 import com.github.diogocerqueiralima.proto.VehicleAssignmentResponse;
 import com.github.diogocerqueiralima.proto.VehicleRemovalReason;
-import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 
 import java.util.UUID;
@@ -35,6 +34,7 @@ public final class VehicleAssignmentGrpcMapper {
      * @return gRPC response carrying the assigned vehicle identifier.
      */
     public static VehicleAssignmentResponse toResponse(VehicleAssignmentResult result) {
+
         VehicleAssignmentResponse.Builder builder = VehicleAssignmentResponse.newBuilder()
                 .setVehicleId(result.vehicleId().toString())
                 .setDeviceId(result.deviceId().toString())
@@ -66,7 +66,8 @@ public final class VehicleAssignmentGrpcMapper {
     }
 
     private static VehicleRemovalReason toProtoRemovalReason(
-            com.github.diogocerqueiralima.domain.assignments.VehicleRemovalReason removalReason) {
+            com.github.diogocerqueiralima.domain.assignments.VehicleRemovalReason removalReason
+    ) {
         return switch (removalReason) {
             case UPGRADE -> VehicleRemovalReason.VEHICLE_REMOVAL_REASON_UPGRADE;
             case LOSS -> VehicleRemovalReason.VEHICLE_REMOVAL_REASON_LOSS;

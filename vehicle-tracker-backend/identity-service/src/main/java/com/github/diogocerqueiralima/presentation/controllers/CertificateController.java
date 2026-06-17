@@ -15,6 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.UUID;
 
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.*;
 
@@ -74,12 +76,19 @@ public class CertificateController {
             }
     )
     @PostMapping(CERTIFICATE_SIGNING_REQUEST_URI)
-    public ResponseEntity<Resource> certificateSigningRequest(@RequestParam("csr") MultipartFile csr) throws IOException {
+    public ResponseEntity<Resource> certificateSigningRequest(
+            @RequestParam("csr") MultipartFile csr, JwtAuthenticationToken authentication
+    ) throws IOException {
 
-        CertificateSigningRequestCommand command = new CertificateSigningRequestCommand(csr.getBytes());
+        // 1. Resolves the authenticated user id from Keycloak token subject.
+        UUID userId = extractUserId(authentication);
+
+        // 2. Delegates the certificate signing request to the application layer.
+        CertificateSigningRequestCommand command = new CertificateSigningRequestCommand(csr.getBytes(), userId);
         CertificateSigningRequestResult result = certificateUseCase.sign(command);
         Resource resource = new ByteArrayResource(result.data());
 
+        // 3. Returns the signed certificate as a downloadable file in the response.
         return ResponseEntity.ok()
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,
@@ -130,6 +139,15 @@ public class CertificateController {
     public ResponseEntity<Void> revoke(@PathVariable BigInteger serialNumber) {
         certificateUseCase.revoke(new LookupCertificateBySerialNumberCommand(serialNumber));
         return ResponseEntity.ok().build();
+    }
+
+    private UUID extractUserId(JwtAuthenticationToken authentication) {
+
+        // 1. Keycloak stores the user id in token subject claim.
+        String subject = authentication.getToken().getSubject();
+
+        // 2. Converts subject to UUID used by application/domain contracts.
+        return UUID.fromString(subject);
     }
 
 }

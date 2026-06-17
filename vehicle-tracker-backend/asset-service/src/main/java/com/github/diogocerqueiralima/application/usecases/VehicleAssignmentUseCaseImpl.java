@@ -9,10 +9,10 @@ import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNot
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.VehicleAssignmentApplicationMapper;
-import com.github.diogocerqueiralima.application.ports.inbound.VehicleAssignmentUseCase;
-import com.github.diogocerqueiralima.application.ports.outbound.DevicePersistence;
-import com.github.diogocerqueiralima.application.ports.outbound.VehicleAssignmentPersistence;
-import com.github.diogocerqueiralima.application.ports.outbound.VehiclePersistence;
+import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
+import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehicleAssignmentPersistence;
+import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.domain.assignments.VehicleAssignment;
 import com.github.diogocerqueiralima.domain.assets.Device;
