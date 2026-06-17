@@ -12,6 +12,7 @@ import com.github.diogocerqueiralima.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
 import com.github.diogocerqueiralima.domain.assets.SimCard;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -29,6 +30,7 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
     }
 
     @Override
+    @Transactional
     public SimCardResult create(CreateSimCardCommand command) {
 
         // 1. Checks if exists a SIM card with the provided ICCID.
@@ -55,6 +57,7 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
     }
 
     @Override
+    @Transactional
     public SimCardResult update(UpdateSimCardCommand command) {
 
         UUID id = command.id();

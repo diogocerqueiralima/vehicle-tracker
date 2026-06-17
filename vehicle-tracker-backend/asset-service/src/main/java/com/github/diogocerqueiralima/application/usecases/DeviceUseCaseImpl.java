@@ -14,6 +14,7 @@ import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.domain.assets.Device;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
     }
 
     @Override
+    @Transactional
     public DeviceResult create(CreateDeviceCommand command) {
 
         // 1. Checks if exists a device with the provided serial number.
@@ -55,6 +57,7 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
     }
 
     @Override
+    @Transactional
     public DeviceResult update(UpdateDeviceCommand command) {
 
         UUID id = command.id();

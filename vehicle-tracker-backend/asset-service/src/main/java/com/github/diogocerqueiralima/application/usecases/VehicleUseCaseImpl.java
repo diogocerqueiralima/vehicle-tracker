@@ -14,6 +14,7 @@ import com.github.diogocerqueiralima.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehiclePersistence;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
     }
 
     @Override
+    @Transactional
     public VehicleResult create(CreateVehicleCommand command) {
 
         // 1. Checks if exists a vehicle with the provided vin
@@ -55,6 +57,7 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
     }
 
     @Override
+    @Transactional
     public VehicleResult update(UpdateVehicleCommand command) {
 
         UUID id = command.id();
