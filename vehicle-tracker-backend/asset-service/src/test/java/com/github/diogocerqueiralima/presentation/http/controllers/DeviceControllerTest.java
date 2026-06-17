@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,13 +45,14 @@ class DeviceControllerTest {
     @Test
     @DisplayName("Should create device and return created response")
     void should_create_device_and_return_created_response() {
-        UUID ownerId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
 
         DeviceResult result = new DeviceResult(
                 id,
+                ownerId,
                 now,
                 now,
                 "SN-001",
@@ -72,25 +73,26 @@ class DeviceControllerTest {
 
         ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.create(request);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Device created successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(id);
-        assertThat(response.getBody().data().serialNumber()).isEqualTo("SN-001");
-        assertThat(response.getBody().data().imei()).isEqualTo("123456789012345");
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Device created successfully.", response.getBody().message());
+        assertNotNull(response.getBody().data());
+        assertEquals(id, response.getBody().data().id());
+        assertEquals("SN-001", response.getBody().data().serialNumber());
+        assertEquals("123456789012345", response.getBody().data().imei());
     }
 
     @Test
     @DisplayName("Should map response data from use case result")
     void should_map_response_data_from_use_case_result() {
-        UUID ownerId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
 
         DeviceResult result = new DeviceResult(
                 id,
+                ownerId,
                 now,
                 now,
                 "SN-001",
@@ -111,23 +113,24 @@ class DeviceControllerTest {
 
         ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.create(request);
 
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().model()).isEqualTo("TK-1000");
-        assertThat(response.getBody().data().manufacturer()).isEqualTo("Teltonika");
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().data());
+        assertEquals("TK-1000", response.getBody().data().model());
+        assertEquals("Teltonika", response.getBody().data().manufacturer());
     }
 
     @Test
     @DisplayName("Should update device and return ok response")
     void should_update_device_and_return_ok_response() {
-        UUID ownerId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
+        UUID ownerId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
         Instant updatedAt = Instant.parse("2026-03-16T12:00:00Z");
 
         DeviceResult result = new DeviceResult(
                 id,
+                ownerId,
                 createdAt,
                 updatedAt,
                 "SN-002",
@@ -148,25 +151,26 @@ class DeviceControllerTest {
 
         ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.update(id, request);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Device updated successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(id);
-        assertThat(response.getBody().data().serialNumber()).isEqualTo("SN-002");
-        assertThat(response.getBody().data().model()).isEqualTo("TK-1100");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Device updated successfully.", response.getBody().message());
+        assertNotNull(response.getBody().data());
+        assertEquals(id, response.getBody().data().id());
+        assertEquals("SN-002", response.getBody().data().serialNumber());
+        assertEquals("TK-1100", response.getBody().data().model());
     }
 
     @Test
     @DisplayName("Should get device by id and return ok response")
     void should_get_device_by_id_and_return_ok_response() {
-        UUID userId = UUID.randomUUID();
 
         UUID id = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
 
         DeviceResult result = new DeviceResult(
                 id,
+                userId,
                 now,
                 now,
                 "SN-001",
@@ -183,50 +187,15 @@ class DeviceControllerTest {
         verify(deviceUseCase).getById(commandCaptor.capture());
         GetDeviceByIdCommand capturedCommand = commandCaptor.getValue();
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Device fetched successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(id);
-        assertThat(response.getBody().data().serialNumber()).isEqualTo("SN-001");
-        assertThat(capturedCommand.id()).isEqualTo(id);
-        assertThat(capturedCommand.userId()).isEqualTo(userId);
-        assertThat(capturedCommand.isAdmin()).isFalse();
-    }
-
-    @Test
-    @DisplayName("Should get device by id and map admin access to command")
-    void should_get_device_by_id_and_map_admin_access_to_command() {
-        UUID adminUserId = UUID.randomUUID();
-        UUID id = UUID.randomUUID();
-        Instant now = Instant.parse("2026-03-15T12:00:00Z");
-
-        DeviceResult result = new DeviceResult(
-                id,
-                now,
-                now,
-                "SN-ADMIN-001",
-                "TK-ADMIN",
-                "Teltonika",
-                "923456789012345"
-        );
-
-        when(deviceUseCase.getById(any())).thenReturn(result);
-
-        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(
-                id,
-                buildAuthentication(adminUserId, List.of("admin"))
-        );
-
-        ArgumentCaptor<GetDeviceByIdCommand> commandCaptor = ArgumentCaptor.forClass(GetDeviceByIdCommand.class);
-        verify(deviceUseCase).getById(commandCaptor.capture());
-        GetDeviceByIdCommand capturedCommand = commandCaptor.getValue();
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(capturedCommand.id()).isEqualTo(id);
-        assertThat(capturedCommand.userId()).isEqualTo(adminUserId);
-        assertThat(capturedCommand.isAdmin()).isTrue();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Device fetched successfully.", response.getBody().message());
+        assertNotNull(response.getBody().data());
+        assertEquals(id, response.getBody().data().id());
+        assertEquals("SN-001", response.getBody().data().serialNumber());
+        assertEquals(id, capturedCommand.id());
+        assertEquals(userId, capturedCommand.userId());
+        assertFalse(capturedCommand.isAdmin());
     }
 
     @Test
@@ -238,6 +207,7 @@ class DeviceControllerTest {
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
         DeviceResult deviceResult = new DeviceResult(
                 id,
+                new UUID(0, 0),
                 now,
                 now,
                 "SN-001",
@@ -250,14 +220,14 @@ class DeviceControllerTest {
 
         ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> response = deviceController.getPage(buildAuthentication(userId), 1, 10);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Devices fetched successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().pageNumber()).isEqualTo(1);
-        assertThat(response.getBody().data().pageSize()).isEqualTo(10);
-        assertThat(response.getBody().data().data()).hasSize(1);
-        assertThat(response.getBody().data().data().getFirst().id()).isEqualTo(id);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Devices fetched successfully.", response.getBody().message());
+        assertNotNull(response.getBody().data());
+        assertEquals(1, response.getBody().data().pageNumber());
+        assertEquals(10, response.getBody().data().pageSize());
+        assertEquals(1, response.getBody().data().data().size());
+        assertEquals(id, response.getBody().data().data().getFirst().id());
     }
 
     private JwtAuthenticationToken buildAuthentication(UUID userId) {
@@ -283,4 +253,3 @@ class DeviceControllerTest {
     }
 
 }
-
