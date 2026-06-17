@@ -47,16 +47,6 @@ public class SimCardAssignmentPersistenceImpl implements SimCardAssignmentPersis
     }
 
     @Override
-    public boolean existsActiveByDeviceId(UUID deviceId) {
-        return simCardAssignmentRepository.existsByDeviceIdAndUnassignedAtIsNull(deviceId);
-    }
-
-    @Override
-    public boolean existsActiveBySimCardId(UUID id) {
-        return simCardAssignmentRepository.existsBySimCardIdAndUnassignedAtIsNull(id);
-    }
-
-    @Override
     public Optional<SimCardAssignment> findActiveByDeviceIdAndSimCardId(UUID deviceId, UUID simCardId) {
         return simCardAssignmentRepository.findByDeviceIdAndSimCardIdAndUnassignedAtIsNull(deviceId, simCardId)
                 .map(SimCardAssignmentMapper::toDomain);

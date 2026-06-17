@@ -16,22 +16,6 @@ import java.util.UUID;
 public interface SimCardAssignmentRepository extends JpaRepository<SimCardAssignmentEntity, Long> {
 
 	/**
-	 * Checks whether there is an active assignment for a given device.
-	 *
-	 * @param deviceId device unique identifier.
-	 * @return true when an active assignment exists for the device.
-	 */
-	boolean existsByDeviceIdAndUnassignedAtIsNull(UUID deviceId);
-
-	/**
-	 * Checks whether there is an active assignment for a given SIM card.
-	 *
-	 * @param id SIM card id.
-	 * @return true when an active assignment exists for the SIM card.
-	 */
-	boolean existsBySimCardIdAndUnassignedAtIsNull(UUID id);
-
-	/**
 	 * Finds an active assignment for a specific device and SIM card pair, acquiring a pessimistic write lock
 	 * to prevent concurrent unassign operations from producing lost audit data.
 	 *

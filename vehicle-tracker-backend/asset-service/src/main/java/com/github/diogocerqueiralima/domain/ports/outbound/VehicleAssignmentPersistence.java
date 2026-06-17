@@ -22,24 +22,6 @@ public interface VehicleAssignmentPersistence {
 
     /**
      *
-     * Checks whether a device already has an active vehicle assignment.
-     *
-     * @param deviceId device unique identifier.
-     * @return true when the device has an active assignment.
-     */
-    boolean existsActiveByDeviceId(UUID deviceId);
-
-    /**
-     *
-     * Checks whether a vehicle already has an active device assignment.
-     *
-     * @param vehicleId vehicle unique identifier.
-     * @return true when the vehicle has an active assignment.
-     */
-    boolean existsActiveByVehicleId(UUID vehicleId);
-
-    /**
-     *
      * Finds an active assignment for a specific device and vehicle pair.
      *
      * @param deviceId device unique identifier.
