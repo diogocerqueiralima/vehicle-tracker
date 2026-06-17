@@ -41,7 +41,7 @@ public class GrpcDeviceService extends DeviceServiceGrpc.DeviceServiceImplBase {
 
             // 1. Retrieve the device by id using the application use case.
             DeviceResult result = deviceUseCase.getById(
-                    new GetDeviceByIdCommand(UUID.fromString(request.getId()), null, true)
+                    new GetDeviceByIdCommand(UUID.fromString(request.getId()), new UUID(0, 0), true)
             );
 
             // 2. Map the application result to a gRPC response and send it.

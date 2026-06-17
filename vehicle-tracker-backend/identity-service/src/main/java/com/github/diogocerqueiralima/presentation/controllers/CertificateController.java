@@ -29,12 +29,7 @@ import java.util.UUID;
 import static com.github.diogocerqueiralima.presentation.config.ApplicationURIs.*;
 
 @Tag(name = "Certificates", description = "Operations related to certificates, including signing and revocation.")
-@SecurityRequirements(
-        value = {
-                @SecurityRequirement(name = "certificateAuth"),
-                @SecurityRequirement(name = "certificateSerialAuth")
-        }
-)
+@SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
 @RestController
 public class CertificateController {
 

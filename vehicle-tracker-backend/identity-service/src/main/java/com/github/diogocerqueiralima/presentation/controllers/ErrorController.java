@@ -1,5 +1,8 @@
 package com.github.diogocerqueiralima.presentation.controllers;
 
+import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
+import com.github.diogocerqueiralima.application.exceptions.DeviceNotOwnedException;
+import com.github.diogocerqueiralima.application.exceptions.InvalidCertificateSubjectException;
 import com.github.diogocerqueiralima.infrastructure.exceptions.CertificateCouldNotBeParsedException;
 import com.github.diogocerqueiralima.infrastructure.exceptions.*;
 import com.github.diogocerqueiralima.presentation.dto.ApiResponseDTO;
@@ -26,13 +29,23 @@ public class ErrorController {
 
     @ExceptionHandler({
             InvalidSignatureException.class, InvalidCertificateSigningRequestException.class,
-            InvalidCommonNameException.class, InvalidCertificateException.class
+            InvalidCommonNameException.class, InvalidCertificateException.class, DeviceNotOwnedException.class,
+            InvalidCertificateSubjectException.class
     })
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(RuntimeException e) {
 
         String message = e.getMessage() == null ? "Bad request." : e.getMessage();
 
         return ResponseEntity.badRequest()
+                .body(new ApiResponseDTO<>(message, null));
+    }
+
+    @ExceptionHandler(DeviceNotFoundException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(RuntimeException e) {
+
+        String message = e.getMessage() == null ? "The requested resource was not found." : e.getMessage();
+
+        return ResponseEntity.status(404)
                 .body(new ApiResponseDTO<>(message, null));
     }
 
