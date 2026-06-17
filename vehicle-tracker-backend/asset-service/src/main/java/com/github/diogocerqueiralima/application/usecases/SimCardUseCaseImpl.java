@@ -11,6 +11,7 @@ import com.github.diogocerqueiralima.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.application.results.SimCardResult;
 import com.github.diogocerqueiralima.domain.assets.SimCard;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -84,6 +85,7 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
      * @param command delete-by-id payload.
      */
     @Override
+    @Transactional
     public void deleteById(DeleteSimCardByIdCommand command) {
 
         // 1. Resolves the target id directly from the inbound command.
