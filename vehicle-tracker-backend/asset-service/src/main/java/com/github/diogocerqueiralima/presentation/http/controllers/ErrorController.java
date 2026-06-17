@@ -1,16 +1,15 @@
 package com.github.diogocerqueiralima.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyExistsException;
-import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
-import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
+import com.github.diogocerqueiralima.domain.exceptions.SimCardAssignmentFailedException;
+import com.github.diogocerqueiralima.domain.exceptions.VehicleAssignmentFailedException;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -69,8 +68,8 @@ public class ErrorController {
      */
     @ExceptionHandler({
             VehicleAlreadyExistsException.class, DeviceAlreadyExistsException.class,
-            DeviceAlreadyAssignedException.class, VehicleAlreadyAssignedException.class,
-            SimCardAlreadyExistsException.class, SimCardAlreadyAssignedException.class
+            SimCardAlreadyExistsException.class, SimCardAssignmentFailedException.class,
+            VehicleAssignmentFailedException.class
     })
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(Exception exception) {
 

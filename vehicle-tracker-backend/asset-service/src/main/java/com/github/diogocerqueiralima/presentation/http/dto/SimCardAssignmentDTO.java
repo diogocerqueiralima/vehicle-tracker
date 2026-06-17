@@ -17,6 +17,6 @@ public record SimCardAssignmentDTO(
         @JsonProperty("unassigned_at") Instant unassignedAt,
         @JsonProperty("unassigned_by") UUID unassignedBy,
         @JsonProperty("removal_reason") SimCardRemovalReason removalReason,
-        @JsonProperty("active") boolean active
+        boolean active
 ) {}
 

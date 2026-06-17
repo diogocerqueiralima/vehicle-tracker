@@ -32,36 +32,45 @@ CREATE TABLE IF NOT EXISTS sim_cards (
     CONSTRAINT fk_sim_cards_assets FOREIGN KEY (id) REFERENCES assets(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS assignments (
+CREATE TABLE IF NOT EXISTS vehicle_assignments (
     id BIGSERIAL PRIMARY KEY,
     assigned_at TIMESTAMPTZ NOT NULL,
     unassigned_at TIMESTAMPTZ,
     assigned_by UUID NOT NULL,
     unassigned_by UUID,
-    active BOOLEAN NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS vehicle_assignments (
-    id BIGSERIAL PRIMARY KEY,
     device_id UUID NOT NULL,
     vehicle_id UUID NOT NULL,
     removal_reason VARCHAR(32),
     installed_by UUID,
     notes VARCHAR(1024),
-    CONSTRAINT fk_vehicle_assignments_assignments FOREIGN KEY (id) REFERENCES assignments(id) ON DELETE CASCADE,
     CONSTRAINT fk_vehicle_assignments_devices FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE,
     CONSTRAINT fk_vehicle_assignments_vehicles FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_vehicle_assignments_active_device
+    ON vehicle_assignments (device_id) WHERE unassigned_at IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_vehicle_assignments_active_vehicle
+    ON vehicle_assignments (vehicle_id) WHERE unassigned_at IS NULL;
+
 CREATE TABLE IF NOT EXISTS sim_card_assignments (
     id BIGSERIAL PRIMARY KEY,
+    assigned_at TIMESTAMPTZ NOT NULL,
+    unassigned_at TIMESTAMPTZ,
+    assigned_by UUID NOT NULL,
+    unassigned_by UUID,
     device_id UUID NOT NULL,
     sim_card_id UUID NOT NULL,
     removal_reason VARCHAR(255),
-    CONSTRAINT fk_sim_card_assignments_assignments FOREIGN KEY (id) REFERENCES assignments(id) ON DELETE CASCADE,
     CONSTRAINT fk_sim_card_assignments_devices FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE,
     CONSTRAINT fk_sim_card_assignments_sim_cards FOREIGN KEY (sim_card_id) REFERENCES sim_cards(id) ON DELETE CASCADE
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_sim_card_assignments_active_device
+    ON sim_card_assignments (device_id) WHERE unassigned_at IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_sim_card_assignments_active_sim_card
+    ON sim_card_assignments (sim_card_id) WHERE unassigned_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS certificates (
     serial_number numeric(38, 0) PRIMARY KEY,

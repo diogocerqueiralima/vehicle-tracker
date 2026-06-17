@@ -2,10 +2,8 @@ package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
-import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleAssignmentPersistence;
@@ -29,8 +27,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -103,8 +99,6 @@ class VehicleAssignmentUseCaseImplTest {
 
         when(devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)).thenReturn(Optional.of(device));
         when(vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)).thenReturn(Optional.of(vehicle));
-        when(vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
-        when(vehicleAssignmentPersistence.existsActiveByVehicleId(vehicleId)).thenReturn(false);
         when(vehicleAssignmentPersistence.save(any(VehicleAssignment.class))).thenReturn(savedAssignment);
 
         VehicleAssignmentResult result = vehicleAssignmentUseCase.assignDeviceToVehicle(command);
@@ -173,101 +167,6 @@ class VehicleAssignmentUseCaseImplTest {
         assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
                 .isInstanceOf(VehicleNotFoundException.class)
                 .hasMessage("Vehicle not found for id: " + vehicleId);
-
-        verify(vehicleAssignmentPersistence, never()).save(any(VehicleAssignment.class));
-    }
-
-    @Test
-    @DisplayName("Should fail assigning when device is already assigned")
-    void should_fail_assigning_when_device_is_already_assigned() {
-
-        UUID deviceId = UUID.randomUUID();
-        UUID vehicleId = UUID.randomUUID();
-
-        Device device = new Device(
-                deviceId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "SN-001",
-                "TK-1000",
-                "Teltonika",
-                "123456789012345"
-        );
-
-        Vehicle vehicle = new Vehicle(
-                vehicleId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "1HGCM82633A123456",
-                "AA-00-AA",
-                "Model 3",
-                "Tesla",
-                LocalDate.of(2024, 1, 15)
-        );
-
-        AssignDeviceToVehicleCommand command = new AssignDeviceToVehicleCommand(
-                deviceId,
-                vehicleId,
-                UUID.randomUUID(),
-                null,
-                null
-        );
-
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.assignedBy())).thenReturn(Optional.of(vehicle));
-        when(vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(true);
-
-        assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
-                .isInstanceOf(DeviceAlreadyAssignedException.class)
-                .hasMessage("Device already assigned for id: " + deviceId);
-
-        verify(vehicleAssignmentPersistence, never()).save(any(VehicleAssignment.class));
-    }
-
-    @Test
-    @DisplayName("Should fail assigning when vehicle is already assigned")
-    void should_fail_assigning_when_vehicle_is_already_assigned() {
-
-        UUID deviceId = UUID.randomUUID();
-        UUID vehicleId = UUID.randomUUID();
-
-        Device device = new Device(
-                deviceId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "SN-001",
-                "TK-1000",
-                "Teltonika",
-                "123456789012345"
-        );
-
-        Vehicle vehicle = new Vehicle(
-                vehicleId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "1HGCM82633A123456",
-                "AA-00-AA",
-                "Model 3",
-                "Tesla",
-                LocalDate.of(2024, 1, 15)
-        );
-
-        AssignDeviceToVehicleCommand command = new AssignDeviceToVehicleCommand(
-                deviceId,
-                vehicleId,
-                UUID.randomUUID(),
-                null,
-                null
-        );
-
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.assignedBy())).thenReturn(Optional.of(vehicle));
-        when(vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
-        when(vehicleAssignmentPersistence.existsActiveByVehicleId(vehicleId)).thenReturn(true);
-
-        assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
-                .isInstanceOf(VehicleAlreadyAssignedException.class)
-                .hasMessage("Vehicle already assigned for id: " + vehicleId);
 
         verify(vehicleAssignmentPersistence, never()).save(any(VehicleAssignment.class));
     }
@@ -370,12 +269,11 @@ class VehicleAssignmentUseCaseImplTest {
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
                 .thenReturn(Optional.empty());
 
-        VehicleAssignmentNotFoundException exception = assertThrows(VehicleAssignmentNotFoundException.class,
-                () -> vehicleAssignmentUseCase.unassignDeviceFromVehicle(command));
-        assertEquals("Active vehicle assignment not found for device id: " + deviceId + " and vehicle id: " + vehicleId, exception.getMessage());
+        assertThatThrownBy(() -> vehicleAssignmentUseCase.unassignDeviceFromVehicle(command))
+                .isInstanceOf(VehicleAssignmentNotFoundException.class)
+                .hasMessage("Active vehicle assignment not found for device id: " + deviceId + " and vehicle id: " + vehicleId);
 
         verify(vehicleAssignmentPersistence, never()).save(any(VehicleAssignment.class));
     }
 
 }
-

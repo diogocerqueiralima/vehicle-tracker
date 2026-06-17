@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.assignments.VehicleAssignment;
+import com.github.diogocerqueiralima.domain.exceptions.VehicleAssignmentFailedException;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleAssignmentPersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.VehicleEntity;
@@ -9,6 +10,7 @@ import com.github.diogocerqueiralima.infrastructure.mappers.DeviceMapper;
 import com.github.diogocerqueiralima.infrastructure.mappers.VehicleAssignmentMapper;
 import com.github.diogocerqueiralima.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.VehicleAssignmentRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -29,12 +31,19 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
     @Override
     public VehicleAssignment save(VehicleAssignment vehicleAssignment) {
 
-        DeviceEntity deviceEntity = DeviceMapper.toEntity(vehicleAssignment.getDevice());
-        VehicleEntity vehicleEntity = VehicleMapper.toEntity(vehicleAssignment.getVehicle());
-        VehicleAssignmentEntity entity = toEntity(vehicleAssignment, deviceEntity, vehicleEntity);
-        VehicleAssignmentEntity savedEntity = vehicleAssignmentRepository.save(entity);
+        try {
+            DeviceEntity deviceEntity = DeviceMapper.toEntity(vehicleAssignment.getDevice());
+            VehicleEntity vehicleEntity = VehicleMapper.toEntity(vehicleAssignment.getVehicle());
+            VehicleAssignmentEntity entity = toEntity(vehicleAssignment, deviceEntity, vehicleEntity);
+            VehicleAssignmentEntity savedEntity = vehicleAssignmentRepository.save(entity);
 
-        return toDomain(savedEntity);
+            return toDomain(savedEntity);
+        } catch (DataIntegrityViolationException e) {
+            throw new VehicleAssignmentFailedException(
+                    vehicleAssignment.getDevice().getId(),
+                    vehicleAssignment.getVehicle().getId()
+            );
+        }
     }
 
     @Override
