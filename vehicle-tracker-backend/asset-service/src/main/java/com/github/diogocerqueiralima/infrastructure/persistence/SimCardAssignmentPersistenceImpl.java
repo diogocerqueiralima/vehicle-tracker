@@ -1,8 +1,8 @@
 package com.github.diogocerqueiralima.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.domain.assignments.SimCardAssignment;
-import com.github.diogocerqueiralima.application.ports.outbound.SimCardAssignmentPersistence;
 import com.github.diogocerqueiralima.domain.exceptions.SimCardAssignmentFailedException;
+import com.github.diogocerqueiralima.domain.ports.outbound.SimCardAssignmentPersistence;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assets.SimCardEntity;
 import com.github.diogocerqueiralima.infrastructure.entities.assignments.SimCardAssignmentEntity;

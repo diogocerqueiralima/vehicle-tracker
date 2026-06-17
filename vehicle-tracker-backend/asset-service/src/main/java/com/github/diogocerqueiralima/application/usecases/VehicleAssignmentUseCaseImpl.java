@@ -3,10 +3,8 @@ package com.github.diogocerqueiralima.application.usecases;
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentByDeviceIdCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
-import com.github.diogocerqueiralima.application.exceptions.VehicleAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.VehicleAssignmentApplicationMapper;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
@@ -44,6 +42,7 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
     }
 
     @Override
+    @Transactional
     public VehicleAssignmentResult assignDeviceToVehicle(AssignDeviceToVehicleCommand command) {
 
         UUID deviceId = command.deviceId();
@@ -57,16 +56,6 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         // 2. Loads the vehicle scoped to the authenticated owner and fails fast if it does not exist or is not owned.
         Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)
                 .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
-
-        // 3. Rejects assignment when the device already has an active assignment.
-        if (vehicleAssignmentPersistence.existsActiveByDeviceId(deviceId)) {
-            throw new DeviceAlreadyAssignedException(deviceId);
-        }
-
-        // 4. Rejects assignment when the vehicle already has an active assignment.
-        if (vehicleAssignmentPersistence.existsActiveByVehicleId(vehicleId)) {
-            throw new VehicleAlreadyAssignedException(vehicleId);
-        }
 
         // 5. Builds and saves the new assignment.
         VehicleAssignment assignmentToSave = VehicleAssignmentApplicationMapper.toDomain(

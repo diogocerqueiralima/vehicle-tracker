@@ -2,9 +2,7 @@ package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToSimCardCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromSimCardCommand;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
-import com.github.diogocerqueiralima.application.exceptions.SimCardAlreadyAssignedException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.SimCardNotFoundException;
 import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
@@ -93,8 +91,6 @@ class SimCardAssignmentUseCaseImplTest {
 
         when(devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)).thenReturn(Optional.of(device));
         when(simCardPersistence.findByIdAndOwnerId(simCardId, assignedBy)).thenReturn(Optional.of(simCard));
-        when(simCardAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
-        when(simCardAssignmentPersistence.existsActiveBySimCardId(simCardId)).thenReturn(false);
         when(simCardAssignmentPersistence.save(any(SimCardAssignment.class))).thenReturn(savedAssignment);
 
         SimCardAssignmentResult result = simCardAssignmentUseCase.assignDeviceToSimCard(command);
@@ -158,93 +154,6 @@ class SimCardAssignmentUseCaseImplTest {
         assertThatThrownBy(() -> simCardAssignmentUseCase.assignDeviceToSimCard(command))
                 .isInstanceOf(SimCardNotFoundException.class)
                 .hasMessage("SIM card not found for id: " + simCardId);
-
-        verify(simCardAssignmentPersistence, never()).save(any(SimCardAssignment.class));
-    }
-
-    @Test
-    @DisplayName("Should fail assigning when device is already assigned")
-    void should_fail_assigning_when_device_is_already_assigned() {
-
-        UUID deviceId = UUID.randomUUID();
-        UUID simCardId = UUID.randomUUID();
-
-        Device device = new Device(
-                deviceId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "SN-001",
-                "TK-1000",
-                "Teltonika",
-                "123456789012345"
-        );
-
-        SimCard simCard = new SimCard(
-                simCardId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "8991101200003204510",
-                "+351910000003",
-                "268011234567893"
-        );
-
-        AssignDeviceToSimCardCommand command = new AssignDeviceToSimCardCommand(
-                deviceId,
-                simCardId,
-                UUID.randomUUID()
-        );
-
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
-        when(simCardPersistence.findByIdAndOwnerId(simCardId, command.assignedBy())).thenReturn(Optional.of(simCard));
-        when(simCardAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(true);
-
-        assertThatThrownBy(() -> simCardAssignmentUseCase.assignDeviceToSimCard(command))
-                .isInstanceOf(DeviceAlreadyAssignedException.class)
-                .hasMessage("Device already assigned for id: " + deviceId);
-
-        verify(simCardAssignmentPersistence, never()).save(any(SimCardAssignment.class));
-    }
-
-    @Test
-    @DisplayName("Should fail assigning when SIM card is already assigned")
-    void should_fail_assigning_when_sim_card_is_already_assigned() {
-
-        UUID deviceId = UUID.randomUUID();
-        UUID simCardId = UUID.randomUUID();
-
-        Device device = new Device(
-                deviceId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "SN-001",
-                "TK-1000",
-                "Teltonika",
-                "123456789012345"
-        );
-
-        SimCard simCard = new SimCard(
-                simCardId,
-                Instant.parse("2026-03-10T10:00:00Z"),
-                Instant.parse("2026-03-10T10:00:00Z"),
-                "8991101200003204510",
-                "+351910000004",
-                "268011234567894"
-        );
-
-        AssignDeviceToSimCardCommand command = new AssignDeviceToSimCardCommand(
-                deviceId,
-                simCardId,
-                UUID.randomUUID()
-        );
-
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
-        when(simCardPersistence.findByIdAndOwnerId(simCardId, command.assignedBy())).thenReturn(Optional.of(simCard));
-        when(simCardAssignmentPersistence.existsActiveByDeviceId(deviceId)).thenReturn(false);
-        when(simCardAssignmentPersistence.existsActiveBySimCardId(simCardId)).thenReturn(true);
-
-        assertThatThrownBy(() -> simCardAssignmentUseCase.assignDeviceToSimCard(command))
-                .isInstanceOf(SimCardAlreadyAssignedException.class)
-                .hasMessage("SIM card already assigned for id: " + simCardId);
 
         verify(simCardAssignmentPersistence, never()).save(any(SimCardAssignment.class));
     }
@@ -366,4 +275,3 @@ class SimCardAssignmentUseCaseImplTest {
     }
 
 }
-
