@@ -1,22 +1,15 @@
 package com.github.diogocerqueiralima.infrastructure.entities.assignments;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.MappedSuperclass;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Entity
-@Table(name = "assignments")
-@Inheritance(strategy = InheritanceType.JOINED)
+@MappedSuperclass
 public abstract class AssignmentEntity {
 
     @Id
@@ -36,16 +29,7 @@ public abstract class AssignmentEntity {
     @Column(name = "unassigned_by")
     private UUID unassignedBy;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
-
     public AssignmentEntity() {}
-
-    @PrePersist
-    @PreUpdate
-    void recalculateActiveFlag() {
-        this.active = this.unassignedAt == null;
-    }
 
     public Long getId() {
         return id;
@@ -87,9 +71,4 @@ public abstract class AssignmentEntity {
         this.unassignedBy = unassignedBy;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
 }
-

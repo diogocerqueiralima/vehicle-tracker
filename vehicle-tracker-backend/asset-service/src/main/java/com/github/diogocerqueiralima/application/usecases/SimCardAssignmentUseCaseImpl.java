@@ -49,7 +49,6 @@ public class SimCardAssignmentUseCaseImpl implements SimCardAssignmentUseCase {
      * @return created assignment result.
      */
     @Override
-    @Transactional
     public SimCardAssignmentResult assignDeviceToSimCard(AssignDeviceToSimCardCommand command) {
 
         UUID deviceId = command.deviceId();

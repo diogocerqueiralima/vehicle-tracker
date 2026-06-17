@@ -10,14 +10,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "vehicle_assignments")
-@PrimaryKeyJoinColumn(name = "id")
 public class VehicleAssignmentEntity extends AssignmentEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -81,4 +79,3 @@ public class VehicleAssignmentEntity extends AssignmentEntity {
     }
 
 }
-

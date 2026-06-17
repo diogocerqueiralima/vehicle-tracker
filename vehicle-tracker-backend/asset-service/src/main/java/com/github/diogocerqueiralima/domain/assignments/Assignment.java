@@ -19,7 +19,6 @@ public abstract class Assignment {
     private final Instant unassignedAt;
     private final UUID assignedBy;
     private final UUID unassignedBy;
-    private final boolean active;
 
     protected Assignment(
             Instant assignedAt, Instant unassignedAt, UUID assignedBy, UUID unassignedBy
@@ -39,7 +38,6 @@ public abstract class Assignment {
         this.assignedBy = Objects.requireNonNull(assignedBy, "assignedBy cannot be null");
         this.unassignedAt = unassignedAt;
         this.unassignedBy = unassignedBy;
-        this.active = unassignedAt == null;
     }
 
     public Long getId() {
@@ -63,7 +61,7 @@ public abstract class Assignment {
     }
 
     public boolean isActive() {
-        return active;
+        return unassignedAt == null;
     }
 
     /**
@@ -75,7 +73,7 @@ public abstract class Assignment {
      * @return the duration of the assignment
      */
     public Duration getDuration() {
-        Instant end = active ? Instant.now() : unassignedAt;
+        Instant end = unassignedAt == null ? Instant.now() : unassignedAt;
         return Duration.between(assignedAt, end);
     }
 

@@ -44,7 +44,6 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
     }
 
     @Override
-    @Transactional
     public VehicleAssignmentResult assignDeviceToVehicle(AssignDeviceToVehicleCommand command) {
 
         UUID deviceId = command.deviceId();
