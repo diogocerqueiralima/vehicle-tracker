@@ -2,11 +2,13 @@ package com.github.diogocerqueiralima.application.usecases;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentByDeviceIdCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.VehicleAssignmentApplicationMapper;
+import com.github.diogocerqueiralima.application.results.VehicleAssignmentHistoryResult;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleAssignmentPersistence;
@@ -113,6 +115,19 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         return vehicleAssignmentPersistence.findActiveByDeviceId(deviceId)
                 .map(VehicleAssignmentApplicationMapper::toResult)
                 .orElseThrow(() -> new VehicleAssignmentNotFoundException(deviceId));
+    }
+
+    @Override
+    public VehicleAssignmentHistoryResult getVehicleAssignmentHistory(GetVehicleAssignmentHistoryCommand command) {
+
+        UUID vehicleId = command.vehicleId();
+        UUID userId = command.userId();
+        int page = command.pageNumber();
+        int pageSize = command.pageSize();
+
+        return VehicleAssignmentApplicationMapper.toResult(
+                vehicleAssignmentPersistence.findHistory(vehicleId, userId, page - 1, pageSize)
+        );
     }
 
 }

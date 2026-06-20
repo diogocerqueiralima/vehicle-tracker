@@ -22,8 +22,8 @@ public abstract class Asset {
     protected Asset(UUID id, UUID ownerId, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.ownerId = ownerId;
-        this.createdAt = Objects.requireNonNull(createdAt, "createdAt cannot be null");
-        this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt cannot be null");
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public UUID getId() {

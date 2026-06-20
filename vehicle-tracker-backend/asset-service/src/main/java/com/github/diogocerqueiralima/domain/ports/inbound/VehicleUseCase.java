@@ -40,9 +40,9 @@ public interface VehicleUseCase {
     VehicleResult getById(@Valid GetVehicleByIdCommand command);
 
     /**
-     * Retrieves a one-based page of vehicles.
+     * Retrieves a one-based pageNumber of vehicles.
      *
-     * @param command the page request command.
+     * @param command the pageNumber request command.
      * @return paginated vehicle result.
      */
     PageResult<VehicleResult> getPage(@Valid GetVehiclePageCommand command);

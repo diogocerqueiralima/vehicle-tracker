@@ -258,7 +258,7 @@ class VehicleUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should get vehicle page when vehicles exist")
+    @DisplayName("Should get vehicle pageNumber when vehicles exist")
     void should_get_vehicle_page_when_vehicles_exist() {
 
         int pageNumber = 1;
@@ -284,7 +284,7 @@ class VehicleUseCaseImplTest {
 
         GetVehiclePageCommand command = new GetVehiclePageCommand(pageNumber, pageSize, userId);
 
-        when(vehiclePersistence.getPageByOwnerId(pageNumber, pageSize, userId)).thenReturn(vehiclePage);
+        when(vehiclePersistence.getPageByOwnerId(pageNumber - 1, pageSize, userId)).thenReturn(vehiclePage);
 
         PageResult<VehicleResult> result = vehicleUseCase.getPage(command);
 
@@ -295,7 +295,7 @@ class VehicleUseCaseImplTest {
         assertThat(result.data()).hasSize(1);
         assertThat(result.data().getFirst().id()).isEqualTo(vehicle.getId());
 
-        verify(vehiclePersistence).getPageByOwnerId(pageNumber, pageSize, userId);
+        verify(vehiclePersistence).getPageByOwnerId(pageNumber - 1, pageSize, userId);
     }
 
 }

@@ -189,7 +189,7 @@ class VehicleControllerTest {
     }
 
     @Test
-    @DisplayName("Should get vehicle page and return ok response")
+    @DisplayName("Should get vehicle pageNumber and return ok response")
     void should_get_vehicle_page_and_return_ok_response() {
         UUID userId = UUID.randomUUID();
 

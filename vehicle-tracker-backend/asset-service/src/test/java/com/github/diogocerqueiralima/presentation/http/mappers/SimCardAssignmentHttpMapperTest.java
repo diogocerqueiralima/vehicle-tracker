@@ -27,12 +27,12 @@ class SimCardAssignmentHttpMapperTest {
         UUID assignedBy = UUID.randomUUID();
 
         AssignDeviceToSimCardRequestDTO request = new AssignDeviceToSimCardRequestDTO(
-                deviceId,
-                simCardId
+                deviceId
         );
 
         AssignDeviceToSimCardCommand command = SimCardAssignmentHttpMapper.toAssignDeviceToSimCardCommand(
                 request,
+                simCardId,
                 assignedBy
         );
 
@@ -83,12 +83,12 @@ class SimCardAssignmentHttpMapperTest {
 
         UnassignDeviceFromSimCardRequestDTO request = new UnassignDeviceFromSimCardRequestDTO(
                 deviceId,
-                simCardId,
                 SimCardRemovalReason.UPGRADE
         );
 
         UnassignDeviceFromSimCardCommand command = SimCardAssignmentHttpMapper.toUnassignDeviceFromSimCardCommand(
                 request,
+                simCardId,
                 unassignedBy
         );
 

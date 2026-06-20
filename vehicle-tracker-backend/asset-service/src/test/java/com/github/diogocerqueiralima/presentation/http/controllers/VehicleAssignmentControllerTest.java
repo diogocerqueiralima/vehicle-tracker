@@ -68,13 +68,13 @@ class VehicleAssignmentControllerTest {
 
         AssignDeviceToVehicleRequestDTO request = new AssignDeviceToVehicleRequestDTO(
                 deviceId,
-                vehicleId,
                 installedBy,
                 "Installed in workshop A"
         );
 
         ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> response = vehicleAssignmentController.assignDeviceToVehicle(
                 buildAuthentication(userId),
+                vehicleId,
                 request
         );
 
@@ -118,12 +118,12 @@ class VehicleAssignmentControllerTest {
 
         UnassignDeviceFromVehicleRequestDTO request = new UnassignDeviceFromVehicleRequestDTO(
                 deviceId,
-                vehicleId,
                 VehicleRemovalReason.RETIRED
         );
 
         ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> response = vehicleAssignmentController.unassignDeviceFromVehicle(
                 buildAuthentication(userId),
+                vehicleId,
                 request
         );
 

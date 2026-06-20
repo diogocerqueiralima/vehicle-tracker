@@ -1,9 +1,12 @@
 package com.github.diogocerqueiralima.presentation.http.mappers;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
+import com.github.diogocerqueiralima.application.results.VehicleAssignmentHistoryResult;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToVehicleRequestDTO;
+import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UnassignDeviceFromVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.VehicleAssignmentDTO;
 
@@ -22,15 +25,16 @@ public final class VehicleAssignmentHttpMapper {
      * Builds an assignment command from an HTTP request payload.
      *
      * @param request request payload for creating a vehicle assignment.
+     * @param vehicleId vehicle identifier from the request path.
      * @param assignedBy user identifier from the authentication context.
      * @return command consumed by the application layer.
      */
     public static AssignDeviceToVehicleCommand toAssignDeviceToVehicleCommand(
-            AssignDeviceToVehicleRequestDTO request, UUID assignedBy
+            AssignDeviceToVehicleRequestDTO request, UUID vehicleId, UUID assignedBy
     ) {
         return new AssignDeviceToVehicleCommand(
                 request.deviceId(),
-                request.vehicleId(),
+                vehicleId,
                 assignedBy,
                 request.installedBy(),
                 request.notes()
@@ -64,18 +68,52 @@ public final class VehicleAssignmentHttpMapper {
      * Builds an unassignment command from an HTTP request payload.
      *
      * @param request request payload for closing a vehicle assignment.
+     * @param vehicleId vehicle identifier from the request path.
      * @param unassignedBy user identifier from the authentication context.
      * @return command consumed by the application layer.
      */
     public static UnassignDeviceFromVehicleCommand toUnassignDeviceFromVehicleCommand(
             UnassignDeviceFromVehicleRequestDTO request,
+            UUID vehicleId,
             UUID unassignedBy
     ) {
         return new UnassignDeviceFromVehicleCommand(
                 request.deviceId(),
-                request.vehicleId(),
+                vehicleId,
                 unassignedBy,
                 request.removalReason()
+        );
+    }
+
+    /**
+     *
+     * Builds a command to retrieve the assignment history of a vehicle.
+     *
+     * @param vehicleId the unique identifier of the vehicle for which the assignment history is being requested.
+     * @param userId the unique identifier of the user making the request, used for authorization and auditing purposes.
+     * @param pageNumber the page number of the assignment history results to retrieve, used for pagination of results.
+     * @param pageSize the number of assignment history results to retrieve per page, used for pagination of results.
+     * @return a command consumed by the application layer to fetch the assignment history of the specified vehicle.
+     */
+    public static GetVehicleAssignmentHistoryCommand toGetVehicleAssignmentHistoryCommand(
+            UUID vehicleId,
+            UUID userId,
+            int pageNumber,
+            int pageSize
+    ) {
+        return new GetVehicleAssignmentHistoryCommand(vehicleId, userId, pageNumber, pageSize);
+    }
+
+    public static PageDTO<VehicleAssignmentDTO> toPageDTO(VehicleAssignmentHistoryResult result) {
+        return new PageDTO<>(
+                result.pageNumber(),
+                result.pageSize(),
+                result.totalPages(),
+                result.totalElements(),
+                result.assignments()
+                        .stream()
+                        .map(VehicleAssignmentHttpMapper::toDTO)
+                        .toList()
         );
     }
 

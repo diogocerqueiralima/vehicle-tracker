@@ -1,21 +1,19 @@
 package com.github.diogocerqueiralima.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
+import com.github.diogocerqueiralima.application.results.VehicleAssignmentHistoryResult;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
-import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
-import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToVehicleRequestDTO;
-import com.github.diogocerqueiralima.presentation.http.dto.UnassignDeviceFromVehicleRequestDTO;
-import com.github.diogocerqueiralima.presentation.http.dto.VehicleAssignmentDTO;
+import com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs;
+import com.github.diogocerqueiralima.presentation.http.dto.*;
 import com.github.diogocerqueiralima.presentation.http.mappers.VehicleAssignmentHttpMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -42,6 +40,7 @@ public class VehicleAssignmentController {
     @PostMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> assignDeviceToVehicle(
             JwtAuthenticationToken authentication,
+            @PathVariable(VEHICLE_ID_PARAM) UUID vehicleId,
             @RequestBody AssignDeviceToVehicleRequestDTO request
     ) {
 
@@ -50,7 +49,7 @@ public class VehicleAssignmentController {
 
         // 2. Maps transport data to an application command.
         AssignDeviceToVehicleCommand command = VehicleAssignmentHttpMapper.toAssignDeviceToVehicleCommand(
-                request, assignedBy
+                request, vehicleId, assignedBy
         );
 
         // 3. Delegates assignment creation to the application layer.
@@ -73,6 +72,7 @@ public class VehicleAssignmentController {
     @DeleteMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> unassignDeviceFromVehicle(
             JwtAuthenticationToken authentication,
+            @PathVariable(VEHICLE_ID_PARAM) UUID vehicleId,
             @RequestBody UnassignDeviceFromVehicleRequestDTO request
     ) {
 
@@ -81,8 +81,7 @@ public class VehicleAssignmentController {
 
         // 2. Maps transport data to an application command.
         UnassignDeviceFromVehicleCommand command = VehicleAssignmentHttpMapper.toUnassignDeviceFromVehicleCommand(
-                request,
-                unassignedBy
+                request, vehicleId, unassignedBy
         );
 
         // 3. Delegates assignment closure to the application layer.
@@ -92,6 +91,31 @@ public class VehicleAssignmentController {
         VehicleAssignmentDTO responseData = VehicleAssignmentHttpMapper.toDTO(result);
 
         return ResponseEntity.ok(new ApiResponseDTO<>("Device unassigned from vehicle successfully.", responseData));
+    }
+
+    @GetMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
+    public ResponseEntity<ApiResponseDTO<PageDTO<VehicleAssignmentDTO>>> getVehicleAssignmentHistory(
+            JwtAuthenticationToken authentication,
+            @PathVariable(VEHICLE_ID_PARAM) UUID vehicleId,
+            @RequestParam(name = PAGE_NUMBER_PARAM, defaultValue = "1") int page,
+            @RequestParam(name = PAGE_SIZE_PARAM, defaultValue = "10") int size
+    ) {
+
+        // 1. Resolve the authenticated user id from the jwt.
+        UUID userId = extractUserId(authentication);
+
+        // 2. Maps transport data to an application command.
+        GetVehicleAssignmentHistoryCommand command = VehicleAssignmentHttpMapper.toGetVehicleAssignmentHistoryCommand(
+                vehicleId, userId, page, size
+        );
+
+        // 3. Delegates retrieval of the assignment history to the application layer.
+        VehicleAssignmentHistoryResult result = vehicleAssignmentUseCase.getVehicleAssignmentHistory(command);
+
+        // 4. Converts application output into the response payload.
+        PageDTO<VehicleAssignmentDTO> responseData = VehicleAssignmentHttpMapper.toPageDTO(result);
+
+        return ResponseEntity.ok(new ApiResponseDTO<>("Vehicle assignment history fetched successfully.", responseData));
     }
 
     private UUID extractUserId(JwtAuthenticationToken authentication) {

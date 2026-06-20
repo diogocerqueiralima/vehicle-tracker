@@ -35,10 +35,10 @@ public interface DeviceRepository extends JpaRepository<DeviceEntity, UUID> {
 	Optional<DeviceEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
 
 	/**
-	 * Retrieves a page of devices by owner id.
+	 * Retrieves a pageNumber of devices by owner id.
 	 *
 	 * @param ownerId owner identifier.
-	 * @param pageable page request.
+	 * @param pageable pageNumber request.
 	 * @return paginated devices from the owner.
 	 */
 	Page<DeviceEntity> findAllByOwnerId(UUID ownerId, Pageable pageable);

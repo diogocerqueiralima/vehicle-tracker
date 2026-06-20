@@ -87,9 +87,9 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
     }
 
     /**
-     * Retrieves a one-based page of vehicles.
+     * Retrieves a one-based pageNumber of vehicles.
      *
-     * @param command page request payload.
+     * @param command pageNumber request payload.
      * @return paginated vehicle result.
      */
     @Override
@@ -100,10 +100,10 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
         int pageSize = command.pageSize();
         UUID userId = command.userId();
 
-        // 2. Fetches the owner-scoped page from persistence preserving one-based indexing semantics.
-        Page<Vehicle> vehiclePageResult = vehiclePersistence.getPageByOwnerId(pageNumber, pageSize, userId);
+        // 2. Fetches the owner-scoped pageNumber from persistence preserving one-based indexing semantics.
+        Page<Vehicle> vehiclePageResult = vehiclePersistence.getPageByOwnerId(pageNumber - 1, pageSize, userId);
 
-        // 3. Converts domain page payload to application output contract.
+        // 3. Converts domain pageNumber payload to application output contract.
         return VehicleApplicationMapper.toPageResult(vehiclePageResult);
     }
 

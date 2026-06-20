@@ -29,13 +29,12 @@ class VehicleAssignmentHttpMapperTest {
 
         AssignDeviceToVehicleRequestDTO request = new AssignDeviceToVehicleRequestDTO(
                 deviceId,
-                vehicleId,
                 installedBy,
                 "Installed in workshop A"
         );
 
         AssignDeviceToVehicleCommand command = VehicleAssignmentHttpMapper.toAssignDeviceToVehicleCommand(
-                request, assignedBy
+                request, vehicleId, assignedBy
         );
 
         assertThat(command.deviceId()).isEqualTo(deviceId);
@@ -92,12 +91,12 @@ class VehicleAssignmentHttpMapperTest {
 
         UnassignDeviceFromVehicleRequestDTO request = new UnassignDeviceFromVehicleRequestDTO(
                 deviceId,
-                vehicleId,
                 VehicleRemovalReason.LOSS
         );
 
         UnassignDeviceFromVehicleCommand command = VehicleAssignmentHttpMapper.toUnassignDeviceFromVehicleCommand(
                 request,
+                vehicleId,
                 unassignedBy
         );
 

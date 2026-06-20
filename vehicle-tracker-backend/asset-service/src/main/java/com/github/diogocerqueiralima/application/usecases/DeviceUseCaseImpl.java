@@ -90,9 +90,9 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
     }
 
     /**
-     * Retrieves a one-based page of devices.
+     * Retrieves a one-based pageNumber of devices.
      *
-     * @param command page request payload.
+     * @param command pageNumber request payload.
      * @return paginated device result.
      */
     @Override
@@ -103,10 +103,10 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
         int pageSize = command.pageSize();
         UUID userId = command.userId();
 
-        // 2. Fetches the owner-scoped page from persistence preserving one-based indexing semantics.
-        Page<Device> devicePageResult = devicePersistence.getPageByOwnerId(pageNumber, pageSize, userId);
+        // 2. Fetches the owner-scoped pageNumber from persistence preserving one-based indexing semantics.
+        Page<Device> devicePageResult = devicePersistence.getPageByOwnerId(pageNumber - 1, pageSize, userId);
 
-        // 3. Converts domain page payload to application output contract.
+        // 3. Converts domain pageNumber payload to application output contract.
         return DeviceApplicationMapper.toPageResult(devicePageResult);
     }
 

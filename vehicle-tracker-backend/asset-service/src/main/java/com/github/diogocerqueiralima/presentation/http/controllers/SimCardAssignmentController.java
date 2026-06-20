@@ -12,13 +12,11 @@ import com.github.diogocerqueiralima.presentation.http.mappers.SimCardAssignment
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.SIM_CARD_ID_PARAM;
 import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.SIM_CARDS_ASSIGNMENTS_BASE_URI;
 
 /**
@@ -42,6 +40,7 @@ public class SimCardAssignmentController {
     @PostMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> assignDeviceToSimCard(
             JwtAuthenticationToken authentication,
+            @PathVariable(SIM_CARD_ID_PARAM) UUID simCardId,
             @RequestBody AssignDeviceToSimCardRequestDTO request
     ) {
 
@@ -51,6 +50,7 @@ public class SimCardAssignmentController {
         // 2. Maps transport data to an application command.
         AssignDeviceToSimCardCommand command = SimCardAssignmentHttpMapper.toAssignDeviceToSimCardCommand(
                 request,
+                simCardId,
                 assignedBy
         );
 
@@ -74,6 +74,7 @@ public class SimCardAssignmentController {
     @DeleteMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> unassignDeviceFromSimCard(
             JwtAuthenticationToken authentication,
+            @PathVariable(SIM_CARD_ID_PARAM) UUID simCardId,
             @RequestBody UnassignDeviceFromSimCardRequestDTO request
     ) {
 
@@ -83,6 +84,7 @@ public class SimCardAssignmentController {
         // 2. Maps transport data to an application command.
         UnassignDeviceFromSimCardCommand command = SimCardAssignmentHttpMapper.toUnassignDeviceFromSimCardCommand(
                 request,
+                simCardId,
                 unassignedBy
         );
 

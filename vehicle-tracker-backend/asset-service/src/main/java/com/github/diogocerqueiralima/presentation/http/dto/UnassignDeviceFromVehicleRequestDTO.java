@@ -13,9 +13,6 @@ public record UnassignDeviceFromVehicleRequestDTO(
         @JsonProperty("device_id")
         UUID deviceId,
 
-        @JsonProperty("vehicle_id")
-        UUID vehicleId,
-
         @JsonProperty("removal_reason")
         VehicleRemovalReason removalReason
 

@@ -61,10 +61,10 @@ public class DevicePersistenceImpl implements DevicePersistence {
     @Override
     public Page<Device> getPage(int pageNumber, int pageSize) {
 
-        // 1. Converts one-based inbound page number to Spring Data zero-based index.
+        // 1. Converts one-based inbound pageNumber number to Spring Data zero-based index.
         PageRequest pageRequest = PageRequest.of(pageNumber - 1, pageSize);
 
-        // 2. Loads entity page and maps each entry to the domain model.
+        // 2. Loads entity pageNumber and maps each entry to the domain model.
         return deviceRepository.findAll(pageRequest)
                 .map(DeviceMapper::toDomain);
     }
@@ -72,10 +72,10 @@ public class DevicePersistenceImpl implements DevicePersistence {
     @Override
     public Page<Device> getPageByOwnerId(int pageNumber, int pageSize, UUID ownerId) {
 
-        // 1. Converts one-based inbound page number to Spring Data zero-based index.
-        PageRequest pageRequest = PageRequest.of(pageNumber - 1, pageSize);
+        // 1. Converts inbound pageNumber number to Spring Data zero-based index.
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
-        // 2. Loads owner-scoped entity page and maps each entry to the domain model.
+        // 2. Loads owner-scoped entity pageNumber and maps each entry to the domain model.
         return deviceRepository.findAllByOwnerId(ownerId, pageRequest)
                 .map(DeviceMapper::toDomain);
     }

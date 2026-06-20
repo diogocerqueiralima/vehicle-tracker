@@ -11,6 +11,9 @@ import com.github.diogocerqueiralima.infrastructure.mappers.VehicleAssignmentMap
 import com.github.diogocerqueiralima.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.infrastructure.repositories.VehicleAssignmentRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -55,6 +58,15 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
     @Override
     public Optional<VehicleAssignment> findActiveByDeviceId(UUID deviceId) {
         return vehicleAssignmentRepository.findByDeviceIdAndUnassignedAtIsNull(deviceId)
+                .map(VehicleAssignmentMapper::toDomain);
+    }
+
+    @Override
+    public Page<VehicleAssignment> findHistory(UUID vehicleId, UUID userId, int pageNumber, int pageSize) {
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+        return vehicleAssignmentRepository.findHistory(vehicleId, userId, pageable)
                 .map(VehicleAssignmentMapper::toDomain);
     }
 

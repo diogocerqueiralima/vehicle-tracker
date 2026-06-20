@@ -70,10 +70,10 @@ public final class DeviceHttpMapper {
     }
 
     /**
-     * Builds a get-page command from HTTP query params.
+     * Builds a get-pageNumber command from HTTP query params.
      *
-     * @param pageNumber one-based page number.
-     * @param pageSize requested page size.
+     * @param pageNumber one-based pageNumber number.
+     * @param pageSize requested pageNumber size.
      * @return command consumed by the application layer.
      */
     public static GetDevicePageCommand toGetPageCommand(int pageNumber, int pageSize, UUID userId) {
@@ -109,8 +109,8 @@ public final class DeviceHttpMapper {
         return new PageDTO<>(
                 result.pageNumber(),
                 result.pageSize(),
-                result.totalElements(),
                 result.totalPages(),
+                result.totalElements(),
                 result.data().stream()
                         .map(DeviceHttpMapper::toDTO)
                         .toList()

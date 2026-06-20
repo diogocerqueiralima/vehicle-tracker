@@ -4,7 +4,6 @@ import com.github.diogocerqueiralima.application.commands.CreateDeviceCommand;
 import com.github.diogocerqueiralima.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.application.commands.GetDevicePageCommand;
 import com.github.diogocerqueiralima.application.commands.UpdateDeviceCommand;
-import com.github.diogocerqueiralima.application.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.application.results.DeviceResult;
 import com.github.diogocerqueiralima.application.results.PageResult;
@@ -22,7 +21,6 @@ public interface DeviceUseCase {
      *
      * @param command the create device command.
      * @return the created device result.
-     * @throws DeviceAlreadyExistsException if a device with the same serial number or IMEI already exists.
      */
     DeviceResult create(@Valid CreateDeviceCommand command);
 
@@ -32,7 +30,6 @@ public interface DeviceUseCase {
      * @param command the update device command.
      * @return the updated device result.
      * @throws DeviceNotFoundException if the device is not found.
-     * @throws DeviceAlreadyExistsException if the updated serial number or IMEI already exists for another device.
      */
     DeviceResult update(@Valid UpdateDeviceCommand command);
 
@@ -46,9 +43,9 @@ public interface DeviceUseCase {
     DeviceResult getById(@Valid GetDeviceByIdCommand command);
 
     /**
-     * Retrieves a one-based page of devices.
+     * Retrieves a one-based pageNumber of devices.
      *
-     * @param command the page request command.
+     * @param command the pageNumber request command.
      * @return paginated device result.
      */
     PageResult<DeviceResult> getPage(@Valid GetDevicePageCommand command);

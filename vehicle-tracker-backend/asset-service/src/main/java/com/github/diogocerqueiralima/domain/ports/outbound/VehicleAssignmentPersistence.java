@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.ports.outbound;
 
 import com.github.diogocerqueiralima.domain.assignments.VehicleAssignment;
+import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -38,5 +39,17 @@ public interface VehicleAssignmentPersistence {
      * @return active assignment when found, otherwise empty.
      */
     Optional<VehicleAssignment> findActiveByDeviceId(UUID deviceId);
+
+    /**
+     *
+     * Finds the history of assignments for a specific vehicle and user, returning a paginated result.
+     *
+     * @param vehicleId The unique identifier of the vehicle for which to retrieve the assignment history.
+     * @param userId The unique identifier of the user who owns the vehicle.
+     * @param pageNumber one-based pageNumber number.
+     * @param pageSize amount of items in the pageNumber.
+     * @return A paginated list of {@link VehicleAssignment} instances representing the assignment history of the specified vehicle for the given user.
+     */
+    Page<VehicleAssignment> findHistory(UUID vehicleId, UUID userId, int pageNumber, int pageSize);
 
 }

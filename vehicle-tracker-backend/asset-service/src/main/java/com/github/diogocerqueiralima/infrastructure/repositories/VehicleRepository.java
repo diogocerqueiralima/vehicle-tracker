@@ -35,10 +35,10 @@ public interface VehicleRepository extends JpaRepository<VehicleEntity, UUID> {
 	Optional<VehicleEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
 
 	/**
-	 * Retrieves a page of vehicles by owner id.
+	 * Retrieves a pageNumber of vehicles by owner id.
 	 *
 	 * @param ownerId owner identifier.
-	 * @param pageable page request.
+	 * @param pageable pageNumber request.
 	 * @return paginated vehicles from the owner.
 	 */
 	Page<VehicleEntity> findAllByOwnerId(UUID ownerId, Pageable pageable);

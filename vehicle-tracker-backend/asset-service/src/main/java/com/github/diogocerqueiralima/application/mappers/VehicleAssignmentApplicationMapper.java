@@ -2,10 +2,12 @@ package com.github.diogocerqueiralima.application.mappers;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
+import com.github.diogocerqueiralima.application.results.VehicleAssignmentHistoryResult;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.domain.assignments.VehicleAssignment;
 import com.github.diogocerqueiralima.domain.assets.Device;
 import com.github.diogocerqueiralima.domain.assets.Vehicle;
+import org.springframework.data.domain.Page;
 
 import java.time.Instant;
 
@@ -93,6 +95,25 @@ public final class VehicleAssignmentApplicationMapper {
                 command.removalReason(),
                 activeAssignment.getInstalledBy(),
                 activeAssignment.getNotes()
+        );
+    }
+
+    /**
+     *
+     * Converts a paginated list of domain vehicle assignments into an application result contract.
+     *
+     * @param page paginated list of domain vehicle assignments.
+     * @return paginated result contract with the list of vehicle assignment results and pagination metadata.
+     */
+    public static VehicleAssignmentHistoryResult toResult(Page<VehicleAssignment> page) {
+        return new VehicleAssignmentHistoryResult(
+                page.get()
+                        .map(VehicleAssignmentApplicationMapper::toResult)
+                        .toList(),
+                page.getNumber() + 1,
+                page.getSize(),
+                page.getTotalPages(),
+                page.getTotalElements()
         );
     }
 
