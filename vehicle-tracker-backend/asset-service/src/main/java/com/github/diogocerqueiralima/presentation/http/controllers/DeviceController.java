@@ -13,6 +13,12 @@ import com.github.diogocerqueiralima.presentation.http.dto.DeviceDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UpdateDeviceRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.mappers.DeviceHttpMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,6 +38,8 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
 /**
  * REST endpoints for device operations.
  */
+@Tag(name = "Devices", description = "Operations related to devices, including creation, update, and retrieval.")
+@SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
 @RestController
 public class DeviceController {
 
@@ -49,6 +57,29 @@ public class DeviceController {
      * @param request request payload for device creation.
      * @return created device wrapped in an API response.
      */
+    @Operation(
+            summary = "Creates a new device.",
+            description = """
+                    Accepts a request payload containing device details, creates a new device in the system,
+                    and returns the created device information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successfully created a new device"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The device already exists or the request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the device creation request"
+                    )
+            }
+    )
     @PostMapping(DEVICES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> create(@RequestBody CreateDeviceRequestDTO request) {
 
@@ -73,6 +104,33 @@ public class DeviceController {
      * @param request request payload for device update.
      * @return updated device wrapped in an API response.
      */
+    @Operation(
+            summary = "Updates an existing device.",
+            description = """
+                    Accepts a request payload containing updated device details, updates the existing device in the system,
+                    and returns the updated device information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully updated a new device"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The device with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the device update request"
+                    )
+            }
+    )
     @PutMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> update(
             @PathVariable(name = DEVICE_ID_PARAM) UUID id,
@@ -99,6 +157,33 @@ public class DeviceController {
      * @param id device identifier.
      * @return device wrapped in an API response.
      */
+    @Operation(
+            summary = "Retrieves a device by id.",
+            description = """
+                    Accepts a device identifier, retrieves the corresponding device from the system,
+                    and returns the device information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully retrieved the device"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The device identifier is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The device with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the device retrieval request"
+                    )
+            }
+    )
     @GetMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> getById(
             @PathVariable(name = DEVICE_ID_PARAM) UUID id,
@@ -132,6 +217,29 @@ public class DeviceController {
      * @param pageSize amount of items requested per pageNumber.
      * @return paged devices wrapped in an API response.
      */
+    @Operation(
+            summary = "Retrieves a one-based pageNumber of devices.",
+            description = """
+                    Accepts pagination parameters, retrieves a paginated list of devices from the system,
+                    and returns the paginated device information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully retrieved the paginated list of devices"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The pagination parameters are invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the device pagination request"
+                    )
+            }
+    )
     @GetMapping(DEVICES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> getPage(
             @AuthenticationPrincipal JwtAuthenticationToken authentication,

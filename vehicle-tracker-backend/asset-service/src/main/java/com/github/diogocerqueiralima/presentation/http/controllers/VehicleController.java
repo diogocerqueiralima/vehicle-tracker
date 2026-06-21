@@ -13,6 +13,12 @@ import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.VehicleDTO;
 import com.github.diogocerqueiralima.presentation.http.mappers.VehicleHttpMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -31,6 +37,8 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
 /**
  * REST endpoints for vehicle operations.
  */
+@Tag(name = "Vehicles", description = "Operations related to vehicles, including creation, update, and retrieval.")
+@SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
 @RestController
 public class VehicleController {
 
@@ -46,6 +54,29 @@ public class VehicleController {
      * @param request request payload for vehicle creation.
      * @return created vehicle wrapped in an API response.
      */
+    @Operation(
+            summary = "Creates a new vehicle.",
+            description = """
+                    Accepts a request payload containing vehicle details, creates a new vehicle in the system,
+                    and returns the created vehicle information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successfully created a new vehicle"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The vehicle already exists or the request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the vehicle creation request"
+                    )
+            }
+    )
     @PostMapping(VEHICLES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> create(
             JwtAuthenticationToken authentication,
@@ -76,6 +107,33 @@ public class VehicleController {
      * @param request request payload for vehicle update.
      * @return updated vehicle wrapped in an API response.
      */
+    @Operation(
+            summary = "Updates an existing vehicle.",
+            description = """
+                    Accepts a request payload containing updated vehicle details, updates the existing vehicle in the system,
+                    and returns the updated vehicle information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully updated the vehicle"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The vehicle with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the vehicle update request"
+                    )
+            }
+    )
     @PutMapping(VEHICLES_ID_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> update(
             @PathVariable(name = VEHICLE_ID_PARAM) UUID id,
@@ -106,6 +164,33 @@ public class VehicleController {
      * @param id vehicle identifier.
      * @return vehicle wrapped in an API response.
      */
+    @Operation(
+            summary = "Retrieves a vehicle by id.",
+            description = """
+                    Accepts a vehicle identifier, retrieves the corresponding vehicle from the system,
+                    and returns the vehicle information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully retrieved the vehicle"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The vehicle identifier is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The vehicle with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the vehicle retrieval request"
+                    )
+            }
+    )
     @GetMapping(VEHICLES_ID_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> getById(
             @PathVariable(name = VEHICLE_ID_PARAM) UUID id,
@@ -136,6 +221,29 @@ public class VehicleController {
      * @param pageSize amount of items requested per pageNumber.
      * @return paged vehicles wrapped in an API response.
      */
+    @Operation(
+            summary = "Retrieves a one-based pageNumber of vehicles.",
+            description = """
+                    Accepts pagination parameters, retrieves a paginated list of vehicles from the system,
+                    and returns the paginated vehicle information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully retrieved the paginated list of vehicles"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The pagination parameters are invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the vehicle pagination request"
+                    )
+            }
+    )
     @GetMapping(VEHICLES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> getPage(
             JwtAuthenticationToken authentication,

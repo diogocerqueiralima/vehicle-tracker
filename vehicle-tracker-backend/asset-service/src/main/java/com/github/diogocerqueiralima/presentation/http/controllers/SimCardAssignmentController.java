@@ -9,6 +9,12 @@ import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToSimCard
 import com.github.diogocerqueiralima.presentation.http.dto.SimCardAssignmentDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UnassignDeviceFromSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.mappers.SimCardAssignmentHttpMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -22,6 +28,8 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
 /**
  * REST endpoints for SIM card assignment operations.
  */
+@Tag(name = "SIM Card Assignments", description = "Operations related to SIM card assignments, including assigning and unassigning devices to SIM cards.")
+@SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
 @RestController
 public class SimCardAssignmentController {
 
@@ -37,6 +45,33 @@ public class SimCardAssignmentController {
      * @param request request payload for assignment.
      * @return created assignment wrapped in an API response.
      */
+    @Operation(
+            summary = "Assigns a device to a SIM card.",
+            description = """
+                    Accepts a request payload containing the device identifier, assigns the device to the specified SIM card,
+                    and returns the created assignment information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successfully assigned the device to the SIM card"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The assignment failed or the request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The SIM card or device with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the assignment request"
+                    )
+            }
+    )
     @PostMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> assignDeviceToSimCard(
             JwtAuthenticationToken authentication,
@@ -71,6 +106,33 @@ public class SimCardAssignmentController {
      * @param request request payload for unassignment.
      * @return updated assignment wrapped in an API response.
      */
+    @Operation(
+            summary = "Unassigns a device from a SIM card.",
+            description = """
+                    Accepts a request payload containing the device identifier, closes the active assignment between the device
+                    and the specified SIM card, and returns the updated assignment information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully unassigned the device from the SIM card"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The unassignment failed or the request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The SIM card or active assignment with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the unassignment request"
+                    )
+            }
+    )
     @DeleteMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> unassignDeviceFromSimCard(
             JwtAuthenticationToken authentication,

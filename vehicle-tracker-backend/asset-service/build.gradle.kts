@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.spring.boot.starter.oauth2.resource.server)
     implementation(libs.postgresql)
     implementation(libs.protobuf.java.util)
+    implementation(libs.springdoc)
     implementation(platform(libs.spring.grpc.dependencies))
 
     testImplementation(libs.spring.boot.starter.test)

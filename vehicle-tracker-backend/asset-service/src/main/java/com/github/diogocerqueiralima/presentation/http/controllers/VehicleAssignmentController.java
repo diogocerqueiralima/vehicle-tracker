@@ -8,6 +8,12 @@ import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCa
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.presentation.http.dto.*;
 import com.github.diogocerqueiralima.presentation.http.mappers.VehicleAssignmentHttpMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -20,6 +26,8 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
 /**
  * REST endpoints for vehicle assignment operations.
  */
+@Tag(name = "Vehicle Assignments", description = "Operations related to vehicle assignments, including assigning and unassigning devices to vehicles.")
+@SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
 @RestController
 public class VehicleAssignmentController {
 
@@ -35,6 +43,33 @@ public class VehicleAssignmentController {
      * @param request request payload for assignment.
      * @return created assignment wrapped in an API response.
      */
+    @Operation(
+            summary = "Assigns a device to a vehicle.",
+            description = """
+                    Accepts a request payload containing the device identifier, assigns the device to the specified vehicle,
+                    and returns the created assignment information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successfully assigned the device to the vehicle"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The assignment failed or the request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The vehicle or device with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the assignment request"
+                    )
+            }
+    )
     @PostMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> assignDeviceToVehicle(
             JwtAuthenticationToken authentication,
@@ -67,6 +102,33 @@ public class VehicleAssignmentController {
      * @param request request payload for unassignment.
      * @return updated assignment wrapped in an API response.
      */
+    @Operation(
+            summary = "Unassigns a device from a vehicle.",
+            description = """
+                    Accepts a request payload containing the device identifier, closes the active assignment between the device
+                    and the specified vehicle, and returns the updated assignment information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully unassigned the device from the vehicle"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The unassignment failed or the request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The vehicle or active assignment with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the unassignment request"
+                    )
+            }
+    )
     @DeleteMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> unassignDeviceFromVehicle(
             JwtAuthenticationToken authentication,
@@ -91,6 +153,41 @@ public class VehicleAssignmentController {
         return ResponseEntity.ok(new ApiResponseDTO<>("Device unassigned from vehicle successfully.", responseData));
     }
 
+    /**
+     * Retrieves the assignment history for a vehicle.
+     *
+     * @param vehicleId vehicle identifier.
+     * @param page page number using one-based indexing.
+     * @param size amount of items requested per page.
+     * @return paged vehicle assignment history wrapped in an API response.
+     */
+    @Operation(
+            summary = "Retrieves the assignment history for a vehicle.",
+            description = """
+                    Accepts a vehicle identifier and pagination parameters, retrieves the paginated assignment history
+                    for the specified vehicle, and returns the paginated assignment information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully retrieved the vehicle assignment history"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The pagination parameters are invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The vehicle with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the assignment history request"
+                    )
+            }
+    )
     @GetMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<VehicleAssignmentDTO>>> getVehicleAssignmentHistory(
             JwtAuthenticationToken authentication,

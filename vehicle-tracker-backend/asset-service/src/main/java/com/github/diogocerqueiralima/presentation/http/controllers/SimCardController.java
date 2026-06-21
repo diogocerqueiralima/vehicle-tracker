@@ -11,6 +11,12 @@ import com.github.diogocerqueiralima.presentation.http.dto.CreateSimCardRequestD
 import com.github.diogocerqueiralima.presentation.http.dto.SimCardDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UpdateSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.mappers.SimCardHttpMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -29,6 +35,8 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
 /**
  * REST endpoints for SIM card operations.
  */
+@Tag(name = "SIM Cards", description = "Operations related to SIM cards, including creation, update, retrieval, and deletion.")
+@SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
 @RestController
 public class SimCardController {
 
@@ -44,6 +52,29 @@ public class SimCardController {
      * @param request request payload for SIM card creation.
      * @return created SIM card wrapped in an API response.
      */
+    @Operation(
+            summary = "Creates a new sim card.",
+            description = """
+                    Accepts a request payload containing sim card details, creates a new sim card in the system,
+                    and returns the created sim card information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successfully created a new sim card"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The sim card already exists or the request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the sim card creation request"
+                    )
+            }
+    )
     @PostMapping(SIM_CARDS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> create(
             JwtAuthenticationToken authentication,
@@ -74,6 +105,33 @@ public class SimCardController {
      * @param request request payload for SIM card update.
      * @return updated SIM card wrapped in an API response.
      */
+    @Operation(
+            summary = "Updates an existing sim card.",
+            description = """
+                    Accepts a request payload containing updated sim card details, updates the existing sim card in the system,
+                    and returns the updated sim card information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully updated a new sim card"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The request payload is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The sim card with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the sim card update request"
+                    )
+            }
+    )
     @PutMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> update(
             @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
@@ -102,6 +160,33 @@ public class SimCardController {
      * @param id SIM card id.
      * @return SIM card wrapped in an API response.
      */
+    @Operation(
+            summary = "Retrieves a sim card by id.",
+            description = """
+                    Accepts a sim card identifier, retrieves the corresponding sim card from the system,
+                    and returns the sim card information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully retrieved the sim card"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The sim card identifier is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The sim card with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the sim card retrieval request"
+                    )
+            }
+    )
     @GetMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> getById(
             @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
@@ -129,6 +214,33 @@ public class SimCardController {
      * @param id SIM card id.
      * @return success response with no payload.
      */
+    @Operation(
+            summary = "Deletes a sim card by id.",
+            description = """
+                    Accepts a sim card identifier, deletes the corresponding sim card from the system,
+                    and returns a success response with no payload.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully deleted the sim card"
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The sim card identifier is invalid"
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The sim card with the specified ID was not found"
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the sim card deletion request"
+                    )
+            }
+    )
     @DeleteMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(
             @PathVariable(SIM_CARD_ID_PARAM) UUID id,
