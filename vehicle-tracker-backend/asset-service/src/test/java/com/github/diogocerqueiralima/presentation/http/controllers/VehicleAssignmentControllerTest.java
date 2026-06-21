@@ -1,12 +1,15 @@
 package com.github.diogocerqueiralima.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
+import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.domain.assignments.VehicleRemovalReason;
 import com.github.diogocerqueiralima.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToVehicleRequestDTO;
+import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UnassignDeviceFromVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.VehicleAssignmentDTO;
 import org.junit.jupiter.api.DisplayName;
@@ -141,6 +144,60 @@ class VehicleAssignmentControllerTest {
         assertThat(response.getBody().data().removalReason()).isEqualTo(VehicleRemovalReason.RETIRED);
         assertThat(response.getBody().data().active()).isFalse();
         assertThat(commandCaptor.getValue().unassignedBy()).isEqualTo(userId);
+    }
+
+    @Test
+    @DisplayName("Should return paginated vehicle assignment history with ok response")
+    void should_return_paginated_vehicle_assignment_history_with_ok_response() {
+
+        UUID userId = UUID.randomUUID();
+        UUID vehicleId = UUID.randomUUID();
+        UUID deviceId = UUID.randomUUID();
+        UUID assignedBy = UUID.randomUUID();
+        Instant assignedAt = Instant.parse("2026-03-20T12:00:00Z");
+
+        VehicleAssignmentResult assignment = new VehicleAssignmentResult(
+                deviceId,
+                vehicleId,
+                assignedAt,
+                assignedBy,
+                null,
+                null,
+                null,
+                null,
+                null,
+                true
+        );
+
+        PageResult<VehicleAssignmentResult> pageResult = new PageResult<>(1, 10, 1, 1L, List.of(assignment));
+
+        when(vehicleAssignmentUseCase.getVehicleAssignmentHistory(any())).thenReturn(pageResult);
+
+        ResponseEntity<ApiResponseDTO<PageDTO<VehicleAssignmentDTO>>> response = vehicleAssignmentController.getVehicleAssignmentHistory(
+                buildAuthentication(userId),
+                vehicleId,
+                1,
+                10
+        );
+
+        ArgumentCaptor<GetVehicleAssignmentHistoryCommand> commandCaptor = ArgumentCaptor.forClass(GetVehicleAssignmentHistoryCommand.class);
+        verify(vehicleAssignmentUseCase).getVehicleAssignmentHistory(commandCaptor.capture());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Vehicle assignment history fetched successfully.");
+        assertThat(response.getBody().data()).isNotNull();
+        assertThat(response.getBody().data().pageNumber()).isEqualTo(1);
+        assertThat(response.getBody().data().pageSize()).isEqualTo(10);
+        assertThat(response.getBody().data().totalPages()).isEqualTo(1);
+        assertThat(response.getBody().data().totalElements()).isEqualTo(1L);
+        assertThat(response.getBody().data().data()).hasSize(1);
+        assertThat(response.getBody().data().data().getFirst().deviceId()).isEqualTo(deviceId);
+        assertThat(response.getBody().data().data().getFirst().vehicleId()).isEqualTo(vehicleId);
+        assertThat(commandCaptor.getValue().vehicleId()).isEqualTo(vehicleId);
+        assertThat(commandCaptor.getValue().userId()).isEqualTo(userId);
+        assertThat(commandCaptor.getValue().pageNumber()).isEqualTo(1);
+        assertThat(commandCaptor.getValue().pageSize()).isEqualTo(10);
     }
 
     private JwtAuthenticationToken buildAuthentication(UUID userId) {
