@@ -9,6 +9,15 @@ import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToSimCard
 import com.github.diogocerqueiralima.presentation.http.dto.SimCardAssignmentDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UnassignDeviceFromSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.mappers.SimCardAssignmentHttpMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -22,6 +31,22 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
 /**
  * REST endpoints for SIM card assignment operations.
  */
+@Tag(name = "SIM Card Assignments", description = "Operations related to SIM card assignments, including assigning and unassigning devices to SIM cards.")
+@SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
+@ApiResponses(
+        value = {
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Missing or invalid JWT bearer token",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "The authenticated user does not have permission to perform this operation",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                )
+        }
+)
 @RestController
 public class SimCardAssignmentController {
 
@@ -37,10 +62,41 @@ public class SimCardAssignmentController {
      * @param request request payload for assignment.
      * @return created assignment wrapped in an API response.
      */
+    @Operation(
+            summary = "Assigns a device to a SIM card.",
+            description = """
+                    Accepts a request payload containing the device identifier, assigns the device to the specified SIM card,
+                    and returns the created assignment information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successfully assigned the device to the SIM card",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device assigned to SIM card successfully.\", \"data\": {\"device_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"sim_card_id\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\", \"assigned_at\": \"2024-03-10T14:00:00Z\", \"assigned_by\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\", \"unassigned_at\": null, \"unassigned_by\": null, \"removal_reason\": null, \"active\": true}}"))
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The assignment failed or the request payload is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The SIM card or device with the specified ID was not found",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the assignment request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                    )
+            }
+    )
     @PostMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> assignDeviceToSimCard(
             JwtAuthenticationToken authentication,
-            @PathVariable(SIM_CARD_ID_PARAM) UUID simCardId,
+            @PathVariable @Parameter(description = "Unique identifier of the SIM card to assign a device to.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true) UUID simCardId,
             @RequestBody AssignDeviceToSimCardRequestDTO request
     ) {
 
@@ -71,10 +127,41 @@ public class SimCardAssignmentController {
      * @param request request payload for unassignment.
      * @return updated assignment wrapped in an API response.
      */
+    @Operation(
+            summary = "Unassigns a device from a SIM card.",
+            description = """
+                    Accepts a request payload containing the device identifier, closes the active assignment between the device
+                    and the specified SIM card, and returns the updated assignment information in the response.
+                    """
+    )
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successfully unassigned the device from the SIM card",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device unassigned from SIM card successfully.\", \"data\": {\"device_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"sim_card_id\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\", \"assigned_at\": \"2024-03-10T14:00:00Z\", \"assigned_by\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\", \"unassigned_at\": null, \"unassigned_by\": null, \"removal_reason\": null, \"active\": true}}"))
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "The unassignment failed or the request payload is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "The SIM card or active assignment with the specified ID was not found",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "An unexpected error occurred while processing the unassignment request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                    )
+            }
+    )
     @DeleteMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> unassignDeviceFromSimCard(
             JwtAuthenticationToken authentication,
-            @PathVariable(SIM_CARD_ID_PARAM) UUID simCardId,
+            @PathVariable @Parameter(description = "Unique identifier of the SIM card to unassign a device from.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true) UUID simCardId,
             @RequestBody UnassignDeviceFromSimCardRequestDTO request
     ) {
 

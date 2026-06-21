@@ -1,6 +1,8 @@
 package com.github.diogocerqueiralima.presentation.http.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
 /**
@@ -13,11 +15,22 @@ import java.util.List;
  * @param data pageNumber content.
  * @param <T> item type.
  */
+@Schema(description = "Generic paginated response payload.")
 public record PageDTO<T>(
-        @JsonProperty("page_number") int pageNumber,
-        @JsonProperty("page_size") int pageSize,
-        @JsonProperty("total_pages") int totalPages,
-        @JsonProperty("total_elements") long totalElements,
-        @JsonProperty("data") List<T> data
-) {}
 
+        @Schema(description = "Current page number using one-based indexing.", example = "1")
+        @JsonProperty("page_number") int pageNumber,
+
+        @Schema(description = "Number of items per page.", example = "10")
+        @JsonProperty("page_size") int pageSize,
+
+        @Schema(description = "Total number of pages available.", example = "5")
+        @JsonProperty("total_pages") int totalPages,
+
+        @Schema(description = "Total number of elements matching the query.", example = "42")
+        @JsonProperty("total_elements") long totalElements,
+
+        @Schema(description = "List of items in the current page.")
+        @JsonProperty("data") List<T> data
+
+) {}
