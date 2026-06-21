@@ -95,14 +95,14 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
             throw new DeviceNotFoundException(deviceId);
         }
 
-        // 2. Creates the updated assignment aggregate with unassignment metadata.
+        // 4. Creates the updated assignment aggregate with unassignment metadata.
         VehicleAssignment assignmentToSave = VehicleAssignmentApplicationMapper.toDomain(
                 command,
                 activeAssignment,
                 Instant.now()
         );
 
-        // 3. Persists the closed assignment and maps it to the application output contract.
+        // 5. Persists the closed assignment and maps it to the application output contract.
         VehicleAssignment savedAssignment = vehicleAssignmentPersistence.save(assignmentToSave);
         return VehicleAssignmentApplicationMapper.toResult(savedAssignment);
     }

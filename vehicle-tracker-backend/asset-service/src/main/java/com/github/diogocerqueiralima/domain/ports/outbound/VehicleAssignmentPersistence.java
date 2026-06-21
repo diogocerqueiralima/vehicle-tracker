@@ -46,7 +46,7 @@ public interface VehicleAssignmentPersistence {
      *
      * @param vehicleId The unique identifier of the vehicle for which to retrieve the assignment history.
      * @param userId The unique identifier of the user who owns the vehicle.
-     * @param pageNumber one-based pageNumber number.
+     * @param pageNumber zero-based pageNumber number.
      * @param pageSize amount of items in the pageNumber.
      * @return A paginated list of {@link VehicleAssignment} instances representing the assignment history of the specified vehicle for the given user.
      */
