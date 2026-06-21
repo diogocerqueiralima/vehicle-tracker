@@ -35,6 +35,6 @@ public record SimCardAssignmentDTO(
         @JsonProperty("removal_reason") SimCardRemovalReason removalReason,
 
         @Schema(description = "Whether this assignment is currently active.", example = "true")
-        boolean active
+        @JsonProperty("active") boolean active
 
 ) {}

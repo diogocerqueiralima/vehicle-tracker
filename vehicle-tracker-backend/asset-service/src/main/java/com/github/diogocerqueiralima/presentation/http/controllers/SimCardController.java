@@ -12,6 +12,9 @@ import com.github.diogocerqueiralima.presentation.http.dto.SimCardDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UpdateSimCardRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.mappers.SimCardHttpMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,6 +40,20 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
  */
 @Tag(name = "SIM Cards", description = "Operations related to SIM cards, including creation, update, retrieval, and deletion.")
 @SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
+@ApiResponses(
+        value = {
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Missing or invalid JWT bearer token",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "The authenticated user does not have permission to perform this operation",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                )
+        }
+)
 @RestController
 public class SimCardController {
 
@@ -63,15 +80,18 @@ public class SimCardController {
             value = {
                     @ApiResponse(
                             responseCode = "201",
-                            description = "Successfully created a new sim card"
+                            description = "Successfully created a new sim card",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"SIM card created successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"iccid\": \"8955100000000000001\", \"msisdn\": \"+351912345678\", \"imsi\": \"268010000000001\"}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The sim card already exists or the request payload is invalid"
+                            description = "The sim card already exists or the request payload is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the sim card creation request"
+                            description = "An unexpected error occurred while processing the sim card creation request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
@@ -116,24 +136,29 @@ public class SimCardController {
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully updated a new sim card"
+                            description = "Successfully updated the sim card",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"SIM card updated successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"iccid\": \"8955100000000000001\", \"msisdn\": \"+351912345678\", \"imsi\": \"268010000000001\"}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The request payload is invalid"
+                            description = "The request payload is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "The sim card with the specified ID was not found"
+                            description = "The sim card with the specified ID was not found",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the sim card update request"
+                            description = "An unexpected error occurred while processing the sim card update request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
     @PutMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> update(
+            @Parameter(description = "Unique identifier of the SIM card to update.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication,
             @RequestBody UpdateSimCardRequestDTO request
@@ -171,24 +196,29 @@ public class SimCardController {
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully retrieved the sim card"
+                            description = "Successfully retrieved the sim card",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"SIM card fetched successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"iccid\": \"8955100000000000001\", \"msisdn\": \"+351912345678\", \"imsi\": \"268010000000001\"}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The sim card identifier is invalid"
+                            description = "The sim card identifier is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "The sim card with the specified ID was not found"
+                            description = "The sim card with the specified ID was not found",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the sim card retrieval request"
+                            description = "An unexpected error occurred while processing the sim card retrieval request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
     @GetMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> getById(
+            @Parameter(description = "Unique identifier of the SIM card to retrieve.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication
     ) {
@@ -225,24 +255,29 @@ public class SimCardController {
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully deleted the sim card"
+                            description = "Successfully deleted the sim card",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"SIM card deleted successfully.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The sim card identifier is invalid"
+                            description = "The sim card identifier is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "The sim card with the specified ID was not found"
+                            description = "The sim card with the specified ID was not found",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the sim card deletion request"
+                            description = "An unexpected error occurred while processing the sim card deletion request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
     @DeleteMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(
+            @Parameter(description = "Unique identifier of the SIM card to delete.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(SIM_CARD_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication
     ) {

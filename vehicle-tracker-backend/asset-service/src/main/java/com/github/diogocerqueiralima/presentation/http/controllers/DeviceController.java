@@ -14,6 +14,9 @@ import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.UpdateDeviceRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.mappers.DeviceHttpMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,7 +24,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,6 +42,20 @@ import static com.github.diogocerqueiralima.presentation.http.config.Application
  */
 @Tag(name = "Devices", description = "Operations related to devices, including creation, update, and retrieval.")
 @SecurityRequirements(value = { @SecurityRequirement(name = "bearerAuth") })
+@ApiResponses(
+        value = {
+                @ApiResponse(
+                        responseCode = "401",
+                        description = "Missing or invalid JWT bearer token",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                ),
+                @ApiResponse(
+                        responseCode = "403",
+                        description = "The authenticated user does not have permission to perform this operation",
+                        content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
+                )
+        }
+)
 @RestController
 public class DeviceController {
 
@@ -68,15 +84,18 @@ public class DeviceController {
             value = {
                     @ApiResponse(
                             responseCode = "201",
-                            description = "Successfully created a new device"
+                            description = "Successfully created a new device",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device created successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"serial_number\": \"SN-00123456\", \"model\": \"TrackPro X200\", \"manufacturer\": \"Teltonika\", \"imei\": \"352099001761481\"}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The device already exists or the request payload is invalid"
+                            description = "The device already exists or the request payload is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the device creation request"
+                            description = "An unexpected error occurred while processing the device creation request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
@@ -115,24 +134,29 @@ public class DeviceController {
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully updated a new device"
+                            description = "Successfully updated the device",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device updated successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"serial_number\": \"SN-00123456\", \"model\": \"TrackPro X200\", \"manufacturer\": \"Teltonika\", \"imei\": \"352099001761481\"}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The request payload is invalid"
+                            description = "The request payload is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "The device with the specified ID was not found"
+                            description = "The device with the specified ID was not found",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the device update request"
+                            description = "An unexpected error occurred while processing the device update request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
     @PutMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> update(
+            @Parameter(description = "Unique identifier of the device to update.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = DEVICE_ID_PARAM) UUID id,
             @RequestBody UpdateDeviceRequestDTO request
     ) {
@@ -168,24 +192,29 @@ public class DeviceController {
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully retrieved the device"
+                            description = "Successfully retrieved the device",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device fetched successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"serial_number\": \"SN-00123456\", \"model\": \"TrackPro X200\", \"manufacturer\": \"Teltonika\", \"imei\": \"352099001761481\"}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The device identifier is invalid"
+                            description = "The device identifier is invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
-                            description = "The device with the specified ID was not found"
+                            description = "The device with the specified ID was not found",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the device retrieval request"
+                            description = "An unexpected error occurred while processing the device retrieval request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
     @GetMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> getById(
+            @Parameter(description = "Unique identifier of the device to retrieve.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = DEVICE_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication
     ) {
@@ -228,22 +257,27 @@ public class DeviceController {
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully retrieved the paginated list of devices"
+                            description = "Successfully retrieved the paginated list of devices",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Devices fetched successfully.\", \"data\": {\"page_number\": 1, \"page_size\": 10, \"total_pages\": 1, \"total_elements\": 1, \"data\": [{\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"serial_number\": \"SN-00123456\", \"model\": \"TrackPro X200\", \"manufacturer\": \"Teltonika\", \"imei\": \"352099001761481\"}]}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The pagination parameters are invalid"
+                            description = "The pagination parameters are invalid",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the device pagination request"
+                            description = "An unexpected error occurred while processing the device pagination request",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
     @GetMapping(DEVICES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> getPage(
-            @AuthenticationPrincipal JwtAuthenticationToken authentication,
+            JwtAuthenticationToken authentication,
+            @Parameter(description = "Page number using one-based indexing.", example = "1")
             @RequestParam(name = PAGE_NUMBER_PARAM, defaultValue = "1") int pageNumber,
+            @Parameter(description = "Number of devices per page.", example = "10")
             @RequestParam(name = PAGE_SIZE_PARAM, defaultValue = "10") int pageSize
     ) {
 
