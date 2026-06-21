@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.DEVICES_BASE_URI;
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.DEVICES_ID_URI;
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.DEVICE_PAGE_NUMBER_PARAM;
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.DEVICE_PAGE_SIZE_PARAM;
+import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.*;
 
 /**
  * REST endpoints for device operations.
@@ -78,7 +75,7 @@ public class DeviceController {
      */
     @PutMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> update(
-            @PathVariable UUID id,
+            @PathVariable(name = DEVICE_ID_PARAM) UUID id,
             @RequestBody UpdateDeviceRequestDTO request
     ) {
 
@@ -104,7 +101,7 @@ public class DeviceController {
      */
     @GetMapping(DEVICES_ID_URI)
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> getById(
-            @PathVariable UUID id,
+            @PathVariable(name = DEVICE_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication
     ) {
 
@@ -129,17 +126,17 @@ public class DeviceController {
     }
 
     /**
-     * Retrieves a one-based page of devices.
+     * Retrieves a one-based pageNumber of devices.
      *
-     * @param pageNumber page number using one-based indexing.
-     * @param pageSize amount of items requested per page.
+     * @param pageNumber pageNumber number using one-based indexing.
+     * @param pageSize amount of items requested per pageNumber.
      * @return paged devices wrapped in an API response.
      */
     @GetMapping(DEVICES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> getPage(
             @AuthenticationPrincipal JwtAuthenticationToken authentication,
-            @RequestParam(DEVICE_PAGE_NUMBER_PARAM) int pageNumber,
-            @RequestParam(DEVICE_PAGE_SIZE_PARAM) int pageSize
+            @RequestParam(name = PAGE_NUMBER_PARAM, defaultValue = "1") int pageNumber,
+            @RequestParam(name = PAGE_SIZE_PARAM, defaultValue = "10") int pageSize
     ) {
 
         // 1. Resolves the authenticated user id from Keycloak token subject.
@@ -148,7 +145,7 @@ public class DeviceController {
         // 2. Maps query params to application command.
         GetDevicePageCommand command = DeviceHttpMapper.toGetPageCommand(pageNumber, pageSize, userId);
 
-        // 3. Delegates retrieval of the page to the application layer.
+        // 3. Delegates retrieval of the pageNumber to the application layer.
         PageResult<DeviceResult> result = deviceUseCase.getPage(command);
 
         // 4. Converts application result to transport DTO.

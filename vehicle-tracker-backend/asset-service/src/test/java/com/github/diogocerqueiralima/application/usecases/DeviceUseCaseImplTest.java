@@ -279,7 +279,7 @@ class DeviceUseCaseImplTest {
     }
 
     @Test
-    @DisplayName("Should get device page when devices exist")
+    @DisplayName("Should get device pageNumber when devices exist")
     void should_get_device_page_when_devices_exist() {
 
         int pageNumber = 1;
@@ -304,7 +304,7 @@ class DeviceUseCaseImplTest {
 
         GetDevicePageCommand command = new GetDevicePageCommand(pageNumber, pageSize, userId);
 
-        when(devicePersistence.getPageByOwnerId(pageNumber, pageSize, userId)).thenReturn(devicePage);
+        when(devicePersistence.getPageByOwnerId(pageNumber - 1, pageSize, userId)).thenReturn(devicePage);
 
         PageResult<DeviceResult> result = deviceUseCase.getPage(command);
 
@@ -315,7 +315,7 @@ class DeviceUseCaseImplTest {
         assertThat(result.data()).hasSize(1);
         assertThat(result.data().getFirst().id()).isEqualTo(device.getId());
 
-        verify(devicePersistence).getPageByOwnerId(pageNumber, pageSize, userId);
+        verify(devicePersistence).getPageByOwnerId(pageNumber - 1, pageSize, userId);
     }
 
 }

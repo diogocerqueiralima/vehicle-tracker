@@ -64,12 +64,12 @@ class SimCardAssignmentControllerTest {
         when(simCardAssignmentUseCase.assignDeviceToSimCard(any())).thenReturn(result);
 
         AssignDeviceToSimCardRequestDTO request = new AssignDeviceToSimCardRequestDTO(
-                deviceId,
-                simCardId
+                deviceId
         );
 
         ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> response = simCardAssignmentController.assignDeviceToSimCard(
                 buildAuthentication(userId),
+                simCardId,
                 request
         );
 
@@ -111,12 +111,12 @@ class SimCardAssignmentControllerTest {
 
         UnassignDeviceFromSimCardRequestDTO request = new UnassignDeviceFromSimCardRequestDTO(
                 deviceId,
-                simCardId,
                 SimCardRemovalReason.UPGRADE
         );
 
         ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> response = simCardAssignmentController.unassignDeviceFromSimCard(
                 buildAuthentication(userId),
+                simCardId,
                 request
         );
 

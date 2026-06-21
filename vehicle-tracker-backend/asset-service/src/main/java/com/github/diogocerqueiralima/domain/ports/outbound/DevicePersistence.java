@@ -50,19 +50,19 @@ public interface DevicePersistence {
     boolean isOwner(UUID id, UUID ownerId);
 
     /**
-     * Retrieves a one-based page of devices.
+     * Retrieves a one-based pageNumber of devices.
      *
-     * @param pageNumber one-based page number.
-     * @param pageSize amount of items in the page.
+     * @param pageNumber one-based pageNumber number.
+     * @param pageSize amount of items in the pageNumber.
      * @return paginated devices.
      */
     Page<Device> getPage(int pageNumber, int pageSize);
 
     /**
-     * Retrieves a one-based page of devices constrained to an owner.
+     * Retrieves a one-based pageNumber of devices constrained to an owner.
      *
-     * @param pageNumber one-based page number.
-     * @param pageSize amount of items in the page.
+     * @param pageNumber one-based pageNumber number.
+     * @param pageSize amount of items in the pageNumber.
      * @param ownerId owner identifier used to scope the search.
      * @return paginated devices for the owner.
      */

@@ -50,19 +50,19 @@ public interface VehiclePersistence {
     boolean isOwner(UUID id, UUID ownerId);
 
     /**
-     * Retrieves a one-based page of vehicles.
+     * Retrieves a one-based pageNumber of vehicles.
      *
-     * @param pageNumber one-based page number.
-     * @param pageSize amount of items in the page.
+     * @param pageNumber one-based pageNumber number.
+     * @param pageSize amount of items in the pageNumber.
      * @return paginated vehicles.
      */
     Page<Vehicle> getPage(int pageNumber, int pageSize);
 
     /**
-     * Retrieves a one-based page of vehicles constrained to an owner.
+     * Retrieves a one-based pageNumber of vehicles constrained to an owner.
      *
-     * @param pageNumber one-based page number.
-     * @param pageSize amount of items in the page.
+     * @param pageNumber one-based pageNumber number.
+     * @param pageSize amount of items in the pageNumber.
      * @param ownerId owner identifier used to scope the search.
      * @return paginated vehicles for the owner.
      */

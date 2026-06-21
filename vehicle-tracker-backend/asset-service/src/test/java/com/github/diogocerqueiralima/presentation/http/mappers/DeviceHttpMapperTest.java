@@ -103,7 +103,7 @@ class DeviceHttpMapperTest {
     }
 
     @Test
-    @DisplayName("Should map query params to get page command")
+    @DisplayName("Should map query params to get pageNumber command")
     void should_map_query_params_to_get_page_command() {
         UUID userId = UUID.randomUUID();
 
@@ -115,7 +115,7 @@ class DeviceHttpMapperTest {
     }
 
     @Test
-    @DisplayName("Should map page result to page dto")
+    @DisplayName("Should map pageNumber result to pageNumber dto")
     void should_map_page_result_to_page_dto() {
 
         UUID id = UUID.randomUUID();

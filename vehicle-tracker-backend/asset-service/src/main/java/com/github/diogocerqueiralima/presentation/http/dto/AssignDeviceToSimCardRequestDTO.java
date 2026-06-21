@@ -10,10 +10,7 @@ import java.util.UUID;
 public record AssignDeviceToSimCardRequestDTO(
 
         @JsonProperty("device_id")
-        UUID deviceId,
-
-        @JsonProperty("sim_card_id")
-        UUID simCardId
+        UUID deviceId
 
 ) {}
 

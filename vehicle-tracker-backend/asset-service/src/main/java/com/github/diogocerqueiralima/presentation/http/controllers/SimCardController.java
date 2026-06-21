@@ -24,8 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.SIM_CARDS_BASE_URI;
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.SIM_CARDS_ID_URI;
+import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.*;
 
 /**
  * REST endpoints for SIM card operations.
@@ -77,7 +76,7 @@ public class SimCardController {
      */
     @PutMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> update(
-            @PathVariable UUID id,
+            @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication,
             @RequestBody UpdateSimCardRequestDTO request
     ) {
@@ -105,7 +104,7 @@ public class SimCardController {
      */
     @GetMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> getById(
-            @PathVariable UUID id,
+            @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication
     ) {
 
@@ -132,7 +131,7 @@ public class SimCardController {
      */
     @DeleteMapping(SIM_CARDS_ID_URI)
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(
-            @PathVariable UUID id,
+            @PathVariable(SIM_CARD_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication
     ) {
 

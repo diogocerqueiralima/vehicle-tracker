@@ -22,15 +22,16 @@ public final class SimCardAssignmentHttpMapper {
      * Builds an assignment command from an HTTP request payload.
      *
      * @param request request payload for creating a SIM card assignment.
+     * @param simCardId SIM card identifier from the request path.
      * @param assignedBy user identifier from the authentication context.
      * @return command consumed by the application layer.
      */
     public static AssignDeviceToSimCardCommand toAssignDeviceToSimCardCommand(
-            AssignDeviceToSimCardRequestDTO request, UUID assignedBy
+            AssignDeviceToSimCardRequestDTO request, UUID simCardId, UUID assignedBy
     ) {
         return new AssignDeviceToSimCardCommand(
                 request.deviceId(),
-                request.simCardId(),
+                simCardId,
                 assignedBy
         );
     }
@@ -60,16 +61,18 @@ public final class SimCardAssignmentHttpMapper {
      * Builds an unassignment command from an HTTP request payload.
      *
      * @param request request payload for closing a SIM card assignment.
+     * @param simCardId SIM card identifier from the request path.
      * @param unassignedBy user identifier from the authentication context.
      * @return command consumed by the application layer.
      */
     public static UnassignDeviceFromSimCardCommand toUnassignDeviceFromSimCardCommand(
             UnassignDeviceFromSimCardRequestDTO request,
+            UUID simCardId,
             UUID unassignedBy
     ) {
         return new UnassignDeviceFromSimCardCommand(
                 request.deviceId(),
-                request.simCardId(),
+                simCardId,
                 unassignedBy,
                 request.removalReason()
         );

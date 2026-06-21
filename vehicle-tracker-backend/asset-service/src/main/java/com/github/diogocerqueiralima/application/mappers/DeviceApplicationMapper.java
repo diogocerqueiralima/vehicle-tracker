@@ -91,8 +91,8 @@ public final class DeviceApplicationMapper {
         return new PageResult<>(
                 devicePageResult.getNumber() + 1,
                 devicePageResult.getSize(),
-                devicePageResult.getTotalElements(),
                 devicePageResult.getTotalPages(),
+                devicePageResult.getTotalElements(),
                 devicePageResult.stream()
                         .map(DeviceApplicationMapper::toResult)
                         .toList()

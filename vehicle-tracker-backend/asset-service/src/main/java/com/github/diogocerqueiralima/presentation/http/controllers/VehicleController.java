@@ -26,10 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.VEHICLES_BASE_URI;
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.VEHICLES_ID_URI;
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.VEHICLE_PAGE_NUMBER_PARAM;
-import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.VEHICLE_PAGE_SIZE_PARAM;
+import static com.github.diogocerqueiralima.presentation.http.config.ApplicationURIs.*;
 
 /**
  * REST endpoints for vehicle operations.
@@ -81,7 +78,7 @@ public class VehicleController {
      */
     @PutMapping(VEHICLES_ID_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> update(
-            @PathVariable UUID id,
+            @PathVariable(name = VEHICLE_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication,
             @RequestBody UpdateVehicleRequestDTO request
     ) {
@@ -111,7 +108,7 @@ public class VehicleController {
      */
     @GetMapping(VEHICLES_ID_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> getById(
-            @PathVariable UUID id,
+            @PathVariable(name = VEHICLE_ID_PARAM) UUID id,
             JwtAuthenticationToken authentication
     ) {
 
@@ -133,17 +130,17 @@ public class VehicleController {
     }
 
     /**
-     * Retrieves a one-based page of vehicles.
+     * Retrieves a one-based pageNumber of vehicles.
      *
-     * @param pageNumber page number using one-based indexing.
-     * @param pageSize amount of items requested per page.
+     * @param pageNumber pageNumber number using one-based indexing.
+     * @param pageSize amount of items requested per pageNumber.
      * @return paged vehicles wrapped in an API response.
      */
     @GetMapping(VEHICLES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> getPage(
             JwtAuthenticationToken authentication,
-            @RequestParam(VEHICLE_PAGE_NUMBER_PARAM) int pageNumber,
-            @RequestParam(VEHICLE_PAGE_SIZE_PARAM) int pageSize
+            @RequestParam(name = PAGE_NUMBER_PARAM, defaultValue = "1") int pageNumber,
+            @RequestParam(name = PAGE_SIZE_PARAM, defaultValue = "10") int pageSize
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
@@ -152,7 +149,7 @@ public class VehicleController {
         // 2. Maps query params to application command.
         GetVehiclePageCommand command = VehicleHttpMapper.toGetPageCommand(pageNumber, pageSize, userId);
 
-        // 3. Delegates retrieval of the page to the application layer.
+        // 3. Delegates retrieval of the pageNumber to the application layer.
         PageResult<VehicleResult> result = vehicleUseCase.getPage(command);
 
         // 4. Converts application result to transport DTO.

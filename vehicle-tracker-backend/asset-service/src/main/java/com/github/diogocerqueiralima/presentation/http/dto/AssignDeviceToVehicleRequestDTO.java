@@ -12,9 +12,6 @@ public record AssignDeviceToVehicleRequestDTO(
         @JsonProperty("device_id")
         UUID deviceId,
 
-        @JsonProperty("vehicle_id")
-        UUID vehicleId,
-
         @JsonProperty("installed_by")
         UUID installedBy,
 

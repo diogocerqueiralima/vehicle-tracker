@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**
- * Command payload used by the presentation layer to request a page of vehicles.
+ * Command payload used by the presentation layer to request a pageNumber of vehicles.
  */
 public record GetVehiclePageCommand(
 

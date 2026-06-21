@@ -199,7 +199,7 @@ class DeviceControllerTest {
     }
 
     @Test
-    @DisplayName("Should get device page and return ok response")
+    @DisplayName("Should get device pageNumber and return ok response")
     void should_get_device_page_and_return_ok_response() {
         UUID userId = UUID.randomUUID();
 
