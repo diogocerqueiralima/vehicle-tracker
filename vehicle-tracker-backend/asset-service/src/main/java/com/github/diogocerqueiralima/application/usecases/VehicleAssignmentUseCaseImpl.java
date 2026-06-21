@@ -8,7 +8,7 @@ import com.github.diogocerqueiralima.application.exceptions.DeviceNotFoundExcept
 import com.github.diogocerqueiralima.application.exceptions.VehicleAssignmentNotFoundException;
 import com.github.diogocerqueiralima.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.application.mappers.VehicleAssignmentApplicationMapper;
-import com.github.diogocerqueiralima.application.results.VehicleAssignmentHistoryResult;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.domain.ports.inbound.VehicleAssignmentUseCase;
 import com.github.diogocerqueiralima.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.domain.ports.outbound.VehicleAssignmentPersistence;
@@ -118,7 +118,7 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
     }
 
     @Override
-    public VehicleAssignmentHistoryResult getVehicleAssignmentHistory(GetVehicleAssignmentHistoryCommand command) {
+    public PageResult<VehicleAssignmentResult> getVehicleAssignmentHistory(GetVehicleAssignmentHistoryCommand command) {
 
         UUID vehicleId = command.vehicleId();
         UUID userId = command.userId();

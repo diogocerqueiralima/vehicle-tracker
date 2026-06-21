@@ -3,7 +3,7 @@ package com.github.diogocerqueiralima.presentation.http.mappers;
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
-import com.github.diogocerqueiralima.application.results.VehicleAssignmentHistoryResult;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.presentation.http.dto.AssignDeviceToVehicleRequestDTO;
 import com.github.diogocerqueiralima.presentation.http.dto.PageDTO;
@@ -104,13 +104,20 @@ public final class VehicleAssignmentHttpMapper {
         return new GetVehicleAssignmentHistoryCommand(vehicleId, userId, pageNumber, pageSize);
     }
 
-    public static PageDTO<VehicleAssignmentDTO> toPageDTO(VehicleAssignmentHistoryResult result) {
+    /**
+     *
+     * Builds a paginated DTO from an application page result.
+     *
+     * @param result the paginated result from the application layer containing a list of vehicle assignment results and pagination metadata.
+     * @return a paginated DTO containing the list of vehicle assignment DTOs and pagination metadata to be returned in the HTTP response.
+     */
+    public static PageDTO<VehicleAssignmentDTO> toPageDTO(PageResult<VehicleAssignmentResult> result) {
         return new PageDTO<>(
                 result.pageNumber(),
                 result.pageSize(),
                 result.totalPages(),
                 result.totalElements(),
-                result.assignments()
+                result.data()
                         .stream()
                         .map(VehicleAssignmentHttpMapper::toDTO)
                         .toList()

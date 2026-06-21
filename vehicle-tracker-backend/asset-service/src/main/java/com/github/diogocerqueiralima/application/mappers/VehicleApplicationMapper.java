@@ -93,8 +93,8 @@ public final class VehicleApplicationMapper {
         return new PageResult<>(
                 vehiclePageResult.getNumber() + 1,
                 vehiclePageResult.getSize(),
-                vehiclePageResult.getTotalElements(),
                 vehiclePageResult.getTotalPages(),
+                vehiclePageResult.getTotalElements(),
                 vehiclePageResult.stream()
                         .map(VehicleApplicationMapper::toResult)
                         .toList()

@@ -7,16 +7,16 @@ import java.util.List;
  *
  * @param pageNumber one-based pageNumber number.
  * @param pageSize pageNumber size requested.
- * @param totalElements total amount of matched elements.
  * @param totalPages total amount of pages.
+ * @param totalElements total amount of matched elements.
  * @param data pageNumber content.
  * @param <T> item type.
  */
 public record PageResult<T>(
         int pageNumber,
         int pageSize,
-        long totalElements,
         int totalPages,
+        long totalElements,
         List<T> data
 ) {}
 

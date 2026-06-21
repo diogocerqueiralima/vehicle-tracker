@@ -2,7 +2,7 @@ package com.github.diogocerqueiralima.application.mappers;
 
 import com.github.diogocerqueiralima.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.application.commands.UnassignDeviceFromVehicleCommand;
-import com.github.diogocerqueiralima.application.results.VehicleAssignmentHistoryResult;
+import com.github.diogocerqueiralima.application.results.PageResult;
 import com.github.diogocerqueiralima.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.domain.assignments.VehicleAssignment;
 import com.github.diogocerqueiralima.domain.assets.Device;
@@ -105,15 +105,15 @@ public final class VehicleAssignmentApplicationMapper {
      * @param page paginated list of domain vehicle assignments.
      * @return paginated result contract with the list of vehicle assignment results and pagination metadata.
      */
-    public static VehicleAssignmentHistoryResult toResult(Page<VehicleAssignment> page) {
-        return new VehicleAssignmentHistoryResult(
-                page.get()
-                        .map(VehicleAssignmentApplicationMapper::toResult)
-                        .toList(),
+    public static PageResult<VehicleAssignmentResult> toResult(Page<VehicleAssignment> page) {
+        return new PageResult(
                 page.getNumber() + 1,
                 page.getSize(),
                 page.getTotalPages(),
-                page.getTotalElements()
+                page.getTotalElements(),
+                page.get()
+                        .map(VehicleAssignmentApplicationMapper::toResult)
+                        .toList()
         );
     }
 
