@@ -1,16 +1,21 @@
 <resources>
     <string name="app_name">MyTracker</string>
-    <string name="welcome_message_title">Rastreie os seus carros em tempo real</string>
-    <string name="welcome_message_subtitle">Monitorize a localização dos seus veículos com facilidade e eficiência.</string>
-    <string name="get_started_button_label">Entrar na plataforma</string>
-    <string name="authentication_idle_title">Estamos a preparar tudo...</string>
-    <string name="authentication_idle_subtitle">Por favor, aguarde um momento.</string>
-    <string name="authentication_redirect_title">Estamos a finalizar...</string>
-    <string name="authentication_redirect_subtitle">Aguarde apenas mais um momento.</string>
-    <string name="authentication_success_title">Autenticado!</string>
-    <string name="authentication_success_subtitle">A sua conta foi autenticada com sucesso. A redirecioná-lo para a aplicação...</string>
-    <string name="authentication_error_title">Erro de autenticação</string>
-    <string name="authentication_error_subtitle">Ocorreu um erro ao tentar autenticar a sua conta. Por favor, tente novamente.</string>
-    <string name="authentication_cancelled_title">A autenticação foi cancelada.</string>
-    <string name="authentication_cancelled_subtitle">Estamos a redirecioná-lo para a página inicial...</string>
+    <string name="welcome_message_title">Track your vehicles in real-time</string>
+    <string name="welcome_message_subtitle">Monitor the location of your vehicles with ease and efficiency.</string>
+    <string name="get_started_button_label">Enter the platform</string>
+    <string name="authentication_idle_title">We\'re getting everything ready…</string>
+    <string name="authentication_idle_subtitle">Please wait a moment.</string>
+    <string name="authentication_redirect_title">We\'re finishing up…</string>
+    <string name="authentication_redirect_subtitle">Just a moment longer.</string>
+    <string name="authentication_success_title">Authenticated!</string>
+    <string name="authentication_success_subtitle">Your account was authenticated successfully. Redirecting you to the app…</string>
+    <string name="authentication_error_title">Authentication error</string>
+    <string name="authentication_error_subtitle">An error occurred while trying to authenticate your account. Please try again.</string>
+    <string name="authentication_cancelled_title">Authentication was cancelled.</string>
+    <string name="authentication_cancelled_subtitle">We\'re redirecting you to the home page…</string>
+    <string name="list_vehicles_title">My vehicles</string>
+    <plurals name="list_vehicles_subtitle">
+        <item quantity="one">You have %1$d vehicle</item>
+        <item quantity="other">You have %1$d vehicles</item>
+    </plurals>
 </resources>
