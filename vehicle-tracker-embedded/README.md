@@ -1,32 +1,39 @@
-# _Sample project_
+# Vehicle Tracker — Embedded Firmware
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+Firmware for the vehicle tracker hardware device, built with **ESP-IDF** and targeting the **ESP32** microcontroller. The device advertises itself over BLE and exposes a GATT configuration service that allows a mobile companion app to provision MQTT and GPS settings, as well as install device certificates.
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+## Requirements
 
+| Tool    | Version              |
+|---------|----------------------|
+| ESP-IDF | >= 4.1.0             |
+| CMake   | >= 3.16              |
+| NimBLE  | bundled with ESP-IDF |
 
-
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
-
-## Example folder contents
-
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
-
-Below is short explanation of remaining files in the project folder.
+## Project Structure
 
 ```
+vehicle-tracker-embedded/
 ├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
+└── main/
+    ├── main.c                          Entry point
+    ├── ble/
+    │   ├── ble_manager.h / .c          NimBLE initialisation & advertising
+    │   └── services/
+    │       └── configuration_service.h / .c   GATT configuration service
+    └── storage/
+        └── storage.h / .c             NVS read/write abstraction
 ```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+
+## Building and Flashing
+
+```bash
+# Set up the ESP-IDF environment (once per terminal session)
+. $IDF_PATH/export.sh
+
+# Build
+idf.py build
+
+# Flash and monitor
+idf.py -p /dev/ttyUSB0 flash monitor
+```
