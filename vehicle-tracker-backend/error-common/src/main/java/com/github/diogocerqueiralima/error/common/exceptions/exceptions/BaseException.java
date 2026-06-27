@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.asset.service.error.common.exceptions;
+package com.github.diogocerqueiralima.error.common.exceptions.exceptions;
 
 /**
  * Base exception class for the application. All custom exceptions should extend this class.

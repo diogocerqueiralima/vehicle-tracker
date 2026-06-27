@@ -15,7 +15,7 @@ import com.github.diogocerqueiralima.identity.service.domain.model.device.Device
 import com.github.diogocerqueiralima.identity.service.domain.ports.outbound.CertificateSigner;
 import com.github.diogocerqueiralima.identity.service.domain.ports.outbound.CertificateSigningRequestReader;
 import com.github.diogocerqueiralima.identity.service.domain.ports.outbound.DeviceProvider;
-import com.github.diogocerqueiralima.asset.service.error.common.exceptions.BadRequestException;
+import com.github.diogocerqueiralima.error.common.exceptions.exceptions.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

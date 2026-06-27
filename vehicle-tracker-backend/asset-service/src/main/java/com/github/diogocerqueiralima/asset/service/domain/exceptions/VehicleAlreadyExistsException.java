@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.domain.exceptions;
 
-import com.github.diogocerqueiralima.asset.service.error.common.exceptions.ConflictException;
+import com.github.diogocerqueiralima.error.common.exceptions.exceptions.ConflictException;
 
 /**
  * Exception thrown when attempting to persist a vehicle with a VIN or plate already in use.

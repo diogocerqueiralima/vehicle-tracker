@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.identity.service.domain.exceptions;
 
-import com.github.diogocerqueiralima.asset.service.error.common.exceptions.OperationFailedException;
+import com.github.diogocerqueiralima.error.common.exceptions.exceptions.OperationFailedException;
 
 import java.math.BigInteger;
 

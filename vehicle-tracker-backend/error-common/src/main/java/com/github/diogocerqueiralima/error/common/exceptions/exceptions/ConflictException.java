@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.asset.service.error.common.exceptions;
+package com.github.diogocerqueiralima.error.common.exceptions.exceptions;
 
 /**
  * Exception thrown when a conflict occurs, such as when trying to create a resource that already exists.

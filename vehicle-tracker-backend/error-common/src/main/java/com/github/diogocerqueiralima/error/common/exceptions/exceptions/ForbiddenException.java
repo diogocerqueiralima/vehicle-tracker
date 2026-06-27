@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.asset.service.error.common.exceptions;
+package com.github.diogocerqueiralima.error.common.exceptions.exceptions;
 
 /**
  * Exception thrown when a user does not have permission to access a resource or perform an action.
