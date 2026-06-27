@@ -63,7 +63,7 @@ public class ErrorController {
     @ExceptionHandler(OperationFailedException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleInternalServerError(OperationFailedException exception) {
 
-        String message = exception.getMessage() == null ? "Bad request" : exception.getMessage();
+        String message = exception.getMessage() == null ? "An unexpected error has occurred" : exception.getMessage();
 
         return ResponseEntity.internalServerError()
                 .body(new ApiResponseDTO<>(message, null));
