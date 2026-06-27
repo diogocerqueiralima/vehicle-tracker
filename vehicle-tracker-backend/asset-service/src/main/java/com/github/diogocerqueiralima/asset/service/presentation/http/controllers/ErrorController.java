@@ -1,12 +1,9 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.controllers;
 
-import com.github.diogocerqueiralima.asset.service.application.exceptions.*;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.SimCardAlreadyExistsException;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.SimCardAssignmentFailedException;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAlreadyExistsException;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAssignmentFailedException;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.ApiResponseDTO;
+import com.github.diogocerqueiralima.error.common.exceptions.ConflictException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
+import com.github.diogocerqueiralima.error.common.exceptions.OperationFailedException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -58,31 +55,28 @@ public class ErrorController {
     }
 
     /**
-     * Handles bad requests by the client.
+     * Handles operation failures.
      *
-     * @param exception bad request exception.
+     * @param exception operation failed exception.
      * @return bad request response.
      */
-    @ExceptionHandler({SimCardAssignmentFailedException.class, VehicleAssignmentFailedException.class})
-    public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(Exception exception) {
+    @ExceptionHandler(OperationFailedException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleOperationFailed(OperationFailedException exception) {
 
         String message = exception.getMessage() == null ? "Bad request" : exception.getMessage();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.badRequest()
                 .body(new ApiResponseDTO<>(message, null));
     }
 
     /**
-     *
      * Handles conflict errors when trying to create resources that already exist.
      *
      * @param exception conflict exception.
      * @return conflict response.
      */
-    @ExceptionHandler({
-            VehicleAlreadyExistsException.class, DeviceAlreadyExistsException.class, SimCardAlreadyExistsException.class,
-    })
-    public ResponseEntity<ApiResponseDTO<Void>> handleConflict(Exception exception) {
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleConflict(ConflictException exception) {
 
         String message = exception.getMessage() == null ? "Conflict" : exception.getMessage();
 
@@ -96,11 +90,8 @@ public class ErrorController {
      * @param exception not found exception.
      * @return not found response.
      */
-    @ExceptionHandler({
-            VehicleNotFoundException.class, DeviceNotFoundException.class, VehicleAssignmentNotFoundException.class,
-            SimCardNotFoundException.class, SimCardAssignmentNotFoundException.class
-    })
-    public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(Exception exception) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(NotFoundException exception) {
 
         String message = exception.getMessage() == null ? "Not found" : exception.getMessage();
 
