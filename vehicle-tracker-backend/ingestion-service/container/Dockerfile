@@ -8,6 +8,7 @@ COPY gradlew /app/gradlew
 COPY ingestion-service /app/ingestion-service
 COPY asset-service /app/asset-service
 COPY identity-service /app/identity-service
+COPY error-common /app/error-common
 COPY events /app/events
 COPY schema /app/schema
 

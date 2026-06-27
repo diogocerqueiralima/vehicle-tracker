@@ -9,6 +9,7 @@ COPY gradle /app/gradle
 COPY settings.gradle.kts /app/settings.gradle.kts
 COPY gradlew /app/gradlew
 COPY identity-service /app/identity-service
+COPY error-common /app/error-common
 COPY schema /app/schema
 COPY tpm/pkcs11.cfg /app/pkcs11.cfg
 
