@@ -62,16 +62,30 @@ public class ErrorController {
      * @param exception bad request exception.
      * @return bad request response.
      */
-    @ExceptionHandler({
-            VehicleAlreadyExistsException.class, DeviceAlreadyExistsException.class,
-            SimCardAlreadyExistsException.class, SimCardAssignmentFailedException.class,
-            VehicleAssignmentFailedException.class
-    })
+    @ExceptionHandler({SimCardAssignmentFailedException.class, VehicleAssignmentFailedException.class})
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(Exception exception) {
 
         String message = exception.getMessage() == null ? "Bad request" : exception.getMessage();
 
         return ResponseEntity.status(400)
+                .body(new ApiResponseDTO<>(message, null));
+    }
+
+    /**
+     *
+     * Handles conflict errors when trying to create resources that already exist.
+     *
+     * @param exception conflict exception.
+     * @return conflict response.
+     */
+    @ExceptionHandler({
+            VehicleAlreadyExistsException.class, DeviceAlreadyExistsException.class, SimCardAlreadyExistsException.class,
+    })
+    public ResponseEntity<ApiResponseDTO<Void>> handleConflict(Exception exception) {
+
+        String message = exception.getMessage() == null ? "Conflict" : exception.getMessage();
+
+        return ResponseEntity.status(409)
                 .body(new ApiResponseDTO<>(message, null));
     }
 
