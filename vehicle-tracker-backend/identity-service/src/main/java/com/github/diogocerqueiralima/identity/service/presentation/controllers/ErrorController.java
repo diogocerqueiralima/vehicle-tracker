@@ -25,7 +25,7 @@ public class ErrorController {
                 .body(new ApiResponseDTO<>(message, null));
     }
 
-    @ExceptionHandler({DeviceNotOwnedException.class, OperationFailedException.class})
+    @ExceptionHandler({DeviceNotOwnedException.class})
     public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(RuntimeException e) {
 
         String message = e.getMessage() == null ? "Bad request." : e.getMessage();
