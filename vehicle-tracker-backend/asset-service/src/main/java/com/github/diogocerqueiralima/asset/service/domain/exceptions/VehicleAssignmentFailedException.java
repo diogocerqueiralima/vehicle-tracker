@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.domain.exceptions;
 
-import com.github.diogocerqueiralima.error.common.exceptions.exceptions.OperationFailedException;
+import com.github.diogocerqueiralima.error.common.exceptions.OperationFailedException;
 
 import java.util.UUID;
 

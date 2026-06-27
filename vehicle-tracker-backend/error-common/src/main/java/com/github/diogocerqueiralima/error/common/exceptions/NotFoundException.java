@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.error.common.exceptions.exceptions;
+package com.github.diogocerqueiralima.error.common.exceptions;
 
 /**
  * Exception thrown when a requested resource is not found.

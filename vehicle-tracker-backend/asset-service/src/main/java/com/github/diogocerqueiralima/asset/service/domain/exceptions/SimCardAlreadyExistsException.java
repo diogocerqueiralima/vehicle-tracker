@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.domain.exceptions;
 
-import com.github.diogocerqueiralima.error.common.exceptions.exceptions.ConflictException;
+import com.github.diogocerqueiralima.error.common.exceptions.ConflictException;
 
 /**
  * Exception thrown when attempting to persist a SIM card with an ICCID, MSISDN or IMSI already in use.

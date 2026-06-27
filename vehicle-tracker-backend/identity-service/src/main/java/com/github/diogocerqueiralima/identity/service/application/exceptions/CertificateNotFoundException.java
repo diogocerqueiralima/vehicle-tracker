@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.identity.service.application.exceptions;
 
-import com.github.diogocerqueiralima.error.common.exceptions.exceptions.NotFoundException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 
 import java.math.BigInteger;
 

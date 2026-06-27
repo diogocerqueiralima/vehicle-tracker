@@ -3,7 +3,7 @@ package com.github.diogocerqueiralima.identity.service.infrastructure.adapters;
 import com.github.diogocerqueiralima.identity.service.domain.model.certificate.CertificateSigningRequest;
 import com.github.diogocerqueiralima.identity.service.domain.model.certificate.CertificateSubject;
 import com.github.diogocerqueiralima.identity.service.domain.ports.outbound.CertificateSigner;
-import com.github.diogocerqueiralima.error.common.exceptions.exceptions.OperationFailedException;
+import com.github.diogocerqueiralima.error.common.exceptions.OperationFailedException;
 import com.github.diogocerqueiralima.identity.service.presentation.config.ApplicationURIs;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;

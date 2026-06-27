@@ -2,7 +2,7 @@ package com.github.diogocerqueiralima.identity.service.presentation.controllers;
 
 import com.github.diogocerqueiralima.identity.service.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.identity.service.application.exceptions.DeviceNotOwnedException;
-import com.github.diogocerqueiralima.error.common.exceptions.exceptions.OperationFailedException;
+import com.github.diogocerqueiralima.error.common.exceptions.OperationFailedException;
 import com.github.diogocerqueiralima.identity.service.presentation.dto.ApiResponseDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

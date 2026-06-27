@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.error.common.exceptions.exceptions;
+package com.github.diogocerqueiralima.error.common.exceptions;
 
 /**
  * Exception thrown when an operation fails due to an unexpected error or condition.

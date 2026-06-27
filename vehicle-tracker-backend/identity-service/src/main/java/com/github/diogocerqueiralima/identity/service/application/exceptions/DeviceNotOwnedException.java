@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.identity.service.application.exceptions;
 
-import com.github.diogocerqueiralima.error.common.exceptions.exceptions.ForbiddenException;
+import com.github.diogocerqueiralima.error.common.exceptions.ForbiddenException;
 
 import java.util.UUID;
 
