@@ -55,17 +55,17 @@ public class ErrorController {
     }
 
     /**
-     * Handles operation failures.
+     * Handles internal server errors when an operation fails unexpectedly.
      *
      * @param exception operation failed exception.
      * @return bad request response.
      */
     @ExceptionHandler(OperationFailedException.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleOperationFailed(OperationFailedException exception) {
+    public ResponseEntity<ApiResponseDTO<Void>> handleInternalServerError(OperationFailedException exception) {
 
         String message = exception.getMessage() == null ? "Bad request" : exception.getMessage();
 
-        return ResponseEntity.badRequest()
+        return ResponseEntity.internalServerError()
                 .body(new ApiResponseDTO<>(message, null));
     }
 
