@@ -1,7 +1,7 @@
 package com.github.diogocerqueiralima.identity.service.presentation.controllers;
 
-import com.github.diogocerqueiralima.identity.service.application.exceptions.DeviceNotFoundException;
-import com.github.diogocerqueiralima.identity.service.application.exceptions.DeviceNotOwnedException;
+import com.github.diogocerqueiralima.error.common.exceptions.ForbiddenException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 import com.github.diogocerqueiralima.error.common.exceptions.OperationFailedException;
 import com.github.diogocerqueiralima.identity.service.presentation.dto.ApiResponseDTO;
 import jakarta.validation.ConstraintViolation;
@@ -26,17 +26,17 @@ public class ErrorController {
                 .body(new ApiResponseDTO<>(message, null));
     }
 
-    @ExceptionHandler({DeviceNotOwnedException.class})
-    public ResponseEntity<ApiResponseDTO<Void>> handleBadRequest(RuntimeException e) {
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleForbidden(ForbiddenException e) {
 
-        String message = e.getMessage() == null ? "Bad request." : e.getMessage();
+        String message = e.getMessage() == null ? "Forbidden." : e.getMessage();
 
-        return ResponseEntity.badRequest()
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ApiResponseDTO<>(message, null));
     }
 
-    @ExceptionHandler(DeviceNotFoundException.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(RuntimeException e) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(NotFoundException e) {
 
         String message = e.getMessage() == null ? "The requested resource was not found." : e.getMessage();
 
