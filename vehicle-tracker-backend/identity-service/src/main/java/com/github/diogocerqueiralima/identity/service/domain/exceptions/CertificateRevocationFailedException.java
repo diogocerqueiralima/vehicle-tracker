@@ -5,11 +5,11 @@ import com.github.diogocerqueiralima.error.common.exceptions.OperationFailedExce
 import java.math.BigInteger;
 
 /**
- * Exception thrown when an operation is attempted on a certificate that could not be revoked
+ * Exception thrown when a certificate revocation operation fails.
  */
-public class CertificateRevokedException extends OperationFailedException {
+public class CertificateRevocationFailedException extends OperationFailedException {
 
-    public CertificateRevokedException(BigInteger serialNumber) {
+    public CertificateRevocationFailedException(BigInteger serialNumber) {
         super("Certificate with serial number " + serialNumber + " could not be revoked.");
     }
 

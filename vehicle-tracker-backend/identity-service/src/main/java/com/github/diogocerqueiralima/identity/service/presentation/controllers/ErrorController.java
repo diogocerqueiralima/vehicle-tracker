@@ -11,9 +11,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Centralized HTTP exception mapping for the identity service.
+ */
 @RestControllerAdvice
 public class ErrorController {
 
+    /**
+     * Handles bean validation errors thrown by validated method parameters.
+     *
+     * @param e constraint violation exception.
+     * @return bad request response containing aggregated validation messages.
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleValidationException(ConstraintViolationException e) {
 
@@ -26,6 +35,12 @@ public class ErrorController {
                 .body(new ApiResponseDTO<>(message, null));
     }
 
+    /**
+     * Handles authorization failures such as ownership violations.
+     *
+     * @param e forbidden exception.
+     * @return forbidden response.
+     */
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleForbidden(ForbiddenException e) {
 
@@ -35,6 +50,12 @@ public class ErrorController {
                 .body(new ApiResponseDTO<>(message, null));
     }
 
+    /**
+     * Handles not-found requests.
+     *
+     * @param e not found exception.
+     * @return not found response.
+     */
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(NotFoundException e) {
 
@@ -44,6 +65,12 @@ public class ErrorController {
                 .body(new ApiResponseDTO<>(message, null));
     }
 
+    /**
+     * Handles operation failures caused by infrastructure or domain errors.
+     *
+     * @param e operation failed exception.
+     * @return internal server error response.
+     */
     @ExceptionHandler(OperationFailedException.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleInternalServerError(OperationFailedException e) {
 

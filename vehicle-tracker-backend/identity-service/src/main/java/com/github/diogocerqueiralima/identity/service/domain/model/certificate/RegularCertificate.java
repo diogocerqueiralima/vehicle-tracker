@@ -1,6 +1,6 @@
 package com.github.diogocerqueiralima.identity.service.domain.model.certificate;
 
-import com.github.diogocerqueiralima.identity.service.domain.exceptions.CertificateRevokedException;
+import com.github.diogocerqueiralima.identity.service.domain.exceptions.CertificateRevocationFailedException;
 import com.github.diogocerqueiralima.identity.service.domain.model.certificate.options.RevokeCertificateOptions;
 
 import java.math.BigInteger;
@@ -36,7 +36,7 @@ public class RegularCertificate extends AbstractCertificate {
     public Certificate revoke() {
 
         if (!options.validate()) {
-            throw new CertificateRevokedException(getSerialNumber());
+            throw new CertificateRevocationFailedException(getSerialNumber());
         }
 
         return new RegularCertificate(getSerialNumber(), getSubject(), getIssuedAt(), getExpiresAt(), true);
