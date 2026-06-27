@@ -1,0 +1,45 @@
+package com.github.diogocerqueiralima.ingestion.service.infrastructure.publishers;
+
+import com.github.diogocerqueiralima.ingestion.service.domain.model.Location;
+import com.github.diogocerqueiralima.ingestion.service.domain.ports.outbound.LocationPublisher;
+import com.github.diogocerqueiralima.asset.service.location.config.ApplicationConfig;
+import com.github.diogocerqueiralima.asset.service.location.ReceiveLocationEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.annotation.Import;
+import org.springframework.stereotype.Component;
+
+@Import(ApplicationConfig.class)
+@Component
+public class LocationPublisherImpl implements LocationPublisher {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(LocationPublisherImpl.class);
+
+    private final ApplicationConfig applicationConfig;
+    private final RabbitTemplate rabbitTemplate;
+
+    public LocationPublisherImpl(ApplicationConfig applicationConfig, RabbitTemplate rabbitTemplate) {
+        this.applicationConfig = applicationConfig;
+        this.rabbitTemplate = rabbitTemplate;
+    }
+
+    @Override
+    public void publish(Location location) {
+
+        LOGGER.info("Publishing location from device with id: {}", location.deviceId());
+
+        ReceiveLocationEvent event = ReceiveLocationEvent.newBuilder()
+                .timestamp(location.timestamp())
+                .latitude(location.latitude())
+                .longitude(location.longitude())
+                .altitude(location.altitude())
+                .speed(location.speed())
+                .course(location.course())
+                .deviceId(location.deviceId())
+                .build();
+
+        rabbitTemplate.convertAndSend("", applicationConfig.getLocationQueueName(), event);
+    }
+
+}

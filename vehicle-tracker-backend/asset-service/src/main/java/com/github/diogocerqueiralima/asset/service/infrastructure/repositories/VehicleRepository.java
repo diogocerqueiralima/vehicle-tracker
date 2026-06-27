@@ -1,0 +1,46 @@
+package com.github.diogocerqueiralima.asset.service.infrastructure.repositories;
+
+import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.VehicleEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Repository interface for managing {@link VehicleEntity} instances in the database.
+ */
+@Repository
+public interface VehicleRepository extends JpaRepository<VehicleEntity, UUID> {
+
+	/**
+	 *
+	 * Checks whether a vehicle with the provided id exists and is owned by the provided owner id.
+	 *
+	 * @param id vehicle identifier.
+	 * @param ownerId owner identifier.
+	 * @return true when the vehicle exists and is owned by the owner, otherwise false.
+	 */
+	boolean existsByIdAndOwnerId(UUID id, UUID ownerId);
+
+	/**
+	 * Finds a vehicle by id and owner id.
+	 *
+	 * @param id vehicle identifier.
+	 * @param ownerId owner identifier.
+	 * @return vehicle when owned by the informed owner.
+	 */
+	Optional<VehicleEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+	/**
+	 * Retrieves a pageNumber of vehicles by owner id.
+	 *
+	 * @param ownerId owner identifier.
+	 * @param pageable pageNumber request.
+	 * @return paginated vehicles from the owner.
+	 */
+	Page<VehicleEntity> findAllByOwnerId(UUID ownerId, Pageable pageable);
+
+}

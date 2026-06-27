@@ -14,6 +14,7 @@ repositories {
 dependencies {
 
     implementation(project(":schema"))
+    implementation(project(":error-common"))
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
