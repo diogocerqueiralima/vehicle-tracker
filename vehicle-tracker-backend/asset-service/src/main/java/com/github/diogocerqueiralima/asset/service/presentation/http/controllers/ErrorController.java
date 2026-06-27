@@ -9,6 +9,7 @@ import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAssi
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.ApiResponseDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -67,7 +68,7 @@ public class ErrorController {
 
         String message = exception.getMessage() == null ? "Bad request" : exception.getMessage();
 
-        return ResponseEntity.status(400)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiResponseDTO<>(message, null));
     }
 
@@ -85,7 +86,7 @@ public class ErrorController {
 
         String message = exception.getMessage() == null ? "Conflict" : exception.getMessage();
 
-        return ResponseEntity.status(409)
+        return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ApiResponseDTO<>(message, null));
     }
 
@@ -103,7 +104,7 @@ public class ErrorController {
 
         String message = exception.getMessage() == null ? "Not found" : exception.getMessage();
 
-        return ResponseEntity.status(404)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiResponseDTO<>(message, null));
     }
 
