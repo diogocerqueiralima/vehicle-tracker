@@ -120,6 +120,23 @@ public class ErrorBaseController {
     }
 
     /**
+     *
+     * Catch-all handler for any unexpected exception not covered by more specific handlers.
+     * This ensures that third-party exceptions (e.g. JPA, JDBC drivers) always produce a
+     * consistent 500 response using {@link ApiResponseDTO} instead of leaking framework details.
+     *
+     * @param e The unhandled {@link Exception} that was thrown.
+     * @return A ResponseEntity containing an {@link ApiResponseDTO} with a generic error message and a null data payload.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleUnexpectedException(Exception e) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponseDTO<>("An unexpected error occurred", null));
+    }
+
+    /**
      * Handles bean validation errors thrown by validated method parameters.
      *
      * @param e constraint violation exception.
