@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.mappers;
 
+import com.github.diogocerqueiralima.api.common.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UnassignDeviceFromVehicleCommand;
@@ -7,7 +8,6 @@ import com.github.diogocerqueiralima.asset.service.application.results.PageResul
 import com.github.diogocerqueiralima.asset.service.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.asset.service.domain.assignments.VehicleRemovalReason;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.AssignDeviceToVehicleRequestDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UnassignDeviceFromVehicleRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.VehicleAssignmentDTO;
 import org.junit.jupiter.api.DisplayName;

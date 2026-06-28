@@ -1,13 +1,13 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.controllers;
 
+import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
+import com.github.diogocerqueiralima.api.common.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateDeviceRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.DeviceDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateDeviceRequestDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

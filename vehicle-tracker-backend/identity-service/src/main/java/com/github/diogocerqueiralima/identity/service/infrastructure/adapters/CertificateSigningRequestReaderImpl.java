@@ -3,6 +3,7 @@ package com.github.diogocerqueiralima.identity.service.infrastructure.adapters;
 import com.github.diogocerqueiralima.identity.service.domain.model.certificate.CertificateSigningRequest;
 import com.github.diogocerqueiralima.identity.service.domain.model.certificate.CertificateSubject;
 import com.github.diogocerqueiralima.identity.service.domain.ports.outbound.CertificateSigningRequestReader;
+import com.github.diogocerqueiralima.error.common.exceptions.BadRequestException;
 import com.github.diogocerqueiralima.error.common.exceptions.OperationFailedException;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.RDN;
@@ -46,13 +47,13 @@ public class CertificateSigningRequestReaderImpl implements CertificateSigningRe
 
             if (!(obj instanceof PKCS10CertificationRequest pkcs10Request)) {
                 log.error("Invalid PKCS#10 certification request");
-                throw new OperationFailedException("The certificate signing request is invalid.");
+                throw new BadRequestException("The certificate signing request is invalid.");
             }
 
             // 2. Verify the signature of the PKCS#10 request
             if (!verifySignature(pkcs10Request)) {
                 log.error("Invalid signature in the certificate signing request");
-                throw new OperationFailedException("The signature is invalid.");
+                throw new BadRequestException("The signature is invalid.");
             }
 
             // 3. Extract subject information and other relevant items from the PKCS#10 request

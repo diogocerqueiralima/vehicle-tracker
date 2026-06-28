@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.mappers;
 
+import com.github.diogocerqueiralima.api.common.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
@@ -8,7 +9,6 @@ import com.github.diogocerqueiralima.asset.service.application.results.DeviceRes
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateDeviceRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.DeviceDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateDeviceRequestDTO;
 
 import java.util.UUID;

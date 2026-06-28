@@ -1,11 +1,11 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.controllers;
 
+import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
+import com.github.diogocerqueiralima.api.common.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.application.results.VehicleResult;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.VehicleUseCase;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateVehicleRequestDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.VehicleDTO;
 import org.junit.jupiter.api.DisplayName;

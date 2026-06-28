@@ -1,20 +1,10 @@
-package com.github.diogocerqueiralima.asset.service.presentation.http.dto;
+package com.github.diogocerqueiralima.api.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-/**
- * Generic paginated payload returned by HTTP endpoints.
- *
- * @param pageNumber one-based pageNumber number.
- * @param pageSize pageNumber size requested.
- * @param totalPages total amount of pages.
- * @param totalElements total amount of matched elements.
- * @param data pageNumber content.
- * @param <T> item type.
- */
 @Schema(description = "Generic paginated response payload.")
 public record PageDTO<T>(
 

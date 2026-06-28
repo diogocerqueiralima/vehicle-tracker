@@ -1,12 +1,12 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.controllers;
 
+import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateSimCardCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.DeleteSimCardByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UpdateSimCardCommand;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.SimCardUseCase;
 import com.github.diogocerqueiralima.asset.service.application.results.SimCardResult;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateSimCardRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.SimCardDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateSimCardRequestDTO;

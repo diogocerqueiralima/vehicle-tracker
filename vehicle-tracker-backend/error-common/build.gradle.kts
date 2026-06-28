@@ -3,9 +3,8 @@ plugins {
 }
 
 group = "com.github.diogocerqueiralima"
-version = "unspecified"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
 }
-
