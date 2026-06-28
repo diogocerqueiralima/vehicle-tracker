@@ -1,5 +1,7 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.controllers;
 
+import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
+import com.github.diogocerqueiralima.api.common.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UnassignDeviceFromVehicleCommand;

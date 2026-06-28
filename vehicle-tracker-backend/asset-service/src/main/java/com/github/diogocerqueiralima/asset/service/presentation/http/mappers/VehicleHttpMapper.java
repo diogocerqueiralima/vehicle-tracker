@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.mappers;
 
+import com.github.diogocerqueiralima.api.common.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehiclePageCommand;
@@ -7,7 +8,6 @@ import com.github.diogocerqueiralima.asset.service.application.commands.UpdateVe
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.application.results.VehicleResult;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateVehicleRequestDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.PageDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateVehicleRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.VehicleDTO;
 

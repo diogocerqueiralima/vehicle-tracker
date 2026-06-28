@@ -15,6 +15,7 @@ dependencies {
 
     implementation(project(":schema"))
     implementation(project(":error-common"))
+    implementation(project(":api-common"))
     implementation(libs.spring.boot.grpc)
     implementation(libs.spring.boot.starter)
     implementation(libs.spring.boot.starter.web)

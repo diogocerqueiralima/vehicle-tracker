@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.identity.service.presentation.dto;
+package com.github.diogocerqueiralima.api.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
