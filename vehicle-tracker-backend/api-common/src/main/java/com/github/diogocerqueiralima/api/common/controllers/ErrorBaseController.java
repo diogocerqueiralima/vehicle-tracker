@@ -155,4 +155,18 @@ public class ErrorBaseController {
                 .body(new ApiResponseDTO<>(message, null));
     }
 
+    /**
+     *
+     * Handles any other exceptions that are not specifically handled by other methods in this class.
+     *
+     * @param e The exception that was thrown.
+     * @return A ResponseEntity containing an {@link ApiResponseDTO} with a generic error message and a null data payload, with a 500 Internal Server Error status.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleGenericException(Exception e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponseDTO<>("An unexpected error occurred.", null));
+    }
+
 }
