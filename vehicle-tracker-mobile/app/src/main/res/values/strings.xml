@@ -18,4 +18,6 @@
         <item quantity="one">You have %1$d vehicle</item>
         <item quantity="other">You have %1$d vehicles</item>
     </plurals>
+    <string name="list_vehicles_empty_title">No vehicles yet</string>
+    <string name="list_vehicles_empty_subtitle">Vehicles you add will show up here.</string>
 </resources>
