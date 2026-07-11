@@ -21,10 +21,11 @@
  * Contains the namespace, name, and a validation function for the configuration item being accessed,
  * allowing the same callback function to handle multiple characteristics.
  */
-typedef struct {
-    const char *namespace;
-    const char *name;
-    bool (*validate)(const char *data, uint16_t len);
+typedef struct
+{
+    const char* namespace;
+    const char* name;
+    bool (*validate)(const char* data, uint16_t len);
 } gatt_handler_context_t;
 
 /**
