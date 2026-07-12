@@ -4,6 +4,8 @@
 #include "driver/uart.h"
 #include "freertos/queue.h"
 
+uart_registry_t uart_registry;
+
 /**
  *
  * @brief Removes the UART context for the specified UART port from the UART registry and returns it.
@@ -289,4 +291,52 @@ char *uart_read(const uart_context_t *context, size_t *size, esp_err_t *status)
     *size = (size_t)read;
 
     return data;
+}
+
+char *uart_read_blocking(const uart_context_t *context, size_t *size, esp_err_t *status, TickType_t timeout)
+{
+
+    // 1. Validate input parameters
+    if (context == nullptr || size == nullptr || status == nullptr)
+    {
+        return nullptr;
+    }
+
+    // 2. Compute the absolute deadline for the wait
+    const TickType_t deadline = xTaskGetTickCount() + timeout;
+
+    // 3. Wait for events on the UART queue, handling non-data events internally, until data is read or the deadline is reached
+    while (xTaskGetTickCount() < deadline)
+    {
+
+        // 4. Wait for an event from the UART queue with a timeout until the deadline
+        uart_event_t event;
+        if (xQueueReceive(*context->queue, &event, deadline - xTaskGetTickCount()) != pdTRUE)
+        {
+            break;
+        }
+
+        // 5. Handle the received UART event based on its type
+        switch (event.type)
+        {
+
+            case UART_DATA:
+                return uart_read(context, size, status);
+
+            case UART_FIFO_OVF:
+            case UART_BUFFER_FULL:
+                ESP_LOGE(TAG, "UART buffer overflow on port %d, flushing", context->port);
+                uart_flush_input(context->port);
+                xQueueReset(*context->queue);
+                break;
+
+            default:
+                ESP_LOGW(TAG, "Unhandled UART event type %d on port %d", event.type, context->port);
+                break;
+        }
+    }
+
+    // 6. Timeout elapsed with no data received
+    *status = ESP_ERR_TIMEOUT;
+    return nullptr;
 }

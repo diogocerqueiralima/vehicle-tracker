@@ -13,8 +13,6 @@ void app_main()
 {
     ESP_LOGI(LOG_TAG, "Application started.");
 
-
-
     /*
     // 1. Init storage
     esp_err_t err = init_storage();
@@ -76,12 +74,10 @@ void app_main()
         return;
     }
 
-    vTaskDelay(pdMS_TO_TICKS(1000)); // Wait for 1 second to allow the device to respond
-
     ESP_LOGI(LOG_TAG, "UART initialized.");
 
     size_t size;
-    char *output = uart_read(context, &size, &error);
+    char *output = uart_read_blocking(context, &size, &error, pdMS_TO_TICKS(1000));
 
     if (error != ESP_OK)
     {
@@ -96,6 +92,8 @@ void app_main()
     }
 
     printf("%.*s", (int)size, output);
+
+    cleanup_uart();
 
     while (1)
     {

@@ -25,7 +25,7 @@ typedef struct
 
 } uart_registry_t;
 
-static uart_registry_t uart_registry;
+extern uart_registry_t uart_registry;
 
 
 /**
@@ -93,5 +93,20 @@ esp_err_t uart_write(const uart_context_t *context, const char *data, size_t siz
  * @return A pointer to the buffer containing the read data, or NULL if there is no data. The caller is responsible for freeing the returned buffer after use.
  */
 char *uart_read(const uart_context_t *context, size_t *size, esp_err_t *status);
+
+/**
+ *
+ * @brief Blocks until data is available on the UART port, an unrecoverable error occurs, or the timeout elapses.
+ *
+ * Internally waits on the UART driver's event queue, transparently handling and recovering from
+ * non-data events (buffer overflow, FIFO overflow) without returning them to the caller.
+ *
+ * @param context Pointer to the UART context associated with the UART port from which data will be read.
+ * @param size Pointer to a size_t variable where the size of the read data will be stored.
+ * @param status Pointer to an esp_err_t variable where the status of the read operation will be stored. Set to ESP_OK on success, ESP_ERR_TIMEOUT if the timeout elapses with no data, or an appropriate error code on failure.
+ * @param timeout The maximum number of ticks to wait for data to become available.
+ * @return A pointer to the buffer containing the read data, or NULL if no data was read. The caller is responsible for freeing the returned buffer after use.
+ */
+char *uart_read_blocking(const uart_context_t *context, size_t *size, esp_err_t *status, TickType_t timeout);
 
 #endif
