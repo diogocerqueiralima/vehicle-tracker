@@ -17,7 +17,7 @@ esp_err_t init_storage();
  *
  * @return ESP_OK on successful deinitialization, or an appropriate error code on failure.
  */
-esp_err_t deinit_storage();
+esp_err_t cleanup_storage();
 
 /**
  *

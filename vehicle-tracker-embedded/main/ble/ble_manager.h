@@ -14,7 +14,7 @@
  * @param svc_def Pointer to the service definition to register.
  * @return 0 on success, or a non-zero error code on allocation failure.
  */
-int ble_manager_register_service(const struct ble_gatt_svc_def *svc_def);
+int ble_manager_register_service(const struct ble_gatt_svc_def* svc_def);
 
 /**
  * @brief Initializes the BLE manager and starts the NimBLE host task.
