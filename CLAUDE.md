@@ -93,6 +93,8 @@ Responsible for handling communication with the backend services. This layer sho
 
 For now, the embedded software does not follow a specific architecture pattern, but it should be organized in a way that allows for easy maintenance and scalability. The code should be modular and well-structured, with clear separation of concerns. The embedded software is responsible for collecting telemetry data from the hardware devices and sending it to the backend services. It should also handle any necessary communication with the hardware components and ensure reliable data transmission to the backend services.
 
+The `vehicle-tracker-embedded` module compiles with `-std=gnu23` (GNU's dialect of C23). This means C23 features such as `nullptr` are available and already in use in the codebase.
+
 # Database Schema Changes
 
 Agents MUST follow these rules when modifying the database schema:
