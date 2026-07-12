@@ -85,6 +85,17 @@ esp_err_t uart_write(const uart_context_t *context, const char *data, size_t siz
 
 /**
  *
+ * @brief Allocates a buffer and reads exactly the requested number of bytes from the UART port.
+ *
+ * @param port the UART port number to read from
+ * @param size Pointer to a size_t variable holding the number of bytes to read on input, and the number of bytes actually read on output.
+ * @param status Pointer to an esp_err_t variable where the status of the read operation will be stored.
+ * @return A pointer to the buffer containing the read data, or NULL if the read failed.
+ */
+char *uart_read_exact(uart_port_t port, size_t *size, esp_err_t *status);
+
+/**
+ *
  * @brief Reads data from the UART port.
  *
  * @param context Pointer to the UART context associated with the UART port from which data will be read.

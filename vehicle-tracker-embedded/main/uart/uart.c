@@ -250,37 +250,37 @@ esp_err_t uart_write(const uart_context_t *context, const char *data, const size
     return uart_wait_tx_done(port, pdMS_TO_TICKS(1000));
 }
 
-char *uart_read(const uart_context_t *context, size_t *size, esp_err_t *status)
+char *uart_read_exact(const uart_port_t port, size_t *size, esp_err_t *status)
 {
 
-    if (context == nullptr || size == nullptr)
-    {
-        return nullptr;
-    }
-
-    const uart_port_t port = context->port;
-
-    *status = uart_get_buffered_data_len(port, size);
-    if (*status != ESP_OK)
-    {
-        return nullptr;
-    }
-
-    if (*size == 0)
-    {
-        return nullptr;
-    }
-
-    char *data = malloc(*size);
+    // 1. Allocate memory for the data buffer based on the requested size
+    const size_t requested = *size;
+    char *data = malloc(requested);
     if (data == nullptr)
     {
         *status = ESP_ERR_NO_MEM;
         return nullptr;
     }
 
-    const int read = uart_read_bytes(port, data, *size, pdMS_TO_TICKS(1000));
+    // 2. Read from the UART port in a loop until the requested number of bytes is read, the timeout elapses, or an error occurs
+    size_t totalRead = 0;
+    while (totalRead < requested)
+    {
 
-    if (read < 0)
+        // 3. Read the remaining bytes from the UART port with a timeout of 1000 ms and check for errors
+        const int read = uart_read_bytes(port, data + totalRead, requested - totalRead, pdMS_TO_TICKS(1000));
+        if (read < 0)
+        {
+            *status = ESP_FAIL;
+            free(data);
+            return nullptr;
+        }
+
+        totalRead += read;
+    }
+
+    // 4. If the total number of bytes read is less than the requested size, set the status to ESP_FAIL and return nullptr
+    if (totalRead < requested)
     {
         *status = ESP_FAIL;
         free(data);
@@ -288,9 +288,33 @@ char *uart_read(const uart_context_t *context, size_t *size, esp_err_t *status)
     }
 
     *status = ESP_OK;
-    *size = (size_t)read;
-
     return data;
+}
+
+char *uart_read(const uart_context_t *context, size_t *size, esp_err_t *status)
+{
+
+    // 1. Validate input parameters
+    if (context == nullptr || size == nullptr)
+    {
+        return nullptr;
+    }
+
+    // 2. Get the number of bytes currently available in the UART buffer and check for errors
+    *status = uart_get_buffered_data_len(context->port, size);
+    if (*status != ESP_OK)
+    {
+        return nullptr;
+    }
+
+    // 3. If there are no bytes available, return nullptr
+    if (*size == 0)
+    {
+        return nullptr;
+    }
+
+    // 4. Read exactly the available number of bytes from the UART port and return the result
+    return uart_read_exact(context->port, size, status);
 }
 
 char *uart_read_blocking(const uart_context_t *context, size_t *size, esp_err_t *status, TickType_t timeout)
@@ -321,7 +345,8 @@ char *uart_read_blocking(const uart_context_t *context, size_t *size, esp_err_t 
         {
 
             case UART_DATA:
-                return uart_read(context, size, status);
+                *size = event.size;
+                return uart_read_exact(context->port, size, status);
 
             case UART_FIFO_OVF:
             case UART_BUFFER_FULL:
