@@ -217,6 +217,10 @@ void cleanup_uart()
 
     }
 
+    free(uart_registry.contexts);
+    uart_registry.contexts = NULL;
+    uart_registry.count = 0;
+    uart_registry.capacity = 0;
 }
 
 esp_err_t uart_write(const uart_context_t *context, const char *data, const size_t size)
@@ -326,16 +330,17 @@ char *uart_read_blocking(const uart_context_t *context, size_t *size, esp_err_t 
         return nullptr;
     }
 
-    // 2. Compute the absolute deadline for the wait
-    const TickType_t deadline = xTaskGetTickCount() + timeout;
+    // 2. Track elapsed time in a wraparound-safe way
+    const TickType_t start = xTaskGetTickCount();
 
-    // 3. Wait for events on the UART queue, handling non-data events internally, until data is read or the deadline is reached
-    while (xTaskGetTickCount() < deadline)
+    // 3. Wait for events on the UART queue, handling non-data events internally, until data is read or the timeout is reached
+    while ((xTaskGetTickCount() - start) < timeout)
     {
 
-        // 4. Wait for an event from the UART queue with a timeout until the deadline
+        // 4. Wait for an event from the UART queue with a timeout until the remaining time elapses
+        const TickType_t remaining = timeout - (xTaskGetTickCount() - start);
         uart_event_t event;
-        if (xQueueReceive(*context->queue, &event, deadline - xTaskGetTickCount()) != pdTRUE)
+        if (xQueueReceive(*context->queue, &event, remaining) != pdTRUE)
         {
             break;
         }

@@ -92,6 +92,7 @@ void app_main()
     }
 
     printf("%.*s", (int)size, output);
+    free(output);
 
     cleanup_uart();
 
