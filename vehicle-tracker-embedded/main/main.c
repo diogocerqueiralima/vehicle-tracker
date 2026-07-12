@@ -47,7 +47,7 @@ void app_main()
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "UART initialized.");
+    ESP_LOGI(LOG_TAG, "UART registry initialized.");
     error = open_uart(UART_NUM_2, 10, 2048, 115200, 27, 26);
     if (error != ESP_OK)
     {
@@ -55,7 +55,7 @@ void app_main()
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "UART initialized.");
+    ESP_LOGI(LOG_TAG, "UART port opened.");
 
     const uart_context_t *context = get_uart_context(UART_NUM_2);
     if (context == NULL)
@@ -64,8 +64,9 @@ void app_main()
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "UART initialized.");
+    ESP_LOGI(LOG_TAG, "UART context acquired.");
     const char *data = "AT\r\n";
+    ESP_LOGI(LOG_TAG, "Sending AT command...");
     error = uart_write(context, data, strlen(data));
 
     if (error != ESP_OK)
@@ -74,7 +75,7 @@ void app_main()
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "UART initialized.");
+    ESP_LOGI(LOG_TAG, "Waiting for UART response...");
 
     size_t size;
     char *output = uart_read_blocking(context, &size, &error, pdMS_TO_TICKS(1000));
