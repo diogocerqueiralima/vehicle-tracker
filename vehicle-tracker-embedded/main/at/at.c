@@ -52,6 +52,7 @@ char *send_at_command_with_response(const uart_context_t *context, const char *c
     {
         free(response);
         *status = ESP_ERR_INVALID_RESPONSE;
+        return nullptr;
     }
     
     return response;

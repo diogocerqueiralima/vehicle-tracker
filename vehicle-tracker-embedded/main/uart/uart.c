@@ -254,11 +254,11 @@ esp_err_t uart_write(const uart_context_t *context, const char *data, const size
     return uart_wait_tx_done(port, pdMS_TO_TICKS(1000));
 }
 
-char *uart_read_exact(const uart_port_t port, size_t *size, esp_err_t *status)
+char *uart_read_exact(const uart_port_t port, size_t size, esp_err_t *status)
 {
 
     // 1. Allocate memory for the data buffer based on the requested size, plus a null terminator
-    const size_t requested = *size;
+    const size_t requested = size;
     char *data = malloc(requested + 1);
     if (data == nullptr)
     {
@@ -312,7 +312,7 @@ char *uart_read(const uart_context_t *context, size_t *size, esp_err_t *status)
     }
 
     // 4. Read exactly the available number of bytes from the UART port and return the result
-    return uart_read_exact(context->port, size, status);
+    return uart_read_exact(context->port, *size, status);
 }
 
 char *uart_read_blocking(const uart_context_t *context, size_t *size, esp_err_t *status, TickType_t timeout)
@@ -345,7 +345,7 @@ char *uart_read_blocking(const uart_context_t *context, size_t *size, esp_err_t 
 
             case UART_DATA:
                 *size = event.size;
-                return uart_read_exact(context->port, size, status);
+                return uart_read_exact(context->port, *size, status);
 
             case UART_FIFO_OVF:
             case UART_BUFFER_FULL:
