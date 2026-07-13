@@ -1,4 +1,5 @@
 #include "esp_log.h"
+#include "at/at.h"
 #include "ble/ble_manager.h"
 #include "ble/services/configuration_service.h"
 #include "driver/gpio.h"
@@ -9,9 +10,31 @@
 #define LOG_TAG "MAIN"
 #define MODEM_PWRKEY_GPIO GPIO_NUM_4
 
+static void modem_power_on(void)
+{
+    gpio_config_t pwrkey_conf = {
+        .pin_bit_mask = (1ULL << MODEM_PWRKEY_GPIO),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&pwrkey_conf);
+
+    // Example for SIM7600-style modules: pull PWRKEY low for ~500ms-1s, then release.
+    gpio_set_level(MODEM_PWRKEY_GPIO, 0);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    gpio_set_level(MODEM_PWRKEY_GPIO, 1);
+
+    // Modem needs several seconds to boot before it answers AT commands.
+    vTaskDelay(pdMS_TO_TICKS(5000));
+}
+
 void app_main()
 {
     ESP_LOGI(LOG_TAG, "Application started.");
+
+    //modem_power_on();
 
     /*
     // 1. Init storage
@@ -64,36 +87,28 @@ void app_main()
         return;
     }
 
+    error = disable_echo(context);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to disable echo: %s", esp_err_to_name(error));
+        return;
+    }
+
     ESP_LOGI(LOG_TAG, "UART context acquired.");
     const char *data = "AT\r\n";
     ESP_LOGI(LOG_TAG, "Sending AT command...");
-    error = uart_write(context, data, strlen(data));
+
+    size_t response_size;
+    char *response = send_at_command_with_response(context, data, strlen(data), "OK", &response_size, &error);
 
     if (error != ESP_OK)
     {
-        ESP_LOGE(LOG_TAG, "Failed to write to UART: %s", esp_err_to_name(error));
+        ESP_LOGE(LOG_TAG, "Failed to send AT command: %s", esp_err_to_name(error));
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "Waiting for UART response...");
-
-    size_t size;
-    char *output = uart_read_blocking(context, &size, &error, pdMS_TO_TICKS(1000));
-
-    if (error != ESP_OK)
-    {
-        ESP_LOGE(LOG_TAG, "Failed to read from UART: %s", esp_err_to_name(error));
-        return;
-    }
-
-    if (output == nullptr)
-    {
-        ESP_LOGI(LOG_TAG, "No data received from UART.");
-        return;
-    }
-
-    printf("%.*s", (int)size, output);
-    free(output);
+    printf("Received response (%zu bytes): '%.*s'\n", response_size, (int)response_size, response);
+    free(response);
 
     cleanup_uart();
 
