@@ -7,7 +7,7 @@
 
 /**
  *
- * @brief Sends an AT command to the specified UART context and waits for a response that matches the expected string.
+ * @brief Sends an AT command to the specified UART context and waits for a response that contains the expected token
  *
  * @param context A pointer to the UART context to which the AT command will be sent.
  * @param command The AT command string to be sent.

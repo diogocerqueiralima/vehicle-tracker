@@ -23,21 +23,29 @@ esp_err_t send_at_command(const uart_context_t *context, const char *command, co
     // 3. Check if the response is null or does not contain the expected string, and set the error code accordingly
     if (response == nullptr || strstr(response, expected) == nullptr)
     {
-        free(response);
         error = ESP_ERR_INVALID_RESPONSE;
     }
 
+    free(response);
     return error;
 }
 
 char *send_at_command_with_response(const uart_context_t *context, const char *command, const size_t size, const char *expected, size_t *response_size, esp_err_t *status)
 {
 
-    // 1. Write the AT command to the UART context
+    // 1. Write the AT command to the UART context and check for errors
     *status = uart_write(context, command, size);
+    if (*status != ESP_OK)
+    {
+        return nullptr;
+    }
 
-    // 2. Read the response from the UART context
+    // 2. Read the response from the UART context and check for errors
     char *response = uart_read_blocking(context, response_size, status, pdMS_TO_TICKS(AT_COMMAND_TIMEOUT_MS));
+    if (*status != ESP_OK)
+    {
+        return nullptr;
+    }
 
     // 3. Check if the response is null or does not contain the expected string, and set the error code accordingly
     if (response == nullptr || strstr(response, expected) == nullptr)

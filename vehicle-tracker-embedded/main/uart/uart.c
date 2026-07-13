@@ -257,9 +257,9 @@ esp_err_t uart_write(const uart_context_t *context, const char *data, const size
 char *uart_read_exact(const uart_port_t port, size_t *size, esp_err_t *status)
 {
 
-    // 1. Allocate memory for the data buffer based on the requested size
+    // 1. Allocate memory for the data buffer based on the requested size, plus a null terminator
     const size_t requested = *size;
-    char *data = malloc(requested);
+    char *data = malloc(requested + 1);
     if (data == nullptr)
     {
         *status = ESP_ERR_NO_MEM;
@@ -283,13 +283,7 @@ char *uart_read_exact(const uart_port_t port, size_t *size, esp_err_t *status)
         totalRead += read;
     }
 
-    // 4. If the total number of bytes read is less than the requested size, set the status to ESP_FAIL and return nullptr
-    if (totalRead < requested)
-    {
-        *status = ESP_FAIL;
-        free(data);
-        return nullptr;
-    }
+    data[totalRead] = '\0';
 
     *status = ESP_OK;
     return data;
