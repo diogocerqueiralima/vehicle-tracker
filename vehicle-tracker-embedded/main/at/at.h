@@ -40,4 +40,22 @@ char *send_at_command_with_response(const uart_context_t *context, const char *c
  */
 esp_err_t disable_echo(const uart_context_t *context);
 
+/**
+ *
+ * @brief Sends the "ATE1" command to the specified UART context to enable echoing of commands.
+ *
+ * @param context A pointer to the UART context to which the "ATE1" command will be sent.
+ * @return ESP_OK if the command was sent and the expected response was received, or an appropriate error code if there was a failure.
+ */
+esp_err_t enable_echo(const uart_context_t *context);
+
+/**
+ *
+ * @brief Sends a test AT command to the specified UART context to verify communication with the device.
+ *
+ * @param context A pointer to the UART context to which the test AT command will be sent.
+ * @return ESP_OK if the command was sent and the expected response was received, or an appropriate error code if there was a failure.
+ */
+esp_err_t at_test(const uart_context_t *context);
+
 #endif

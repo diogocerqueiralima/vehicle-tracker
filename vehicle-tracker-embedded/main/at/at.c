@@ -46,12 +46,23 @@ char *send_at_command_with_response(const uart_context_t *context, const char *c
         *status = ESP_ERR_INVALID_RESPONSE;
     }
     
-    *status = ESP_OK;
     return response;
 }
 
 esp_err_t disable_echo(const uart_context_t *context)
 {
     const char *command = "ATE0\r\n";
+    return send_at_command(context, command, strlen(command), "OK");
+}
+
+esp_err_t enable_echo(const uart_context_t *context)
+{
+    const char *command = "ATE1\r\n";
+    return send_at_command(context, command, strlen(command), "OK");
+}
+
+esp_err_t at_test(const uart_context_t *context)
+{
+    const char *command = "AT\r\n";
     return send_at_command(context, command, strlen(command), "OK");
 }
