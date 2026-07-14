@@ -15,6 +15,9 @@ import kotlinx.serialization.json.Json
 
 const val USER_PRE_SESSION_DATA = "USER_PRE_SESSION_DATA"
 
+/**
+ * Implementation of [UserPreSessionRepository] using [DataStore] for persistence.
+ */
 class UserPreSessionRepositoryImpl(
     private val dataStore: DataStore<Preferences>,
 ) : UserPreSessionRepository {
@@ -25,7 +28,7 @@ class UserPreSessionRepositoryImpl(
         val json = Json.encodeToString(entity)
 
         dataStore.edit { preferences ->
-            preferences[stringPreferencesKey("USER_PRE_SESSION_DATA")] = json
+            preferences[stringPreferencesKey(USER_PRE_SESSION_DATA)] = json
         }
 
     }
@@ -33,7 +36,7 @@ class UserPreSessionRepositoryImpl(
     override suspend fun get(): UserPreSession? {
 
         val preferences = dataStore.data.first()
-        val json = preferences[stringPreferencesKey("USER_PRE_SESSION_DATA")] ?: return null
+        val json = preferences[stringPreferencesKey(USER_PRE_SESSION_DATA)] ?: return null
         val entity = Json.decodeFromString<UserPreSessionEntity>(json)
 
         return entity.toDomain()

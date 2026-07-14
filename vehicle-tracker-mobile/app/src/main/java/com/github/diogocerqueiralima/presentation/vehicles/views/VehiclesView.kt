@@ -35,6 +35,14 @@ import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.model.Vehicle
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This view is responsible for displaying a list of vehicles.
+ * In case the list is empty, it will show a placeholder.
+ *
+ * @param modifier Modifier to be applied to the view.
+ * @param vehicles List of vehicles to be displayed.
+ * @param onVehicleClick Callback to be invoked when a vehicle is clicked.
+ */
 @Composable
 fun VehiclesView(
     modifier: Modifier = Modifier,
@@ -71,6 +79,12 @@ fun VehiclesView(
 
 }
 
+/**
+ * This composable function represents a card that displays information about a vehicle.
+ *
+ * @param vehicle The vehicle to be displayed in the card.
+ * @param onClick Callback to be invoked when the card is clicked.
+ */
 @Composable
 private fun VehicleCard(vehicle: Vehicle, onClick: () -> Unit = {}) {
 
@@ -144,6 +158,11 @@ private fun VehicleCard(vehicle: Vehicle, onClick: () -> Unit = {}) {
 
 }
 
+/**
+ * This composable function represents a placeholder that is displayed when the list of vehicles is empty.
+ *
+ * @param modifier Modifier to be applied to the placeholder.
+ */
 @Composable
 private fun EmptyVehiclesPlaceholder(modifier: Modifier = Modifier) {
 

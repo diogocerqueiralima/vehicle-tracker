@@ -22,6 +22,9 @@ import kotlin.jvm.java
 
 const val TAG = "REDIRECT_ACTIVITY"
 
+/**
+ * Activity that handles the redirect from the authentication flow, processes the authorization code or error, and navigates to the appropriate screen.
+ */
 class RedirectActivity : ComponentActivity() {
 
     val homeIntent by lazy {

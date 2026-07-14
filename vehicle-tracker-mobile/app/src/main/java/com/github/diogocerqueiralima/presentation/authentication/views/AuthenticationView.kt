@@ -22,6 +22,9 @@ import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.SuccessIndicator
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user is waiting for being redirected to the authentication page.
+ */
 @Composable
 fun AuthenticationIdleView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -32,6 +35,9 @@ fun AuthenticationIdleView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user was redirected to the application after the authentication process.
+ */
 @Composable
 fun AuthenticationRedirectView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -42,6 +48,9 @@ fun AuthenticationRedirectView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user has successfully authenticated.
+ */
 @Composable
 fun AuthenticationSuccessView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -52,6 +61,9 @@ fun AuthenticationSuccessView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when an error occurs.
+ */
 @Composable
 fun AuthenticationErrorView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -62,6 +74,9 @@ fun AuthenticationErrorView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user cancels the authentication process.
+ */
 @Composable
 fun AuthenticationCancelledView(modifier: Modifier = Modifier) {
     AuthenticationView(

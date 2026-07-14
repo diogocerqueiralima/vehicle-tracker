@@ -101,6 +101,9 @@ class RedirectViewModel(
 
 }
 
+/**
+ * Factory class for creating instances of RedirectViewModel with the required dependencies.
+ */
 @Suppress("UNCHECKED_CAST")
 class RedirectViewModelFactory(
     val authenticationService: AuthenticationService,

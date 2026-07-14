@@ -12,6 +12,9 @@ import com.github.diogocerqueiralima.presentation.authentication.views.Authentic
 import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationIdleView
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This screen is responsible for displaying the authentication state of the application before the user is redirected to the authentication page.
+ */
 @Composable
 fun AuthenticationScreen(viewModel: AuthenticationViewModel) {
 

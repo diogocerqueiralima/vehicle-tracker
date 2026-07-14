@@ -3,6 +3,9 @@ package com.github.diogocerqueiralima.infrastructure.http.dto
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Data class representing the response from exchanging an authorization code for tokens.
+ */
 @Serializable
 data class ExchangeAuthorizationCodeResponseDTO(
     @SerialName("access_token") val accessToken: String,

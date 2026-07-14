@@ -7,6 +7,9 @@ import com.github.diogocerqueiralima.presentation.ui.activities.BottomNavigation
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
 import com.github.diogocerqueiralima.presentation.vehicles.screens.VehiclesScreen
 
+/**
+ * Activity that displays the vehicles screen and handles navigation to other destinations.
+ */
 class VehiclesActivity : BottomNavigationActivity(BottomNavigationDestination.Vehicles) {
 
     override fun onCreate(savedInstanceState: Bundle?) {

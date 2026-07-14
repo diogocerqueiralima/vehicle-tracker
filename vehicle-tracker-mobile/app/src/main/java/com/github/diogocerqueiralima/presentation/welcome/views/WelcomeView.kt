@@ -34,6 +34,12 @@ import androidx.compose.ui.unit.sp
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This view is responsible for displaying the welcome screen of the application.
+ *
+ * @param modifier Modifier to be applied to the view.
+ * @param onClickJoinPlatform Callback to be invoked when the button to join the platform is clicked.
+ */
 @Composable
 fun WelcomeView(
     modifier: Modifier = Modifier,

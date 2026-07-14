@@ -22,6 +22,14 @@ import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 import com.github.diogocerqueiralima.presentation.vehicles.views.VehiclesView
 
+/**
+ * This screen is responsible for displaying a list of vehicles.
+ * It includes a header, a bottom navigation bar, and the vehicles view.
+ *
+ * @param vehicles List of vehicles to be displayed.
+ * @param onVehicleClick Callback to be invoked when a vehicle is clicked.
+ * @param onNavigate Callback to be invoked when a bottom navigation destination is selected.
+ */
 @Composable
 fun VehiclesScreen(
     vehicles: List<Vehicle> = emptyList(),

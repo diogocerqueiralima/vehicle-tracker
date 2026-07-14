@@ -7,6 +7,9 @@ import com.github.diogocerqueiralima.presentation.home.screens.HomeScreen
 import com.github.diogocerqueiralima.presentation.ui.activities.BottomNavigationActivity
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
 
+/**
+ * Activity that displays the home screen and handles navigation to other destinations.
+ */
 class HomeActivity : BottomNavigationActivity(BottomNavigationDestination.Home) {
 
     override fun onCreate(savedInstanceState: Bundle?) {

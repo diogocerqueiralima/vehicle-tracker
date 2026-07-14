@@ -120,6 +120,9 @@ class AuthenticationViewModel(
 
 }
 
+/**
+ * A factory class for creating instances of AuthenticationViewModel.
+ */
 @Suppress("UNCHECKED_CAST")
 class AuthenticationViewModelFactory(
     val authenticationService: AuthenticationService,

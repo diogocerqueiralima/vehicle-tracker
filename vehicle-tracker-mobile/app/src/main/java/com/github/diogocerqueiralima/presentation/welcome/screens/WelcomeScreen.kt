@@ -9,6 +9,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.github.diogocerqueiralima.presentation.welcome.views.WelcomeView
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This screen is responsible for displaying the welcome screen of the application.
+ *
+ * @param onClickJoinPlatform Callback to be invoked when the button to join the platform is clicked.
+ */
 @Composable
 fun WelcomeScreen(onClickJoinPlatform: () -> Unit) {
 

@@ -20,6 +20,12 @@ import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigation
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This screen is responsible for displaying the home screen of the application.
+ * It includes a header, a bottom navigation bar, and the home view.
+ *
+ * @param onNavigate Callback to be invoked when a bottom navigation destination is selected.
+ */
 @Composable
 fun HomeScreen(onNavigate: (BottomNavigationDestination) -> Unit = {}) {
 

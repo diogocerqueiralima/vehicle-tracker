@@ -16,6 +16,9 @@ import com.github.diogocerqueiralima.presentation.authentication.screens.Authent
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModelFactory
 
+/**
+ * Activity that handles the authentication process, including starting the authentication flow and handling cancellation.
+ */
 class AuthenticationActivity : ComponentActivity() {
 
     private val viewModel by viewModels<AuthenticationViewModel>(

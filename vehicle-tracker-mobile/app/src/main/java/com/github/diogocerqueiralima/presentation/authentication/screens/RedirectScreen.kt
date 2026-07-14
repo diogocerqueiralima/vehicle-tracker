@@ -8,12 +8,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectState
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModel
-import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationCancelledView
 import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationErrorView
 import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationRedirectView
 import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationSuccessView
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This screen is responsible for displaying the authentication state of the application after the user authenticates and is redirected back to the application.
+ */
 @Composable
 fun RedirectScreen(viewModel: RedirectViewModel) {
 

@@ -11,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This view is responsible for displaying the home screen of the application.
+ */
 @Composable
 fun HomeView(modifier: Modifier = Modifier) {
 

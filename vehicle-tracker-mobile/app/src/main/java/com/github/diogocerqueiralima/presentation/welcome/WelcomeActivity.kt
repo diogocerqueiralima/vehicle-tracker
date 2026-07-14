@@ -8,6 +8,9 @@ import androidx.activity.enableEdgeToEdge
 import com.github.diogocerqueiralima.presentation.authentication.AuthenticationActivity
 import com.github.diogocerqueiralima.presentation.welcome.screens.WelcomeScreen
 
+/**
+ * Activity that displays the welcome screen and handles navigation to the authentication screen.
+ */
 class WelcomeActivity : ComponentActivity() {
 
     val authenticationIntent by lazy {
