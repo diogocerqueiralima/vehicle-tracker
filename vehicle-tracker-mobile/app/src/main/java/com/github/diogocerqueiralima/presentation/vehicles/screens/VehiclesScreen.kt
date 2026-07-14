@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.presentation.home.screens
+package com.github.diogocerqueiralima.presentation.vehicles.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,18 +10,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.presentation.home.views.HomeView
+import com.github.diogocerqueiralima.domain.model.Vehicle
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationBar
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+import com.github.diogocerqueiralima.presentation.vehicles.views.VehiclesView
 
 @Composable
-fun HomeScreen(onNavigate: (BottomNavigationDestination) -> Unit = {}) {
+fun VehiclesScreen(
+    vehicles: List<Vehicle> = emptyList(),
+    onVehicleClick: (Vehicle) -> Unit = {},
+    onNavigate: (BottomNavigationDestination) -> Unit = {}
+) {
 
     VehicleTrackerMobileTheme {
         Scaffold(
@@ -37,21 +43,27 @@ fun HomeScreen(onNavigate: (BottomNavigationDestination) -> Unit = {}) {
                                 .clip(CircleShape)
                         )
                     },
-                    title = stringResource(R.string.home_title),
-                    description = stringResource(R.string.home_subtitle)
+                    title = stringResource(R.string.list_vehicles_title),
+                    description = pluralStringResource(
+                        id = R.plurals.list_vehicles_subtitle,
+                        count = vehicles.size,
+                        formatArgs = arrayOf(vehicles.size)
+                    )
                 )
             },
             bottomBar = {
                 BottomNavigationBar(
-                    selectedDestination = BottomNavigationDestination.Home,
+                    selectedDestination = BottomNavigationDestination.Vehicles,
                     onDestinationSelected = onNavigate
                 )
             }
         ) { innerPadding ->
-            HomeView(
+            VehiclesView(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(innerPadding),
+                vehicles = vehicles,
+                onVehicleClick = onVehicleClick
             )
         }
     }
@@ -60,6 +72,6 @@ fun HomeScreen(onNavigate: (BottomNavigationDestination) -> Unit = {}) {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun HomeScreenPreview() {
-    HomeScreen()
+fun VehiclesScreenPreview() {
+    VehiclesScreen()
 }

@@ -73,14 +73,14 @@ class AuthenticationViewModel(
      * <p>This can happen if the user closes the authentication tab or presses the back button
      * during the authentication process.
      *
-     * @param homeIntent A function that redirects the user to the home screen, used when authentication is canceled.
+     * @param welcomeIntent A function that redirects the user to the welcome screen, used when authentication is canceled.
      */
-    fun handleAuthenticationCancellation(homeIntent: () -> Unit) {
+    fun handleAuthenticationCancellation(welcomeIntent: () -> Unit) {
 
         if (_state.value !is Authenticating) return
         _state.value = AuthenticationState.Canceled
 
-        homeIntent()
+        welcomeIntent()
     }
 
     /**

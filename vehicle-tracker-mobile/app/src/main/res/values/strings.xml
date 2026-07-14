@@ -20,4 +20,9 @@
     </plurals>
     <string name="list_vehicles_empty_title">No vehicles yet</string>
     <string name="list_vehicles_empty_subtitle">Vehicles you add will show up here.</string>
+    <string name="home_title">Welcome back</string>
+    <string name="home_subtitle">Here\'s an overview of your fleet</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_vehicles">Vehicles</string>
+    <string name="nav_devices">Devices</string>
 </resources>

@@ -16,6 +16,9 @@ import com.github.diogocerqueiralima.presentation.authentication.screens.Redirec
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModelFactory
 import com.github.diogocerqueiralima.presentation.home.HomeActivity
+import com.github.diogocerqueiralima.presentation.welcome.WelcomeActivity
+import kotlin.getValue
+import kotlin.jvm.java
 
 const val TAG = "REDIRECT_ACTIVITY"
 
@@ -23,6 +26,10 @@ class RedirectActivity : ComponentActivity() {
 
     val homeIntent by lazy {
         Intent(this, HomeActivity::class.java)
+    }
+
+    val welcomeIntent by lazy {
+        Intent(this, WelcomeActivity::class.java)
     }
 
     private val viewModel by viewModels<RedirectViewModel>(
@@ -59,14 +66,17 @@ class RedirectActivity : ComponentActivity() {
         Log.d(TAG, "Extracted code: $code, state: $state, error: $error")
 
         if (code != null && state != null) {
-            viewModel.handleAuthorizationCode(code, state) {
-                startActivity(homeIntent)
-            }
+            viewModel.handleAuthorizationCode(
+                code = code,
+                state = state,
+                welcomeIntent = { startActivity(welcomeIntent) },
+                homeIntent = { startActivity(homeIntent) }
+            )
             return
         }
 
         viewModel.handleAuthenticationError(error ?: "Unknown error during authentication.") {
-            startActivity(homeIntent)
+            startActivity(welcomeIntent)
         }
     }
 

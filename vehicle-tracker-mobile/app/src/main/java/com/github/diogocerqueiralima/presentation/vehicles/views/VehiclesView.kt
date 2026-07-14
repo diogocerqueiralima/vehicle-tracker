@@ -1,6 +1,5 @@
 package com.github.diogocerqueiralima.presentation.vehicles.views
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,16 +27,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.model.Vehicle
-import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
 @Composable
@@ -52,24 +47,6 @@ fun VehiclesView(
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background),
     ) {
-
-        HeaderComponent(
-            icon = {
-                Image(
-                    painter = painterResource(R.drawable.logo),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                )
-            },
-            title = stringResource(R.string.list_vehicles_title),
-            description = pluralStringResource(
-                id = R.plurals.list_vehicles_subtitle,
-                count = vehicles.size,
-                formatArgs = arrayOf(vehicles.size)
-            )
-        )
 
         if (vehicles.isEmpty()) {
             EmptyVehiclesPlaceholder(modifier = Modifier.fillMaxSize())
