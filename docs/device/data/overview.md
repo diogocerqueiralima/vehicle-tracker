@@ -28,7 +28,7 @@ Each device has a MQTT Topic that it uses to report data. The topic is structure
 /devices/{device_id}/data/{data_type}
 ```
 
-Only the device with the specified `{device_id}` can publish data to this topic. The `{data_type}` specifies the type of data being reported, such as location, network, or telemetry.
+Only the device with the specified `{device_id}` can publish data to this topic. The `{data_type}` specifies the type of data being reported, such as location, network, or status.
 
 The QoS (Quality of Service) level for the MQTT messages is a configurable connection parameter (see the `qos` parameter in the [Device Configuration Overview](../ble/configuration/overview.md)) and defaults to 0, meaning messages are delivered at most once with no acknowledgment required. QoS 0 is an appropriate default because the device reports data at a high frequency, so occasional message loss is acceptable and can be compensated for by subsequent reports. The `sequence_number` metadata attribute can be used to detect any missing data reports and send an alert if necessary.
 
