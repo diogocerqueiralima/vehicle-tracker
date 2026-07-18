@@ -6,7 +6,7 @@ You can see the different reported data in the following sections:
 
 - [Location Data](location-data.md): Information about the device's location
 - [Network Data](network-data.md): Details about the device's network connectivity
-- [Telemetry Data](telemetry-data.md): Information about the device's performance and operational status
+- [Status Data](status-data.md): Information about the device's performance and operational status
 
 Each section provides a comprehensive overview of the reported data, including the attributes and their respective values. This organization helps users understand the data being collected and how it can be utilized for various applications.
 
