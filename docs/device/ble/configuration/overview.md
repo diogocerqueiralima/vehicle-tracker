@@ -18,7 +18,6 @@ The configuration parameters are categorized into several groups based on their 
 - **MQTT Keep Alive Interval**: The interval at which the device will send a keep-alive message to the MQTT broker to maintain the connection. This is typically measured in seconds.
 - **MQTT Quality of Service (QoS)**: The level of service for message delivery. Common QoS levels include 0 (at most once), 1 (at least once), and 2 (exactly once). The choice of QoS can affect the reliability and performance of message delivery.
 - **MQTT Reconnection Interval**: The interval at which the device will attempt to reconnect to the MQTT broker if the connection is lost. This is typically measured in seconds.
-- **MQTT Topic**: The topic to which the device will publish its data.
 
 ### GPS Parameters
 

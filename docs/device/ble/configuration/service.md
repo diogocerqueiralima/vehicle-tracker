@@ -20,7 +20,6 @@ For a full list of configuration parameters, refer to the [Device Configuration 
 | `keep_alive` | `193bdbf3-3f36-4bd1-a06f-e8bc31f1978f` | `int` | Read, Write |
 | `qos` | `497378ba-0252-4d84-a07f-05a886d01186` | `int` | Read, Write |
 | `recon_interval` | `1472f295-a20b-4c4b-b191-7f67b0ecaa7c` | `int` | Read, Write |
-| `topic` | `9e0ab42d-c0c9-4235-b3a1-79054cf92bc5` | `string` | Read, Write |
 | `gps_update` | `2691f217-5921-4b93-938f-23a2186158a7` | `int` | Read, Write |
 | `gps_timeout` | `d1832cf4-f6da-4f19-9342-f51e471656ca` | `int` | Read, Write |
 | `csr` | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` | `string` | Read |
