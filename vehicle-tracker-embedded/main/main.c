@@ -1,42 +1,15 @@
+#include "esp_event.h"
 #include "esp_log.h"
-#include "at/at.h"
-#include "ble/ble_manager.h"
-#include "ble/services/configuration_service.h"
-#include "driver/gpio.h"
-#include "driver/uart.h"
-#include "storage/storage.h"
-#include "uart/uart.h"
+#include "esp_netif.h"
+#include "modem/modem.h"
 
 #define LOG_TAG "MAIN"
-#define MODEM_PWRKEY_GPIO GPIO_NUM_4
-
-static void modem_power_on(void)
-{
-    gpio_config_t pwrkey_conf = {
-        .pin_bit_mask = (1ULL << MODEM_PWRKEY_GPIO),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    gpio_config(&pwrkey_conf);
-
-    // Example for SIM7600-style modules: pull PWRKEY low for ~500ms-1s, then release.
-    gpio_set_level(MODEM_PWRKEY_GPIO, 0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    gpio_set_level(MODEM_PWRKEY_GPIO, 1);
-
-    // Modem needs several seconds to boot before it answers AT commands.
-    vTaskDelay(pdMS_TO_TICKS(5000));
-}
 
 void app_main()
 {
     ESP_LOGI(LOG_TAG, "Application started.");
-
-    //modem_power_on();
-
-    /*
+  
+		/*
     // 1. Init storage
     esp_err_t err = init_storage();
     if (err != ESP_OK)
@@ -62,58 +35,64 @@ void app_main()
     }
     */
 
-    esp_err_t error = init_uart();
-
+    // 1. Initialize the network interface
+    esp_err_t error = esp_netif_init();
     if (error != ESP_OK)
     {
-        ESP_LOGE(LOG_TAG, "Failed to initialize UART: %s", esp_err_to_name(error));
+        ESP_LOGE(LOG_TAG, "Failed to initialize network interface: %s", esp_err_to_name(error));
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "UART registry initialized.");
-    error = open_uart(UART_NUM_2, 10, 2048, 115200, 27, 26);
+    // 2. Create the default event loop
+    error = esp_event_loop_create_default();
     if (error != ESP_OK)
     {
-        ESP_LOGE(LOG_TAG, "Failed to open UART: %s", esp_err_to_name(error));
+        ESP_LOGE(LOG_TAG, "Failed to create default loop event");
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "UART port opened.");
-
-    const uart_context_t *context = get_uart_context(UART_NUM_2);
-    if (context == NULL)
+    // 3. Create a new network interface for the PPP connection
+    const esp_netif_config_t esp_netif_config = ESP_NETIF_DEFAULT_PPP();
+    esp_netif_t *netif = esp_netif_new(&esp_netif_config);
+    if (netif == NULL)
     {
-        ESP_LOGE(LOG_TAG, "Failed to get UART context.");
+        ESP_LOGE(LOG_TAG, "No network interface found");
         return;
     }
 
-    error = disable_echo(context);
+    // 4. Set the default network interface to the newly created PPP interface
+    error = esp_netif_set_default_netif(netif);
     if (error != ESP_OK)
     {
-        ESP_LOGE(LOG_TAG, "Failed to disable echo: %s", esp_err_to_name(error));
+        ESP_LOGE(LOG_TAG, "Failed to set default network interface: %s", esp_err_to_name(error));
         return;
     }
 
-    ESP_LOGI(LOG_TAG, "UART context acquired.");
-    const char *data = "AT\r\n";
-    ESP_LOGI(LOG_TAG, "Sending AT command...");
+		if (modem_is_powered_up() == ESP_OK)
+		{
+				ESP_LOGI(LOG_TAG, "Modem is already powered up.");
+		}
+		else
+		{
 
-    size_t response_size;
-    char *response = send_at_command_with_response(context, data, strlen(data), "OK", &response_size, &error);
+			ESP_LOGI(LOG_TAG, "Modem is not powered up. Powering up the modem...");
 
+			// 5. Power up the modem
+			error = modem_power_up();
+			if (error != ESP_OK)
+			{
+					ESP_LOGE(LOG_TAG, "Failed to power up modem: %s", esp_err_to_name(error));
+					return;
+			}
+		
+		}
+
+    error = modem_init("internet");
     if (error != ESP_OK)
     {
-        ESP_LOGE(LOG_TAG, "Failed to send AT command: %s", esp_err_to_name(error));
+        ESP_LOGE(LOG_TAG, "Failed to initialize modem: %s", esp_err_to_name(error));
         return;
     }
 
-    printf("Received response (%zu bytes): '%.*s'\n", response_size, (int)response_size, response);
-    free(response);
-
-    cleanup_uart();
-
-    while (1)
-    {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
+    ESP_LOGI(LOG_TAG, "Modem initialized successfully.");
 }

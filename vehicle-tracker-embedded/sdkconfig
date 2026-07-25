@@ -3764,6 +3764,35 @@ CONFIG_WL_SECTOR_SIZE_4096=y
 # default:
 CONFIG_WL_SECTOR_SIZE=4096
 # end of Wear Levelling
+
+#
+# esp-modem
+#
+# default:
+CONFIG_ESP_MODEM_CMUX_DEFRAGMENT_PAYLOAD=y
+# default:
+# CONFIG_ESP_MODEM_USE_INFLATABLE_BUFFER_IF_NEEDED is not set
+# default:
+CONFIG_ESP_MODEM_CMUX_DELAY_AFTER_DLCI_SETUP=0
+# default:
+CONFIG_ESP_MODEM_CMUX_DELAY_AFTER_NETIF_DISCONNECT=0
+# default:
+# CONFIG_ESP_MODEM_CMUX_USE_SHORT_PAYLOADS_ONLY is not set
+# default:
+# CONFIG_ESP_MODEM_ADD_CUSTOM_MODULE is not set
+# default:
+CONFIG_ESP_MODEM_C_API_STR_MAX=128
+# default:
+# CONFIG_ESP_MODEM_URC_HANDLER is not set
+# default:
+# CONFIG_ESP_MODEM_PPP_ESCAPE_BEFORE_EXIT is not set
+# default:
+# CONFIG_ESP_MODEM_ADD_DEBUG_LOGS is not set
+# default:
+# CONFIG_ESP_MODEM_ENABLE_DEVELOPMENT_MODE is not set
+# default:
+CONFIG_ESP_MODEM_USE_PPP_MODE=y
+# end of esp-modem
 # end of Component config
 
 # default:
