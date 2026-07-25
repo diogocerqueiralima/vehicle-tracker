@@ -5,3 +5,4 @@ main/secrets/**
 managed_components/**
 .cache
 .vscode
+build.clang
