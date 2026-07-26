@@ -26,23 +26,7 @@ class AuthenticationService(
     suspend fun exchangeAuthorizationCode(authorizationCode: String, codeVerifier: String) {
 
         val dto = client.exchangeAuthorizationCode(authorizationCode, codeVerifier)
-        val session = UserSession(
-            accessToken = Token.AccessToken(
-                value = dto.accessToken,
-                createdAt = Clock.System.now(),
-                expiresIn = dto.expiresIn,
-                renewedAt = null
-            ),
-            refreshToken = Token.RefreshToken(
-                value = dto.refreshToken,
-                createdAt = Clock.System.now(),
-                expiresIn = dto.refreshExpiresIn
-            ),
-            identityToken = Token.IdentityToken(
-                value = dto.idToken,
-                createdAt = Clock.System.now()
-            )
-        )
+        val session =
 
         userSessionRepository.save(session)
     }

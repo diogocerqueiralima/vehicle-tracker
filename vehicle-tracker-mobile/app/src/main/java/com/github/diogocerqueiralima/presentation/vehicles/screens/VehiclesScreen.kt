@@ -81,5 +81,12 @@ fun VehiclesScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun VehiclesScreenPreview() {
-    VehiclesScreen()
+    VehiclesScreen(
+        vehicles = listOf(
+            Vehicle(
+                name = "My Car",
+                plate = "AB-12-CD"
+            )
+        )
+    )
 }
