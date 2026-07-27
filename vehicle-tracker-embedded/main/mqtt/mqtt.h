@@ -39,6 +39,18 @@ esp_err_t mqtt_init(char *hostname, uint32_t port, char *certificate, size_t cer
 esp_err_t mqtt_publish(const char *topic, const char *payload, int qos, bool retain);
 
 /**
+*
+* @brief Publish a message to the specified MQTT topic asynchronously.
+*
+* @param topic The MQTT topic to publish to.
+* @param payload The message payload to publish.
+* @param qos The Quality of Service level for the message (0, 1, or 2).
+* @param retain Whether to retain the message on the broker (true or false).
+* @return ESP_OK on success, or an error code on failure.
+*/
+esp_err_t mqtt_publish_async(const char *topic, const char *payload, int qos, bool retain);
+
+/**
 	*
 	* @brief Destroy the MQTT client and free associated resources.
 	*

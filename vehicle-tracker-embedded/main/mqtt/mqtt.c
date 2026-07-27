@@ -69,6 +69,33 @@ esp_err_t mqtt_publish(const char *topic, const char *payload, int qos, bool ret
 	return ESP_OK;
 }
 
+esp_err_t mqtt_publish_async(const char *topic, const char *payload, int qos, bool retain)
+{
+
+	// 1. Check if the MQTT client is initialized
+	if (mqtt_client == NULL)
+	{
+		return ESP_FAIL;
+	}
+
+	// 2. Publish the message to the specified topic asynchronously
+	int msg_id = esp_mqtt_client_enqueue(mqtt_client, topic, payload, 0, qos, retain, true);
+
+	// 3. Check the return value of the enqueue function (-1 indicates failure, -2 indicates no memory)
+	if (msg_id == -1)
+	{
+		return ESP_FAIL;
+	}
+
+	if (msg_id == -2)
+	{
+		return ESP_ERR_NO_MEM;
+	}
+
+	// 4. Return success if the message was enqueued successfully
+	return ESP_OK;
+}
+
 esp_err_t mqtt_destroy()
 {
 
