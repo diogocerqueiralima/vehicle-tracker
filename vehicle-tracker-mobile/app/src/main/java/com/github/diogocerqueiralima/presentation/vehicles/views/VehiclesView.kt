@@ -18,8 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.model.Vehicle
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+import java.time.LocalDate
 
 /**
  * This view is responsible for displaying a list of vehicles.
@@ -132,7 +135,7 @@ private fun VehicleCard(vehicle: Vehicle, onClick: () -> Unit = {}) {
             ) {
 
                 Text(
-                    text = vehicle.name,
+                    text = vehicle.displayName,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
@@ -197,6 +200,56 @@ private fun EmptyVehiclesPlaceholder(modifier: Modifier = Modifier) {
 
 }
 
+/**
+ * This composable function represents a loading indicator displayed while the vehicles are being fetched.
+ *
+ * @param modifier Modifier to be applied to the view.
+ */
+@Composable
+fun VehiclesLoadingView(modifier: Modifier = Modifier) {
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+
+}
+
+/**
+ * This composable function represents an error message displayed when the vehicles could not be retrieved.
+ *
+ * @param modifier Modifier to be applied to the view.
+ * @param message The error message to be displayed.
+ */
+@Composable
+fun VehiclesErrorView(modifier: Modifier = Modifier, message: String) {
+
+    Column(
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        Icon(
+            imageVector = Icons.Default.ErrorOutline,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(56.dp)
+        )
+
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+
+    }
+
+}
+
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun VehiclesViewPreview() {
@@ -205,9 +258,27 @@ fun VehiclesViewPreview() {
             VehiclesView(
                 modifier = Modifier.padding(innerPadding),
                 vehicles = listOf(
-                    Vehicle(name = "Peugeot 2008", plate = "AA-AA-AA"),
-                    Vehicle(name = "Peugeot 208", plate = "BB-BB-BB"),
-                    Vehicle(name = "Mercedes Benz", plate = "CC-CC-CC")
+                    Vehicle(
+                        vin = "VF3ABCDEF12345678",
+                        plate = "AA-AA-AA",
+                        model = "2008",
+                        manufacturer = "Peugeot",
+                        manufacturingDate = LocalDate.of(2022, 1, 15)
+                    ),
+                    Vehicle(
+                        vin = "VF3ABCDEF12345679",
+                        plate = "BB-BB-BB",
+                        model = "208",
+                        manufacturer = "Peugeot",
+                        manufacturingDate = LocalDate.of(2021, 6, 10)
+                    ),
+                    Vehicle(
+                        vin = "WDB1234561A123456",
+                        plate = "CC-CC-CC",
+                        model = "C-Class",
+                        manufacturer = "Mercedes Benz",
+                        manufacturingDate = LocalDate.of(2020, 3, 5)
+                    )
                 )
             )
         }
@@ -222,6 +293,29 @@ fun VehiclesViewEmptyPreview() {
             VehiclesView(
                 modifier = Modifier.padding(innerPadding),
                 vehicles = emptyList()
+            )
+        }
+    }
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true)
+fun VehiclesLoadingViewPreview() {
+    VehicleTrackerMobileTheme {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            VehiclesLoadingView(modifier = Modifier.fillMaxSize().padding(innerPadding))
+        }
+    }
+}
+
+@Composable
+@Preview(showBackground = true, showSystemUi = true)
+fun VehiclesErrorViewPreview() {
+    VehicleTrackerMobileTheme {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            VehiclesErrorView(
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                message = "Failed to load vehicles."
             )
         }
     }

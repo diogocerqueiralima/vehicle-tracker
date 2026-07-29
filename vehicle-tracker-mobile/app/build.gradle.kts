@@ -25,6 +25,7 @@ android {
         manifestPlaceholders["redirectHost"] = "oauth"
         manifestPlaceholders["redirectPath"] = "/callback"
 
+        buildConfigField("String", "ASSET_SERVICE_URI", "\"https://api.tracker.homelab\"")
         buildConfigField("String", "AUTHORIZATION_URI", "\"https://auth.tracker.homelab/realms/vehicle-tracker/protocol/openid-connect/auth\"")
         buildConfigField("String", "CLIENT_ID", "\"tracker\"")
         buildConfigField("String", "REDIRECT_URI", "\"mytracker://oauth/callback\"")
@@ -45,6 +46,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        isCoreLibraryDesugaringEnabled = true
     }
 
     buildFeatures {
@@ -88,4 +90,6 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }

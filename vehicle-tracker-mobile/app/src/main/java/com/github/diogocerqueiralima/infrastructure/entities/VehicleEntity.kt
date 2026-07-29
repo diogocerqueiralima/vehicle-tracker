@@ -1,14 +1,18 @@
 package com.github.diogocerqueiralima.infrastructure.entities
 
-import java.util.UUID
+import kotlinx.serialization.Serializable
 
 /**
- * Data class representing a vehicle entity with an ID, name, and plate number.
+ * Data class representing a vehicle entity as received from the Asset Service.
  */
+@Serializable
 data class VehicleEntity(
 
-    val id: UUID,
-    val name: String,
-    val plate: String
+    val id: String,
+    val vin: String,
+    val plate: String,
+    val model: String,
+    val manufacturer: String,
+    val manufacturingDate: String
 
 )

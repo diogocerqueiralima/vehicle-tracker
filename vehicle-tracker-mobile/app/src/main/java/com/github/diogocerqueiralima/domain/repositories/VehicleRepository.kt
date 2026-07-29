@@ -16,4 +16,9 @@ interface VehicleRepository {
      */
     suspend fun findById(id: UUID): Vehicle?
 
+    /**
+     * @return A list of all Vehicles available in the repository.
+     */
+    suspend fun findAll(): List<Vehicle>
+
 }
