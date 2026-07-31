@@ -6,7 +6,7 @@ This document provides a high-level overview of the devices used in the vehicle-
 
 ## Authentication
 
-Devices authenticate with the MQTT broker using certificates issued by the Identity Service. The authentication process ensures that only authorized devices can send data to the system. For more information on the authentication process, refer to the [Device Authentication Overview](authentication/overview.md).
+Devices authenticate with the MQTT broker using certificates issued by the Identity Service. The authentication process ensures that only authorized devices can send data to the system. For more information on the authentication process, refer to the [Device Authentication Overview](device/authentication/overview.md).
 
 ## Communication
 
