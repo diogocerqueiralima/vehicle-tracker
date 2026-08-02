@@ -30,8 +30,6 @@ Each device has a MQTT Topic that it uses to report data. The topic is structure
 
 Only the device with the specified `{device_id}` can publish data to this topic. The `{data_type}` specifies the type of data being reported, such as location, network, or status.
 
-The QoS (Quality of Service) level for the MQTT messages is a configurable connection parameter (see the `qos` parameter in the [Device Configuration Overview](../ble/configuration/overview.md)) and defaults to 0, meaning messages are delivered at most once with no acknowledgment required. QoS 0 is an appropriate default because the device reports data at a high frequency, so occasional message loss is acceptable and can be compensated for by subsequent reports. The `sequence_number` metadata attribute can be used to detect any missing data reports and send an alert if necessary.
-
 ## Data Format
 
 The device publishes data to the MQTT topic using Protocol Buffers (protobuf) format, which is a language-neutral, platform-neutral, extensible mechanism for serializing structured data. This allows for efficient data transmission and ensures compatibility across different platforms and programming languages.
