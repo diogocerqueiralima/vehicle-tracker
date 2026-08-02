@@ -16,6 +16,6 @@ The device exposes a **GATT Server** that allows authorized clients to read and 
 
 | Service | Description | Document |
 |---|---|---|
-| **Connection Service** | Allows reading and writing device connection parameters. | [Connection Service](device/ble/connection/overview.md) |
-| **GPS Service** | Allows reading and writing GPS configuration parameters. | [GPS Service](device/ble/gps/overview.md) |
-| **Authentication Service** | Allows reading and writing authentication parameters. | [Authentication Service](device/ble/authentication/overview.md) |
+| **Connection Service** | Allows reading and writing device connection parameters. | [Connection Service](connection/overview.md) |
+| **GPS Service** | Allows reading and writing GPS configuration parameters. | [GPS Service](gps/overview.md) |
+| **Authentication Service** | Allows reading and writing authentication parameters. | [Authentication Service](authentication/overview.md) |
