@@ -19,10 +19,24 @@ void app_main()
     }
 
     // 2. Register BLE services before initializing the manager
-    err = ble_manager_register_service(&configuration_service_def);
+    err = ble_manager_register_service(&connection_service_def);
     if (err != 0)
     {
-        ESP_LOGE(LOG_TAG, "Failed to register configuration service: %d", err);
+        ESP_LOGE(LOG_TAG, "Failed to register connection service: %d", err);
+        return;
+    }
+
+    err = ble_manager_register_service(&gps_service_def);
+    if (err != 0)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to register GPS service: %d", err);
+        return;
+    }
+
+    err = ble_manager_register_service(&authentication_service_def);
+    if (err != 0)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to register authentication service: %d", err);
         return;
     }
 
