@@ -3,7 +3,7 @@
 #include "esp_random.h"
 #include "host/ble_hs.h"
 
-void ble_security_init()
+void ble_security_init(void)
 {
     // 1. Require MITM-protected, bonded pairing so unauthenticated clients are rejected
     ble_hs_cfg.sm_io_cap = BLE_HS_IO_DISPLAY_ONLY;

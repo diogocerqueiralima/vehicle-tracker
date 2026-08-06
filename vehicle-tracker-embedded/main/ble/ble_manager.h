@@ -21,6 +21,6 @@ int ble_manager_register_service(const struct ble_gatt_svc_def* svc_def);
  * All services must be registered via ble_manager_register_service() before calling this.
  * @return 0 on success, or an appropriate error code if initialization fails.
  */
-int ble_manager_init();
+int ble_manager_init(void);
 
 #endif
