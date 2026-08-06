@@ -82,7 +82,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_csr_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = CSR_NAMESPACE,
@@ -93,7 +93,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_certificate_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = CERTIFICATE_NAMESPACE,
@@ -104,7 +104,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_ca_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = CA_NAMESPACE,
@@ -115,7 +115,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_revoke_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = REVOKE_NAMESPACE,
@@ -126,7 +126,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_expiration_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = EXPIRATION_NAMESPACE,
@@ -137,7 +137,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_status_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = STATUS_NAMESPACE,

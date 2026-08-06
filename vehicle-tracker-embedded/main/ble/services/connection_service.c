@@ -67,7 +67,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &connection_mqtt_broker_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = MQTT_BROKER_NAMESPACE,
@@ -78,7 +78,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &connection_mqtt_keep_alive_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = MQTT_KEEP_ALIVE_INTERVAL_NAMESPACE,
@@ -89,7 +89,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &connection_mqtt_qos_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = MQTT_QOS_NAMESPACE,
@@ -100,7 +100,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &connection_mqtt_reconnection_interval_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_READ_ENC | BLE_GATT_CHR_F_WRITE_ENC,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = MQTT_RECONNECTION_INTERVAL_NAMESPACE,
