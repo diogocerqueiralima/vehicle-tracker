@@ -3,14 +3,13 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include "esp_log.h"
+#include "host/ble_store.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "security/ble_security.h"
 
-// Registers the NVS-backed store callbacks for sm_bonding. Not exposed in a public header by NimBLE.
-void ble_store_config_init(void);
-
 static const char* LOG_TAG = "ble_manager";
+static const char* DEVICE_NAME = "VehicleTracker-ESP32\0";
 
 static struct ble_gatt_svc_def* gatt_services_defs = nullptr;
 static int service_count = 0;
@@ -36,11 +35,10 @@ static void start_advertising(void)
     }
 
     // 2. Build advertising payload: general-discoverable, complete local name
-    static constexpr char name[] = "VehicleTracker-ESP32";
     struct ble_hs_adv_fields fields = {0};
     fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
-    fields.name = (const uint8_t*)name;
-    fields.name_len = sizeof(name) - 1;
+    fields.name = (const uint8_t*)DEVICE_NAME;
+    fields.name_len = strlen(DEVICE_NAME) - 1;
     fields.name_is_complete = 1;
 
     rc = ble_gap_adv_set_fields(&fields);
@@ -77,7 +75,7 @@ static int on_gap_event(struct ble_gap_event* event, void* arg)
             {
                 struct ble_sm_io pkey = {0};
                 pkey.action = event->passkey.params.action;
-                pkey.passkey = ble_security_generate_passkey();
+                pkey.passkey = generate_passkey();
                 ESP_LOGI(LOG_TAG, "Enter passkey %" PRIu32 " on the peer device", pkey.passkey);
                 ble_sm_inject_io(event->passkey.conn_handle, &pkey);
             }
@@ -162,13 +160,10 @@ int ble_manager_init(void)
     // 3. Configure the Security Manager (bonding, MITM protection, passkey pairing)
     ble_security_init();
 
-    // 4. Register the bond/key storage callbacks required by sm_bonding to persist pairing data
-    ble_store_config_init();
-
-    // 5. Initialize GATT service
+    // 4. Initialize GATT service
     ble_svc_gatt_init();
 
-    // 6. Append the terminator sentinel required by ble_gatts_count_cfg
+    // 5. Append the terminator sentinel required by ble_gatts_count_cfg
     struct ble_gatt_svc_def* tmp = realloc(gatt_services_defs, (service_count + 1) * sizeof(*gatt_services_defs));
     if (tmp == NULL)
     {
@@ -189,7 +184,7 @@ int ble_manager_init(void)
         return rc;
     }
 
-    // 7. Start the NimBLE host task
+    // 6. Start the NimBLE host task
     nimble_port_freertos_init(ble_host_task);
 
     return 0;

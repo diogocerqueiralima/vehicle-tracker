@@ -13,8 +13,9 @@ void ble_security_init(void);
 /**
  * @brief Generates a random 6-digit passkey (100000-999999) to be displayed to the user and
  * entered on the peer device during pairing.
+ *
  * @return The generated passkey.
  */
-uint32_t ble_security_generate_passkey();
+uint32_t generate_passkey();
 
 #endif

@@ -16,7 +16,9 @@ void ble_security_init(void)
     ble_hs_cfg.sm_their_key_dist |= BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
 }
 
-uint32_t ble_security_generate_passkey()
+uint32_t generate_passkey()
 {
-    return 100000 + esp_random() % 900000;
+	const uint32_t r = esp_random();
+	const uint32_t v = (uint32_t)(((uint64_t)r * 900000U) >> 32);
+	return 100000U + v;
 }
