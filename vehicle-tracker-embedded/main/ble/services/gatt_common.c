@@ -15,7 +15,7 @@ int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble
 
     switch (ctxt->op)
     {
-			case BLE_GATT_ACCESS_OP_READ_CHR:
+    case BLE_GATT_ACCESS_OP_READ_CHR:
         {
             ESP_LOGI(LOG_TAG, "Reading %s configuration", ctx->name);
 
@@ -53,7 +53,7 @@ int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble
             ESP_LOGI(LOG_TAG, "Successfully read %s", ctx->name);
             break;
         }
-			case BLE_GATT_ACCESS_OP_WRITE_CHR:
+    case BLE_GATT_ACCESS_OP_WRITE_CHR:
         {
             ESP_LOGI(LOG_TAG, "Writing %s configuration", ctx->name);
 
@@ -87,9 +87,9 @@ int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble
             ESP_LOGI(LOG_TAG, "Successfully saved %s", ctx->name);
             break;
         }
-			default:
+    default:
         break;
-			}
+    }
 
     return 0;
 }

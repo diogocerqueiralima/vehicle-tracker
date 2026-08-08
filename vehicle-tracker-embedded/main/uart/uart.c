@@ -13,7 +13,7 @@ uart_registry_t uart_registry;
  * @param port the UART port number for which the context should be removed
  * @return A pointer to the removed UART context, or nullptr if no context was found for the specified port
  */
-uart_context_t *remove_uart_context(const uart_port_t port)
+static uart_context_t *remove_uart_context(const uart_port_t port)
 {
 
     for (int i = 0; i < uart_registry.count; i++)
@@ -48,7 +48,7 @@ uart_context_t *remove_uart_context(const uart_port_t port)
  * @param context A pointer to the UART context to be cleaned up.
  * @return ESP_OK on success, or an appropriate error code if the UART driver deletion fails.
  */
-esp_err_t cleanup_uart_context(uart_context_t *context)
+static esp_err_t cleanup_uart_context(uart_context_t *context)
 {
 
     // 1. Delete the UART driver for the specified port and check for errors
