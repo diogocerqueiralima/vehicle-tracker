@@ -38,7 +38,7 @@ static void start_advertising(void)
     struct ble_hs_adv_fields fields = {0};
     fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
     fields.name = (const uint8_t*)DEVICE_NAME;
-    fields.name_len = strlen(DEVICE_NAME) - 1;
+    fields.name_len = strlen(DEVICE_NAME);
     fields.name_is_complete = 1;
 
     rc = ble_gap_adv_set_fields(&fields);
