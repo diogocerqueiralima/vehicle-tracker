@@ -3,6 +3,8 @@
 #include "esp_err.h"
 #include "esp_modem_api.h"
 
+#define TAG	"modem"
+
 esp_err_t modem_is_powered_up()
 {
 
@@ -100,6 +102,7 @@ esp_err_t modem_init(char *apn)
     esp_netif_t *netif = esp_netif_get_default_netif();
     if (netif == NULL)
     {
+    	ESP_LOGE(TAG, "No default netif");
         return ESP_ERR_INVALID_STATE;
     }
 
@@ -118,29 +121,15 @@ esp_err_t modem_init(char *apn)
     esp_modem_dce_t *modem = esp_modem_new_dev(ESP_MODEM_DCE_SIM7600, &dte_config, &dce_config, netif);
     if (modem == NULL)
     {
+    	ESP_LOGE(TAG, "Failed to create modem instance");
         return ESP_FAIL;
     }
 
-    // 5. Set the modem to command mode to prepare it for AT command communication
-    esp_err_t error = esp_modem_set_mode(modem, ESP_MODEM_MODE_COMMAND);
-    if (error != ESP_OK)
-    {
-        return error;
-    }
-
     // 6. Synchronize the modem to ensure it is ready for communication and properly configured
-    error = esp_modem_sync(modem);
+    esp_err_t error = esp_modem_sync(modem);
     if (error != ESP_OK)
     {
-        return error;
-    }
-
-    // 7. Set the modem to data mode to enable data transmission over the established connection.
-    // This is the default mode for the modem after initialization, allowing it to send and receive data.
-    // If it's necessary to switch back to command mode for sending AT commands, it's supposed to pause the data mode and switch back to command mode.
-    error = esp_modem_set_mode(modem, ESP_MODEM_MODE_DATA);
-    if (error != ESP_OK)
-    {
+    	ESP_LOGE(TAG, "Failed to synchronize modem");
         return error;
     }
 

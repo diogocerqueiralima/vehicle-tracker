@@ -2,12 +2,12 @@
 
 #define MODEM_H
 
-#define UART_PORT_NUMBER			2
-#define TX										27
-#define RX										26
-#define POWER_PIN							4
-#define POWER_DELAY_MS				500
-#define POWER_STATUS_PIN			34
+#define UART_PORT_NUMBER		2
+#define TX						27
+#define RX						26
+#define POWER_PIN				4
+#define POWER_DELAY_MS			500
+#define POWER_STATUS_PIN		34
 #define POWER_STATUS_DELAY_MS	16000
 #define POWER_STATUS_TRIES		3
 

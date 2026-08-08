@@ -57,7 +57,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &gps_update_interval_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
+                 BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = GPS_UPDATE_INTERVAL_NAMESPACE,
@@ -68,7 +69,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &gps_timeout_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
+                 BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = GPS_TIMEOUT_NAMESPACE,
@@ -79,7 +81,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &gps_mode_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
+                 BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = GPS_MODE_NAMESPACE,
