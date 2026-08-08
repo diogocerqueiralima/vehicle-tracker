@@ -144,7 +144,7 @@ int ble_manager_register_service(const struct ble_gatt_svc_def* svc_def)
     return 0;
 }
 
-int ble_manager_init(void)
+int ble_manager_init()
 {
     // 1. Initialize the NimBLE port (must happen before any NimBLE API calls)
     int rc = nimble_port_init();

@@ -8,7 +8,7 @@
  * @brief Configures the NimBLE Security Manager (bonding, MITM protection, secure connections
  * and key distribution) in ble_hs_cfg. Must be called before ble_manager_init() starts advertising.
  */
-void ble_security_init(void);
+void ble_security_init();
 
 /**
  * @brief Generates a random 6-digit passkey (100000-999999) to be displayed to the user and
