@@ -4,6 +4,24 @@
 
 i2c_registry_t i2c_registry;
 
+static i2c_device_t* get_i2c_device(const i2c_device_registry_t *device_registry, uint16_t device_address)
+{
+
+    for (int i = 0; i < device_registry->count; i++)
+    {
+
+        i2c_device_t* device = device_registry->devices[i];
+
+        if (device->address == device_address)
+        {
+            return device;
+        }
+
+    }
+
+    return nullptr;
+}
+
 esp_err_t init_i2c()
 {
 
@@ -227,14 +245,34 @@ esp_err_t i2c_add_device(i2c_context_t *context, uint16_t device_address, uint32
     return ESP_OK;
 }
 
-esp_err_t i2c_write(i2c_master_dev_handle_t dev_handle, const uint8_t *data, size_t size)
+esp_err_t i2c_write(i2c_context_t *context, uint16_t device_address, const uint8_t *data, size_t size)
 {
-    return i2c_master_transmit(dev_handle, data, size, -1);
+
+    // 1. Search for the device with the given address in the context's device registry
+    const i2c_device_t* device = get_i2c_device(context->device_registry, device_address);
+    if (device == nullptr)
+    {
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    // 2. Write to the device
+    return i2c_master_transmit(device->handle, data, size, -1);
+
 }
 
-esp_err_t i2c_read(i2c_master_dev_handle_t dev_handle, uint8_t *data, size_t size)
+esp_err_t i2c_read(i2c_context_t *context, uint16_t device_address, uint8_t *data, size_t size)
 {
-    return i2c_master_receive(dev_handle, data, size, -1);
+
+    // 1. Search for the device with the given address in the context's device registry
+    const i2c_device_t* device = get_i2c_device(context->device_registry, device_address);
+    if (device == nullptr)
+    {
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    // 2. Read from the device
+    return i2c_master_receive(device->handle, data, size, -1);
+
 }
 
 esp_err_t i2c_remove_device(i2c_context_t *context, uint16_t device_address)

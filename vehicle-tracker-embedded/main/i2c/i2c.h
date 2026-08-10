@@ -110,22 +110,24 @@ esp_err_t i2c_remove_device(i2c_context_t *context, uint16_t device_address);
  *
  * @brief Writes data to the I2C device.
  *
- * @param dev_handle the device handle to write to
+ * @param context Pointer to the I2C context associated with the bus the device was added to.
+ * @param device_address the 7-bit I2C address of the device to write to
  * @param data Pointer to the data buffer to be sent over I2C.
  * @param size The size of the data to be sent in bytes.
  * @return ESP_OK on success, or an appropriate error code on failure.
  */
-esp_err_t i2c_write(i2c_master_dev_handle_t dev_handle, const uint8_t *data, size_t size);
+esp_err_t i2c_write(i2c_context_t *context, uint16_t device_address, const uint8_t *data, size_t size);
 
 /**
  *
  * @brief Reads data from the I2C device.
  *
- * @param dev_handle the device handle to read from
+ * @param context Pointer to the I2C context associated with the bus the device was added to.
+ * @param device_address the 7-bit I2C address of the device to read from
  * @param data Pointer to the buffer where the read data will be stored.
  * @param size The number of bytes to read.
  * @return ESP_OK on success, or an appropriate error code on failure.
  */
-esp_err_t i2c_read(i2c_master_dev_handle_t dev_handle, uint8_t *data, size_t size);
+esp_err_t i2c_read(i2c_context_t *context, uint16_t device_address, uint8_t *data, size_t size);
 
 #endif
