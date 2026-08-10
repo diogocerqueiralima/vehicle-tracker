@@ -95,6 +95,59 @@ esp_err_t open_i2c(i2c_port_num_t port, int sda, int scl)
     return ESP_OK;
 }
 
+esp_err_t close_i2c(i2c_port_num_t port)
+{
+
+    // 1. Search for the context with the given port in the i2c registry
+    for (int i = 0; i < i2c_registry.count; i++)
+    {
+
+        i2c_context_t* context = i2c_registry.contexts[i];
+
+        if (context->port != port)
+        {
+            continue;
+        }
+
+        // 2. Remove all devices from the bus
+        i2c_device_registry_t* device_registry = context->device_registry;
+        for (int j = 0; j < device_registry->count; j++)
+        {
+
+            i2c_device_t* device = device_registry->devices[j];
+
+            const esp_err_t error = i2c_master_bus_rm_device(device->handle);
+            if (error != ESP_OK)
+            {
+                return error;
+            }
+
+            free(device);
+
+        }
+
+        free(device_registry->devices);
+        free(device_registry);
+
+        // 3. Delete the i2c bus
+        const esp_err_t error = i2c_del_master_bus(context->bus);
+        if (error != ESP_OK)
+        {
+            return error;
+        }
+
+        // 4. Remove the context from the registry
+        free(context);
+        i2c_registry.contexts[i] = i2c_registry.contexts[i2c_registry.count - 1];
+        i2c_registry.count--;
+
+        return ESP_OK;
+
+    }
+
+    return ESP_ERR_NOT_FOUND;
+}
+
 i2c_context_t* get_i2c_context(i2c_port_num_t port)
 {
 
@@ -113,6 +166,22 @@ i2c_context_t* get_i2c_context(i2c_port_num_t port)
     }
 
     return nullptr;
+}
+
+void cleanup_i2c()
+{
+
+    // 1. Close every open i2c bus, freeing its context and devices
+    while (i2c_registry.count > 0)
+    {
+        close_i2c(i2c_registry.contexts[0]->port);
+    }
+
+    // 2. Free the registry itself
+    free(i2c_registry.contexts);
+    i2c_registry.contexts = nullptr;
+    i2c_registry.capacity = 0;
+
 }
 
 esp_err_t i2c_add_device(i2c_context_t *context, uint16_t device_address, uint32_t clk_speed, i2c_master_dev_handle_t *dev_handle)
@@ -156,6 +225,16 @@ esp_err_t i2c_add_device(i2c_context_t *context, uint16_t device_address, uint32
     device_registry->count++;
 
     return ESP_OK;
+}
+
+esp_err_t i2c_write(i2c_master_dev_handle_t dev_handle, const uint8_t *data, size_t size)
+{
+    return i2c_master_transmit(dev_handle, data, size, -1);
+}
+
+esp_err_t i2c_read(i2c_master_dev_handle_t dev_handle, uint8_t *data, size_t size)
+{
+    return i2c_master_receive(dev_handle, data, size, -1);
 }
 
 esp_err_t i2c_remove_device(i2c_context_t *context, uint16_t device_address)
