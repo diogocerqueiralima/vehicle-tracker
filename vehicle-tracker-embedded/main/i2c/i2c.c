@@ -1,6 +1,9 @@
 #include "i2c.h"
 
+#include "esp_log.h"
 #include "driver/i2c_master.h"
+
+#define I2C_TAG "I2C"
 
 i2c_registry_t i2c_registry;
 
@@ -197,7 +200,13 @@ void cleanup_i2c()
     // 1. Close every open i2c bus, freeing its context and devices
     while (i2c_registry.count > 0)
     {
-        close_i2c(i2c_registry.contexts[0]->port);
+        const esp_err_t error = close_i2c(i2c_registry.contexts[0]->port);
+        if (error != ESP_OK)
+        {
+            ESP_LOGE(I2C_TAG, "Failed to close I2C bus on port %d: %s", i2c_registry.contexts[0]->port, esp_err_to_name(error));
+            break;
+        }
+
     }
 
     // 2. Free the registry itself
@@ -300,13 +309,13 @@ esp_err_t i2c_read(i2c_context_t *context, uint16_t device_address, uint8_t *dat
 esp_err_t i2c_remove_device(i2c_context_t *context, uint16_t device_address)
 {
 
-    i2c_device_registry_t* device_registry = context->device_registry;
-
     // 1. Validate input context
     if (context == nullptr)
     {
         return ESP_ERR_INVALID_ARG;
     }
+
+    i2c_device_registry_t* device_registry = context->device_registry;
 
     // 2. Search for the device with the given address in the context's device registry
     for (int i = 0; i < device_registry->count; i++)
