@@ -1,7 +1,6 @@
 #ifndef I2C_H
 
 #define I2C_H
-#define TAG     "I2C"
 
 #include "esp_err.h"
 #include "driver/i2c_types.h"

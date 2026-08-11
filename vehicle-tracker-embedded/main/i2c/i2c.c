@@ -7,6 +7,11 @@ i2c_registry_t i2c_registry;
 static i2c_device_t* get_i2c_device(const i2c_device_registry_t *device_registry, uint16_t device_address)
 {
 
+    if (device_registry == nullptr)
+    {
+        return nullptr;
+    }
+
     for (int i = 0; i < device_registry->count; i++)
     {
 
@@ -205,29 +210,35 @@ void cleanup_i2c()
 esp_err_t i2c_add_device(i2c_context_t *context, uint16_t device_address, uint32_t clk_speed, i2c_master_dev_handle_t *dev_handle)
 {
 
+    // 1. Validate input context
+    if (context == nullptr)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
     i2c_device_registry_t* device_registry = context->device_registry;
 
-    // 1. Check if the device registry has reached its capacity
+    // 2. Check if the device registry has reached its capacity
     if (device_registry->count >= device_registry->capacity)
     {
         return ESP_ERR_NO_MEM;
     }
 
-    // 2. Create the device config
+    // 3. Create the device config
     const i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address = device_address,
         .scl_speed_hz = clk_speed,
     };
 
-    // 3. Add the device to the bus
+    // 4. Add the device to the bus
     const esp_err_t error = i2c_master_bus_add_device(context->bus, &dev_cfg, dev_handle);
     if (error != ESP_OK)
     {
         return error;
     }
 
-    // 4. Create the device
+    // 5. Create the device
     i2c_device_t* device = malloc(sizeof(i2c_device_t));
     if (device == NULL)
     {
@@ -238,7 +249,7 @@ esp_err_t i2c_add_device(i2c_context_t *context, uint16_t device_address, uint32
     device->address = device_address;
     device->handle = *dev_handle;
 
-    // 5. Register the device
+    // 6. Register the device
     device_registry->devices[device_registry->count] = device;
     device_registry->count++;
 
@@ -248,29 +259,40 @@ esp_err_t i2c_add_device(i2c_context_t *context, uint16_t device_address, uint32
 esp_err_t i2c_write(i2c_context_t *context, uint16_t device_address, const uint8_t *data, size_t size)
 {
 
-    // 1. Search for the device with the given address in the context's device registry
+    // 1. Validate input context
+    if (context == nullptr)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Search for the device with the given address in the context's device registry
     const i2c_device_t* device = get_i2c_device(context->device_registry, device_address);
     if (device == nullptr)
     {
         return ESP_ERR_NOT_FOUND;
     }
 
-    // 2. Write to the device
+    // 3. Write to the device
     return i2c_master_transmit(device->handle, data, size, -1);
-
 }
 
 esp_err_t i2c_read(i2c_context_t *context, uint16_t device_address, uint8_t *data, size_t size)
 {
 
-    // 1. Search for the device with the given address in the context's device registry
+    // 1. Validate input context
+    if (context == nullptr)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Search for the device with the given address in the context's device registry
     const i2c_device_t* device = get_i2c_device(context->device_registry, device_address);
     if (device == nullptr)
     {
         return ESP_ERR_NOT_FOUND;
     }
 
-    // 2. Read from the device
+    // 3. Read from the device
     return i2c_master_receive(device->handle, data, size, -1);
 
 }
@@ -280,7 +302,13 @@ esp_err_t i2c_remove_device(i2c_context_t *context, uint16_t device_address)
 
     i2c_device_registry_t* device_registry = context->device_registry;
 
-    // 1. Search for the device with the given address in the context's device registry
+    // 1. Validate input context
+    if (context == nullptr)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Search for the device with the given address in the context's device registry
     for (int i = 0; i < device_registry->count; i++)
     {
 
@@ -291,14 +319,14 @@ esp_err_t i2c_remove_device(i2c_context_t *context, uint16_t device_address)
             continue;
         }
 
-        // 2. Remove the device from the bus
+        // 3. Remove the device from the bus
         const esp_err_t error = i2c_master_bus_rm_device(device->handle);
         if (error != ESP_OK)
         {
             return error;
         }
 
-        // 3. Remove the device from the registry
+        // 4. Remove the device from the registry
         free(device);
         device_registry->devices[i] = device_registry->devices[device_registry->count - 1];
         device_registry->count--;
