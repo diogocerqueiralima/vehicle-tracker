@@ -34,8 +34,15 @@ static uint8_t u8x8_byte_display_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
     // 1. Accumulate the bytes u8g2 wants to send for the current transfer
     case U8X8_MSG_BYTE_SEND:
         {
+
+            // 2. Check if the transfer exceeds the bytes
+            if ((size_t)arg_int > DISPLAY_I2C_BUFFER_SIZE - buffer_len)
+            {
+                return 0;
+            }
+
             const uint8_t *data = arg_ptr;
-            while (arg_int > 0 && buffer_len < DISPLAY_I2C_BUFFER_SIZE)
+            while (arg_int > 0)
             {
                 buffer[buffer_len++] = *data;
                 data++;
@@ -44,12 +51,12 @@ static uint8_t u8x8_byte_display_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
         }
         break;
 
-    // 2. Reset the buffer at the start of a new transfer
+    // 3. Reset the buffer at the start of a new transfer
     case U8X8_MSG_BYTE_START_TRANSFER:
         buffer_len = 0;
         break;
 
-    // 3. Flush the accumulated buffer over I2C at the end of the transfer
+    // 4. Flush the accumulated buffer over I2C at the end of the transfer
     case U8X8_MSG_BYTE_END_TRANSFER:
         {
             const display_context_t *context = u8x8_GetUserPtr(u8x8);
