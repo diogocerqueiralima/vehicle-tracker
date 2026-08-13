@@ -14,6 +14,9 @@ static const char* DEVICE_NAME = "VehicleTracker-ESP32\0";
 static struct ble_gatt_svc_def* gatt_services_defs = nullptr;
 static int service_count = 0;
 
+static ble_manager_gap_cb_t app_gap_cb = nullptr;
+static void* app_gap_cb_arg = nullptr;
+
 static void ble_host_task(void* param)
 {
     (void)param;
@@ -24,7 +27,7 @@ static void ble_host_task(void* param)
 static int on_gap_event(struct ble_gap_event* event, void* arg);
 
 // Starts undirected connectable advertising indefinitely, using the device's inferred address type.
-static void start_advertising(void)
+static void start_advertising()
 {
     // 1. Infer own address type (public if available, random static otherwise)
     uint8_t addr_type;
@@ -66,6 +69,10 @@ static int on_gap_event(struct ble_gap_event* event, void* arg)
     case BLE_GAP_EVENT_DISCONNECT:
         {
             ESP_LOGI(LOG_TAG, "Disconnected (reason %d), restarting advertising", event->disconnect.reason);
+            if (app_gap_cb != nullptr)
+            {
+                app_gap_cb(BLE_MANAGER_EVENT_DISCONNECTED, nullptr, app_gap_cb_arg);
+            }
             start_advertising();
             return 0;
         }
@@ -76,7 +83,12 @@ static int on_gap_event(struct ble_gap_event* event, void* arg)
                 struct ble_sm_io pkey = {0};
                 pkey.action = event->passkey.params.action;
                 pkey.passkey = generate_passkey();
-                ESP_LOGI(LOG_TAG, "Enter passkey %" PRIu32 " on the peer device", pkey.passkey);
+
+                if (app_gap_cb != nullptr)
+                {
+                    app_gap_cb(BLE_MANAGER_EVENT_PASSKEY, &pkey.passkey, app_gap_cb_arg);
+                }
+
                 ble_sm_inject_io(event->passkey.conn_handle, &pkey);
             }
             return 0;
@@ -90,6 +102,10 @@ static int on_gap_event(struct ble_gap_event* event, void* arg)
                 if (rc == 0 && desc.sec_state.bonded)
                 {
                     ESP_LOGI(LOG_TAG, "Connected (connection %d, bonded)", event->enc_change.conn_handle);
+                    if (app_gap_cb != nullptr)
+                    {
+                        app_gap_cb(BLE_MANAGER_EVENT_CONNECTED, nullptr, app_gap_cb_arg);
+                    }
                 }
                 else
                 {
@@ -129,6 +145,12 @@ static void on_reset(int reason)
 {
     (void)reason;
     // Host reset; re-synchronization will trigger on_sync again
+}
+
+void ble_manager_set_gap_callback(ble_manager_gap_cb_t cb, void* arg)
+{
+    app_gap_cb = cb;
+    app_gap_cb_arg = arg;
 }
 
 int ble_manager_register_service(const struct ble_gatt_svc_def* svc_def)
