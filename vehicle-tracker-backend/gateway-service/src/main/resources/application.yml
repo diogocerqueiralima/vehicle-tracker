@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: gateway-service
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+
+gateway:
+  routes:
+    - id: identity-service
+      path: /identity/**
+      uri: ${IDENTITY_SERVICE_URL}
+      public-route: false
+    - id: asset-service
+      path: /assets/**
+      uri: ${ASSET_SERVICE_URL}
+      public-route: false
+  rate-limit:
+    capacity: 100
+    window-seconds: 60
+    routes:
+      identity-service:
+        capacity: 20
+        window-seconds: 60
