@@ -16,3 +16,6 @@ dependencies:
   #   public: true
   espressif/esp_modem: ^2.0.2
   espressif/mqtt: '*'
+  u8g2:
+    git: https://github.com/olikraus/u8g2.git
+    version: "2.37.1"
