@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+
+gateway:
+  routes:
+    - id: asset-service
+      prefix: /assets
+      uri: http://localhost:8081
+      rules:
+        - method: POST
+          path: /devices
+          role: ADMIN
+        - method: PUT
+          path: /devices/{deviceId}
+          role: ADMIN

@@ -21,7 +21,6 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.boot.starter.oauth2.resource.server)
     implementation(libs.postgresql)
     implementation(libs.protobuf.java.util)
     implementation(libs.springdoc)

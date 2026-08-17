@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
+import com.github.diogocerqueiralima.api.common.headers.ReservedHeaders;
 import com.github.diogocerqueiralima.asset.service.application.commands.AssignDeviceToSimCardCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UnassignDeviceFromSimCardCommand;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.SimCardAssignmentUseCase;
@@ -20,12 +21,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.asset.service.presentation.http.config.ApplicationURIs.SIM_CARDS_ASSIGNMENTS_BASE_URI;
+import static com.github.diogocerqueiralima.api.common.uris.ApplicationURIs.SIM_CARDS_ASSIGNMENTS_BASE_URI;
 
 /**
  * REST endpoints for SIM card assignment operations.
@@ -94,13 +94,13 @@ public class SimCardAssignmentController {
     )
     @PostMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> assignDeviceToSimCard(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @PathVariable @Parameter(description = "Unique identifier of the SIM card to assign a device to.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true) UUID simCardId,
             @RequestBody AssignDeviceToSimCardRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
-        UUID assignedBy = extractUserId(authentication);
+        UUID assignedBy = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         AssignDeviceToSimCardCommand command = SimCardAssignmentHttpMapper.toAssignDeviceToSimCardCommand(
@@ -159,13 +159,13 @@ public class SimCardAssignmentController {
     )
     @DeleteMapping(SIM_CARDS_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> unassignDeviceFromSimCard(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @PathVariable @Parameter(description = "Unique identifier of the SIM card to unassign a device from.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true) UUID simCardId,
             @RequestBody UnassignDeviceFromSimCardRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
-        UUID unassignedBy = extractUserId(authentication);
+        UUID unassignedBy = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         UnassignDeviceFromSimCardCommand command = SimCardAssignmentHttpMapper.toUnassignDeviceFromSimCardCommand(
@@ -183,19 +183,16 @@ public class SimCardAssignmentController {
         return ResponseEntity.ok(new ApiResponseDTO<>("Device unassigned from SIM card successfully.", responseData));
     }
 
-    private UUID extractUserId(JwtAuthenticationToken authentication) {
+    private UUID extractUserId(String userIdHeader) {
 
-        // 1. Keycloak stores the user id in the token subject claim.
-        String subject = authentication.getToken().getSubject();
-        if (subject == null || subject.isBlank()) {
-            throw new IllegalArgumentException("Missing user ID in authentication token.");
+        if (userIdHeader == null || userIdHeader.isBlank()) {
+            throw new IllegalArgumentException("Missing user ID header.");
         }
 
-        // 2. Converts subject to UUID used by application/domain contracts.
         try {
-            return UUID.fromString(subject);
+            return UUID.fromString(userIdHeader);
         } catch (IllegalArgumentException exception) {
-            throw new IllegalArgumentException("Invalid user ID format in authentication token.", exception);
+            throw new IllegalArgumentException("Invalid user ID format in header.", exception);
         }
     }
 

@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.asset.service.presentation.http.controller
 
 import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.api.common.dto.PageDTO;
+import com.github.diogocerqueiralima.api.common.headers.ReservedHeaders;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehiclePageCommand;
@@ -24,18 +25,18 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.asset.service.presentation.http.config.ApplicationURIs.*;
+import static com.github.diogocerqueiralima.api.common.uris.ApplicationURIs.*;
 
 /**
  * REST endpoints for vehicle operations.
@@ -99,12 +100,12 @@ public class VehicleController {
     )
     @PostMapping(VEHICLES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> create(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @RequestBody CreateVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Map transport data to an application command.
         CreateVehicleCommand command = VehicleHttpMapper.toCreateCommand(request, userId);
@@ -162,12 +163,12 @@ public class VehicleController {
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> update(
             @Parameter(description = "Unique identifier of the vehicle to update.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = VEHICLE_ID_PARAM) UUID id,
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @RequestBody UpdateVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Map transport data to an application command.
         UpdateVehicleCommand command = VehicleHttpMapper.toUpdateCommand(id, request, userId);
@@ -224,11 +225,11 @@ public class VehicleController {
     public ResponseEntity<ApiResponseDTO<VehicleDTO>> getById(
             @Parameter(description = "Unique identifier of the vehicle to retrieve.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = VEHICLE_ID_PARAM) UUID id,
-            JwtAuthenticationToken authentication
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Map transport data to an application command.
         GetVehicleByIdCommand command = VehicleHttpMapper.toGetByIdCommand(id, userId);
@@ -279,7 +280,7 @@ public class VehicleController {
     )
     @GetMapping(VEHICLES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<VehicleDTO>>> getPage(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @Parameter(description = "Page number using one-based indexing.", example = "1")
             @RequestParam(name = PAGE_NUMBER_PARAM, defaultValue = "1") int pageNumber,
             @Parameter(description = "Number of vehicles per page.", example = "10")
@@ -287,7 +288,7 @@ public class VehicleController {
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Maps query params to application command.
         GetVehiclePageCommand command = VehicleHttpMapper.toGetPageCommand(pageNumber, pageSize, userId);
@@ -303,13 +304,8 @@ public class VehicleController {
         );
     }
 
-    private UUID extractUserId(JwtAuthenticationToken authentication) {
-
-        // 1. Keycloak stores the user id in the token subject claim.
-        String subject = authentication.getToken().getSubject();
-
-        // 2. Converts subject to UUID used by application/domain contracts.
-        return UUID.fromString(subject);
+    private UUID extractUserId(String userIdHeader) {
+        return UUID.fromString(userIdHeader);
     }
 
 }
