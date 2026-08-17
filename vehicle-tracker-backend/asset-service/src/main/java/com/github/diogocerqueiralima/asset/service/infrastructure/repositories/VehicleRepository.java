@@ -43,4 +43,23 @@ public interface VehicleRepository extends JpaRepository<VehicleEntity, UUID> {
 	 */
 	Page<VehicleEntity> findAllByOwnerId(UUID ownerId, Pageable pageable);
 
+	/**
+	 * Checks whether a vehicle with the given VIN or plate already exists.
+	 *
+	 * @param vin VIN to check.
+	 * @param plate plate to check.
+	 * @return true when a vehicle with either value already exists.
+	 */
+	boolean existsByVinOrPlate(String vin, String plate);
+
+	/**
+	 * Checks whether a vehicle other than the given id already uses the VIN or plate.
+	 *
+	 * @param vin VIN to check.
+	 * @param plate plate to check.
+	 * @param id id to exclude from the check.
+	 * @return true when another vehicle with either value already exists.
+	 */
+	boolean existsByVinOrPlateAndIdNot(String vin, String plate, UUID id);
+
 }

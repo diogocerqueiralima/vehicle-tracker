@@ -1,12 +1,10 @@
 package com.github.diogocerqueiralima.asset.service.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.asset.service.domain.assets.SimCard;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.SimCardEntity;
 import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.SimCardMapper;
 import com.github.diogocerqueiralima.asset.service.infrastructure.repositories.SimCardRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -27,14 +25,10 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     @Override
     public SimCard save(SimCard simCard) {
 
-        try {
-            SimCardEntity entity = toEntity(simCard);
-            SimCardEntity savedEntity = simCardRepository.save(entity);
+        SimCardEntity entity = toEntity(simCard);
+        SimCardEntity savedEntity = simCardRepository.save(entity);
 
-            return toDomain(savedEntity);
-        } catch (DataIntegrityViolationException e) {
-            throw new SimCardAlreadyExistsException();
-        }
+        return toDomain(savedEntity);
     }
 
     @Override
@@ -52,6 +46,16 @@ public class SimCardPersistenceImpl implements SimCardPersistence {
     @Override
     public void deleteByIdAndOwnerId(UUID id, UUID ownerId) {
         simCardRepository.deleteByIdAndOwnerId(id, ownerId);
+    }
+
+    @Override
+    public boolean existsByIccidOrMsisdnOrImsi(String iccid, String msisdn, String imsi) {
+        return simCardRepository.existsByIccidOrMsisdnOrImsi(iccid, msisdn, imsi);
+    }
+
+    @Override
+    public boolean isIccidOrMsisdnOrImsiTakenByAnotherSimCard(String iccid, String msisdn, String imsi, UUID excludingId) {
+        return simCardRepository.existsByIccidOrMsisdnOrImsiAndIdNot(iccid, msisdn, imsi, excludingId);
     }
 
 }

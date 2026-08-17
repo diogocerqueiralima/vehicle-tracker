@@ -6,6 +6,7 @@ import com.github.diogocerqueiralima.asset.service.application.exceptions.Device
 import com.github.diogocerqueiralima.asset.service.application.exceptions.SimCardAssignmentNotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.exceptions.SimCardNotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.mappers.SimCardAssignmentApplicationMapper;
+import com.github.diogocerqueiralima.asset.service.domain.exceptions.SimCardAssignmentFailedException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.SimCardAssignmentUseCase;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.SimCardAssignmentPersistence;
@@ -62,7 +63,13 @@ public class SimCardAssignmentUseCaseImpl implements SimCardAssignmentUseCase {
         SimCard simCard = simCardPersistence.findByIdAndOwnerId(simCardId, assignedBy)
                 .orElseThrow(() -> new SimCardNotFoundException(simCardId));
 
-        // 3. Builds and saves the new assignment.
+        // 3. Fails when either the device or the SIM card already has an active assignment.
+        if (simCardAssignmentPersistence.hasActiveAssignmentForDevice(deviceId)
+                || simCardAssignmentPersistence.hasActiveAssignmentForSimCard(simCardId)) {
+            throw new SimCardAssignmentFailedException(deviceId, simCardId);
+        }
+
+        // 4. Builds and saves the new assignment.
         SimCardAssignment assignmentToSave = SimCardAssignmentApplicationMapper.toDomain(
                 command,
                 device,
@@ -72,7 +79,7 @@ public class SimCardAssignmentUseCaseImpl implements SimCardAssignmentUseCase {
 
         SimCardAssignment savedAssignment = simCardAssignmentPersistence.save(assignmentToSave);
 
-        // 4. Maps persisted assignment to application response contract.
+        // 5. Maps persisted assignment to application response contract.
         return SimCardAssignmentApplicationMapper.toResult(savedAssignment);
     }
 

@@ -52,4 +52,20 @@ public interface VehicleAssignmentPersistence {
      */
     Page<VehicleAssignment> findHistory(UUID vehicleId, UUID userId, int pageNumber, int pageSize);
 
+    /**
+     * Checks whether the given device already has an active assignment.
+     *
+     * @param deviceId device unique identifier.
+     * @return true when an active assignment exists for the device.
+     */
+    boolean hasActiveAssignmentForDevice(UUID deviceId);
+
+    /**
+     * Checks whether the given vehicle already has an active assignment.
+     *
+     * @param vehicleId vehicle unique identifier.
+     * @return true when an active assignment exists for the vehicle.
+     */
+    boolean hasActiveAssignmentForVehicle(UUID vehicleId);
+
 }

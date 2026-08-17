@@ -1,7 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.asset.service.domain.assignments.VehicleAssignment;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAssignmentFailedException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.VehicleAssignmentPersistence;
 import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.VehicleEntity;
@@ -10,7 +9,6 @@ import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.Device
 import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.VehicleAssignmentMapper;
 import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.asset.service.infrastructure.repositories.VehicleAssignmentRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,19 +32,12 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
     @Override
     public VehicleAssignment save(VehicleAssignment vehicleAssignment) {
 
-        try {
-            DeviceEntity deviceEntity = DeviceMapper.toEntity(vehicleAssignment.getDevice());
-            VehicleEntity vehicleEntity = VehicleMapper.toEntity(vehicleAssignment.getVehicle());
-            VehicleAssignmentEntity entity = toEntity(vehicleAssignment, deviceEntity, vehicleEntity);
-            VehicleAssignmentEntity savedEntity = vehicleAssignmentRepository.save(entity);
+        DeviceEntity deviceEntity = DeviceMapper.toEntity(vehicleAssignment.getDevice());
+        VehicleEntity vehicleEntity = VehicleMapper.toEntity(vehicleAssignment.getVehicle());
+        VehicleAssignmentEntity entity = toEntity(vehicleAssignment, deviceEntity, vehicleEntity);
+        VehicleAssignmentEntity savedEntity = vehicleAssignmentRepository.save(entity);
 
-            return toDomain(savedEntity);
-        } catch (DataIntegrityViolationException e) {
-            throw new VehicleAssignmentFailedException(
-                    vehicleAssignment.getDevice().getId(),
-                    vehicleAssignment.getVehicle().getId()
-            );
-        }
+        return toDomain(savedEntity);
     }
 
     @Override
@@ -68,6 +59,16 @@ public class VehicleAssignmentPersistenceImpl implements VehicleAssignmentPersis
 
         return vehicleAssignmentRepository.findHistory(vehicleId, userId, pageable)
                 .map(VehicleAssignmentMapper::toDomain);
+    }
+
+    @Override
+    public boolean hasActiveAssignmentForDevice(UUID deviceId) {
+        return vehicleAssignmentRepository.existsByDeviceIdAndUnassignedAtIsNull(deviceId);
+    }
+
+    @Override
+    public boolean hasActiveAssignmentForVehicle(UUID vehicleId) {
+        return vehicleAssignmentRepository.existsByVehicleIdAndUnassignedAtIsNull(vehicleId);
     }
 
 }
