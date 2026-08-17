@@ -9,6 +9,7 @@ import com.github.diogocerqueiralima.asset.service.application.exceptions.Vehicl
 import com.github.diogocerqueiralima.asset.service.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.mappers.VehicleAssignmentApplicationMapper;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
+import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAssignmentFailedException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.VehicleAssignmentUseCase;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.VehicleAssignmentPersistence;
@@ -59,7 +60,12 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
         Vehicle vehicle = vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)
                 .orElseThrow(() -> new VehicleNotFoundException(vehicleId));
 
-        // 3. Builds and saves the new assignment.
+        // 3. Fails when either the device or the vehicle already has an active assignment.
+        if (vehicleAssignmentPersistence.hasActiveAssignmentForDevice(deviceId) || vehicleAssignmentPersistence.hasActiveAssignmentForVehicle(vehicleId)) {
+            throw new VehicleAssignmentFailedException(deviceId, vehicleId);
+        }
+
+        // 4. Builds and saves the new assignment.
         VehicleAssignment assignmentToSave = VehicleAssignmentApplicationMapper.toDomain(
                 command,
                 device,
@@ -69,7 +75,7 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
 
         VehicleAssignment savedAssignment = vehicleAssignmentPersistence.save(assignmentToSave);
 
-        // 4. Maps persisted assignment to application response contract.
+        // 5. Maps persisted assignment to application response contract.
         return VehicleAssignmentApplicationMapper.toResult(savedAssignment);
     }
 

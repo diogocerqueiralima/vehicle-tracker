@@ -47,4 +47,25 @@ public interface SimCardPersistence {
      */
     void deleteByIdAndOwnerId(UUID id, UUID ownerId);
 
+    /**
+     * Checks whether a SIM card with the given ICCID, MSISDN or IMSI already exists.
+     *
+     * @param iccid ICCID to check.
+     * @param msisdn MSISDN to check.
+     * @param imsi IMSI to check.
+     * @return true when a SIM card with any of those values already exists.
+     */
+    boolean existsByIccidOrMsisdnOrImsi(String iccid, String msisdn, String imsi);
+
+    /**
+     * Checks whether a SIM card other than the given id already uses the ICCID, MSISDN or IMSI.
+     *
+     * @param iccid ICCID to check.
+     * @param msisdn MSISDN to check.
+     * @param imsi IMSI to check.
+     * @param excludingId id to exclude from the check (the SIM card being updated).
+     * @return true when another SIM card with any of those values already exists.
+     */
+    boolean isIccidOrMsisdnOrImsiTakenByAnotherSimCard(String iccid, String msisdn, String imsi, UUID excludingId);
+
 }

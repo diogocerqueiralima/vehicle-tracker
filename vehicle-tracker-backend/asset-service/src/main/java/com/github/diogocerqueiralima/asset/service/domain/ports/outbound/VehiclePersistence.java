@@ -68,4 +68,23 @@ public interface VehiclePersistence {
      */
     Page<Vehicle> getPageByOwnerId(int pageNumber, int pageSize, UUID ownerId);
 
+    /**
+     * Checks whether a vehicle with the given VIN or plate already exists.
+     *
+     * @param vin VIN to check.
+     * @param plate plate to check.
+     * @return true when a vehicle with either value already exists.
+     */
+    boolean existsByVinOrPlate(String vin, String plate);
+
+    /**
+     * Checks whether a vehicle other than the given id already uses the VIN or plate.
+     *
+     * @param vin VIN to check.
+     * @param plate plate to check.
+     * @param excludingId id to exclude from the check (the vehicle being updated).
+     * @return true when another vehicle with either value already exists.
+     */
+    boolean isVinOrPlateTakenByAnotherVehicle(String vin, String plate, UUID excludingId);
+
 }

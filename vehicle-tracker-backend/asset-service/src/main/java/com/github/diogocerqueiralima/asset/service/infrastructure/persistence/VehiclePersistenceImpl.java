@@ -1,12 +1,10 @@
 package com.github.diogocerqueiralima.asset.service.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.asset.service.domain.assets.Vehicle;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.VehiclePersistence;
 import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.VehicleEntity;
 import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.VehicleMapper;
 import com.github.diogocerqueiralima.asset.service.infrastructure.repositories.VehicleRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -29,14 +27,10 @@ public class VehiclePersistenceImpl implements VehiclePersistence {
     @Override
     public Vehicle save(Vehicle vehicle) {
 
-        try {
-            VehicleEntity entity = toEntity(vehicle);
-            VehicleEntity savedEntity = vehicleRepository.save(entity);
+        VehicleEntity entity = toEntity(vehicle);
+        VehicleEntity savedEntity = vehicleRepository.save(entity);
 
-            return toDomain(savedEntity);
-        } catch (DataIntegrityViolationException e) {
-            throw new VehicleAlreadyExistsException();
-        }
+        return toDomain(savedEntity);
     }
 
     @Override
@@ -86,6 +80,16 @@ public class VehiclePersistenceImpl implements VehiclePersistence {
         // 2. Loads owner-scoped entity pageNumber and maps each entry to the domain model.
         return vehicleRepository.findAllByOwnerId(ownerId, pageRequest)
                 .map(VehicleMapper::toDomain);
+    }
+
+    @Override
+    public boolean existsByVinOrPlate(String vin, String plate) {
+        return vehicleRepository.existsByVinOrPlate(vin, plate);
+    }
+
+    @Override
+    public boolean isVinOrPlateTakenByAnotherVehicle(String vin, String plate, UUID excludingId) {
+        return vehicleRepository.existsByVinOrPlateAndIdNot(vin, plate, excludingId);
     }
 
 }

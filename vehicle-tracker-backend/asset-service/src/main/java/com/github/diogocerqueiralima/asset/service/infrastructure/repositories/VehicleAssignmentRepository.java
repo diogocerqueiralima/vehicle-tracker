@@ -39,6 +39,22 @@ public interface VehicleAssignmentRepository extends JpaRepository<VehicleAssign
 	Optional<VehicleAssignmentEntity> findByDeviceIdAndUnassignedAtIsNull(UUID deviceId);
 
 	/**
+	 * Checks whether the given device already has an active assignment.
+	 *
+	 * @param deviceId device unique identifier.
+	 * @return true when an active assignment exists for the device.
+	 */
+	boolean existsByDeviceIdAndUnassignedAtIsNull(UUID deviceId);
+
+	/**
+	 * Checks whether the given vehicle already has an active assignment.
+	 *
+	 * @param vehicleId vehicle unique identifier.
+	 * @return true when an active assignment exists for the vehicle.
+	 */
+	boolean existsByVehicleIdAndUnassignedAtIsNull(UUID vehicleId);
+
+	/**
 	 *
 	 * Finds the history of assignments for a specific vehicle and user, returning a paginated result.
 	 *

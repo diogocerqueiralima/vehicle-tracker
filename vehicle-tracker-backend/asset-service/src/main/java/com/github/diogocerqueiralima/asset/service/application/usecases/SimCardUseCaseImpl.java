@@ -6,6 +6,7 @@ import com.github.diogocerqueiralima.asset.service.application.commands.GetSimCa
 import com.github.diogocerqueiralima.asset.service.application.commands.UpdateSimCardCommand;
 import com.github.diogocerqueiralima.asset.service.application.exceptions.SimCardNotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.mappers.SimCardApplicationMapper;
+import com.github.diogocerqueiralima.asset.service.domain.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.SimCardUseCase;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.asset.service.application.results.SimCardResult;
@@ -31,11 +32,16 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
     @Override
     public SimCardResult create(CreateSimCardCommand command) {
 
-        // 1. Creates and saves the new SIM card.
+        // 1. Fails when the ICCID, MSISDN or IMSI is already in use.
+        if (simCardPersistence.existsByIccidOrMsisdnOrImsi(command.iccid(), command.msisdn(), command.imsi())) {
+            throw new SimCardAlreadyExistsException();
+        }
+
+        // 2. Creates and saves the new SIM card.
         SimCard simCardToSave = SimCardApplicationMapper.toDomain(command, Instant.now());
         SimCard savedSimCard = simCardPersistence.save(simCardToSave);
 
-        // 5. Builds the result.
+        // 3. Builds the result.
         return SimCardApplicationMapper.toResult(savedSimCard);
     }
 
@@ -50,11 +56,16 @@ public class SimCardUseCaseImpl implements SimCardUseCase {
         SimCard existingSimCard = simCardPersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new SimCardNotFoundException(id));
 
-        // 2. Updates and saves the SIM card.
+        // 2. Fails fast when another SIM card already uses the ICCID, MSISDN or IMSI.
+        if (simCardPersistence.isIccidOrMsisdnOrImsiTakenByAnotherSimCard(command.iccid(), command.msisdn(), command.imsi(), id)) {
+            throw new SimCardAlreadyExistsException();
+        }
+
+        // 3. Updates and saves the SIM card.
         SimCard simCardToSave = SimCardApplicationMapper.toDomain(command, existingSimCard, Instant.now());
         SimCard updatedSimCard = simCardPersistence.save(simCardToSave);
 
-        // 6. Builds the result.
+        // 4. Builds the result.
         return SimCardApplicationMapper.toResult(updatedSimCard);
     }
 
