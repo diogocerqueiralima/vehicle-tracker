@@ -1,12 +1,10 @@
 package com.github.diogocerqueiralima.asset.service.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.asset.service.domain.assets.Device;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.DeviceMapper;
 import com.github.diogocerqueiralima.asset.service.infrastructure.repositories.DeviceRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -29,14 +27,10 @@ public class DevicePersistenceImpl implements DevicePersistence {
     @Override
     public Device save(Device device) {
 
-        try {
-            DeviceEntity entity = toEntity(device);
-            DeviceEntity savedEntity = deviceRepository.save(entity);
+        DeviceEntity entity = toEntity(device);
+        DeviceEntity savedEntity = deviceRepository.save(entity);
 
-            return toDomain(savedEntity);
-        } catch (DataIntegrityViolationException e) {
-            throw new DeviceAlreadyExistsException();
-        }
+        return toDomain(savedEntity);
     }
 
     @Override
@@ -78,6 +72,16 @@ public class DevicePersistenceImpl implements DevicePersistence {
         // 2. Loads owner-scoped entity pageNumber and maps each entry to the domain model.
         return deviceRepository.findAllByOwnerId(ownerId, pageRequest)
                 .map(DeviceMapper::toDomain);
+    }
+
+    @Override
+    public boolean existsBySerialNumberOrImei(String serialNumber, String imei) {
+        return deviceRepository.existsBySerialNumberOrImei(serialNumber, imei);
+    }
+
+    @Override
+    public boolean isSerialNumberOrImeiTakenByAnotherDevice(String serialNumber, String imei, UUID excludingId) {
+        return deviceRepository.existsBySerialNumberOrImeiAndIdNot(serialNumber, imei, excludingId);
     }
 
 }

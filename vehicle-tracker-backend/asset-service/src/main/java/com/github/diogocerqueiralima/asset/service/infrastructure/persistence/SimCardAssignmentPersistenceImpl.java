@@ -1,7 +1,6 @@
 package com.github.diogocerqueiralima.asset.service.infrastructure.persistence;
 
 import com.github.diogocerqueiralima.asset.service.domain.assignments.SimCardAssignment;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.SimCardAssignmentFailedException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.SimCardAssignmentPersistence;
 import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.DeviceEntity;
 import com.github.diogocerqueiralima.asset.service.infrastructure.entities.assets.SimCardEntity;
@@ -10,7 +9,6 @@ import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.Device
 import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.SimCardAssignmentMapper;
 import com.github.diogocerqueiralima.asset.service.infrastructure.mappers.SimCardMapper;
 import com.github.diogocerqueiralima.asset.service.infrastructure.repositories.SimCardAssignmentRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -31,25 +29,28 @@ public class SimCardAssignmentPersistenceImpl implements SimCardAssignmentPersis
     @Override
     public SimCardAssignment save(SimCardAssignment simCardAssignment) {
 
-        try {
-            DeviceEntity deviceEntity = DeviceMapper.toEntity(simCardAssignment.getDevice());
-            SimCardEntity simCardEntity = SimCardMapper.toEntity(simCardAssignment.getSimCard());
-            SimCardAssignmentEntity entity = toEntity(simCardAssignment, deviceEntity, simCardEntity);
-            SimCardAssignmentEntity savedEntity = simCardAssignmentRepository.save(entity);
+        DeviceEntity deviceEntity = DeviceMapper.toEntity(simCardAssignment.getDevice());
+        SimCardEntity simCardEntity = SimCardMapper.toEntity(simCardAssignment.getSimCard());
+        SimCardAssignmentEntity entity = toEntity(simCardAssignment, deviceEntity, simCardEntity);
+        SimCardAssignmentEntity savedEntity = simCardAssignmentRepository.save(entity);
 
-            return toDomain(savedEntity);
-        } catch (DataIntegrityViolationException e) {
-            throw new SimCardAssignmentFailedException(
-                    simCardAssignment.getDevice().getId(),
-                    simCardAssignment.getSimCard().getId()
-            );
-        }
+        return toDomain(savedEntity);
     }
 
     @Override
     public Optional<SimCardAssignment> findActiveByDeviceIdAndSimCardId(UUID deviceId, UUID simCardId) {
         return simCardAssignmentRepository.findByDeviceIdAndSimCardIdAndUnassignedAtIsNull(deviceId, simCardId)
                 .map(SimCardAssignmentMapper::toDomain);
+    }
+
+    @Override
+    public boolean hasActiveAssignmentForDevice(UUID deviceId) {
+        return simCardAssignmentRepository.existsByDeviceIdAndUnassignedAtIsNull(deviceId);
+    }
+
+    @Override
+    public boolean hasActiveAssignmentForSimCard(UUID simCardId) {
+        return simCardAssignmentRepository.existsBySimCardIdAndUnassignedAtIsNull(simCardId);
     }
 
 }

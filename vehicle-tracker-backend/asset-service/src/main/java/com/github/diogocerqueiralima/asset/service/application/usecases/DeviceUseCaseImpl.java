@@ -6,6 +6,7 @@ import com.github.diogocerqueiralima.asset.service.application.commands.GetDevic
 import com.github.diogocerqueiralima.asset.service.application.commands.UpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.mappers.DeviceApplicationMapper;
+import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
@@ -33,14 +34,19 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
     @Override
     public DeviceResult create(CreateDeviceCommand command) {
 
-        // 1. Creates a new device.
+        // 1. Fails when the serial number or IMEI is already in use.
+        if (devicePersistence.existsBySerialNumberOrImei(command.serialNumber(), command.imei())) {
+            throw new DeviceAlreadyExistsException();
+        }
+
+        // 2. Creates a new device.
         Instant now = Instant.now();
         Device device = DeviceApplicationMapper.toDomain(command, now);
 
-        // 4. Saves the device.
+        // 3. Saves the device.
         Device savedDevice = devicePersistence.save(device);
 
-        // 5. Builds the result.
+        // 4. Builds the result.
         return DeviceApplicationMapper.toResult(savedDevice);
     }
 
@@ -54,13 +60,18 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
         Device existingDevice = devicePersistence.findById(id)
                 .orElseThrow(() -> new DeviceNotFoundException(id));
 
-        // 2. Updates the device preserving identity and creation timestamp.
+        // 2. Fails when another device already uses the serial number or IMEI.
+        if (devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)) {
+            throw new DeviceAlreadyExistsException();
+        }
+
+        // 3. Updates the device preserving identity and creation timestamp.
         Device deviceToSave = DeviceApplicationMapper.toDomain(command, existingDevice, Instant.now());
 
-        // 5. Saves the device.
+        // 4. Saves the device.
         Device updatedDevice = devicePersistence.save(deviceToSave);
 
-        // 6. Builds the result.
+        // 5. Builds the result.
         return DeviceApplicationMapper.toResult(updatedDevice);
     }
 

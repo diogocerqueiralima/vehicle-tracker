@@ -9,6 +9,7 @@ import com.github.diogocerqueiralima.asset.service.application.mappers.VehicleAp
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.application.results.VehicleResult;
 import com.github.diogocerqueiralima.asset.service.domain.assets.Vehicle;
+import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.VehicleUseCase;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.VehiclePersistence;
 import org.springframework.data.domain.Page;
@@ -33,14 +34,19 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
     @Override
     public VehicleResult create(CreateVehicleCommand command) {
 
-        // 1. Create a new vehicle
+        // 1. Fails when the VIN or plate is already in use.
+        if (vehiclePersistence.existsByVinOrPlate(command.vin(), command.plate())) {
+            throw new VehicleAlreadyExistsException();
+        }
+
+        // 2. Create a new vehicle
         Instant now = Instant.now();
         Vehicle vehicle = VehicleApplicationMapper.toDomain(command, now);
 
-        // 4. Saves the vehicle
+        // 3. Saves the vehicle
         Vehicle savedVehicle = vehiclePersistence.save(vehicle);
 
-        // 5. Build the result
+        // 4. Build the result
         return VehicleApplicationMapper.toResult(savedVehicle);
     }
 
@@ -55,13 +61,18 @@ public class VehicleUseCaseImpl implements VehicleUseCase {
         Vehicle existingVehicle = vehiclePersistence.findByIdAndOwnerId(id, userId)
                 .orElseThrow(() -> new VehicleNotFoundException(id));
 
-        // 2. Update the vehicle
+        // 2. Fails when another vehicle already uses the VIN or plate.
+        if (vehiclePersistence.isVinOrPlateTakenByAnotherVehicle(command.vin(), command.plate(), id)) {
+            throw new VehicleAlreadyExistsException();
+        }
+
+        // 3. Update the vehicle
         Vehicle vehicleToSave = VehicleApplicationMapper.toDomain(command, existingVehicle, Instant.now());
 
-        // 5. Save the vehicle
+        // 4. Save the vehicle
         Vehicle updatedVehicle = vehiclePersistence.save(vehicleToSave);
 
-        // 6. Build the result
+        // 5. Build the result
         return VehicleApplicationMapper.toResult(updatedVehicle);
     }
 
