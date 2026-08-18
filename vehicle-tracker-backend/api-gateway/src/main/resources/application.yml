@@ -11,7 +11,7 @@ gateway:
   routes:
     - id: asset-service
       prefix: /assets
-      uri: http://localhost:8081
+      uri: ${ASSET_SERVICE_URI}
       rules:
         - method: POST
           path: /devices

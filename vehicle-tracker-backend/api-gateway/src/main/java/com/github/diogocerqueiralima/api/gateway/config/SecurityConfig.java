@@ -46,6 +46,7 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain defaultSecurityFilterChain(ServerHttpSecurity http, GatewayRoutesProperties routes) {
         return http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(authorize -> {
 
                     for (GatewayRoutesProperties.Route route : routes.routes()) {
