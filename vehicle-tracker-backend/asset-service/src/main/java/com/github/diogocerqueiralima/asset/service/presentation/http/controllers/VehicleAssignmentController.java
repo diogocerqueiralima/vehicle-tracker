@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.asset.service.presentation.http.controller
 
 import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.api.common.dto.PageDTO;
+import com.github.diogocerqueiralima.api.common.headers.ReservedHeaders;
 import com.github.diogocerqueiralima.asset.service.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehicleAssignmentHistoryCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UnassignDeviceFromVehicleCommand;
@@ -21,12 +22,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.asset.service.presentation.http.config.ApplicationURIs.*;
+import static com.github.diogocerqueiralima.api.common.uris.ApplicationURIs.*;
 
 /**
  * REST endpoints for vehicle assignment operations.
@@ -95,14 +95,14 @@ public class VehicleAssignmentController {
     )
     @PostMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> assignDeviceToVehicle(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @Parameter(description = "Unique identifier of the vehicle to assign a device to.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable UUID vehicleId,
             @RequestBody AssignDeviceToVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
-        UUID assignedBy = extractUserId(authentication);
+        UUID assignedBy = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         AssignDeviceToVehicleCommand command = VehicleAssignmentHttpMapper.toAssignDeviceToVehicleCommand(
@@ -159,14 +159,14 @@ public class VehicleAssignmentController {
     )
     @DeleteMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> unassignDeviceFromVehicle(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @Parameter(description = "Unique identifier of the vehicle to unassign a device from.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable UUID vehicleId,
             @RequestBody UnassignDeviceFromVehicleRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
-        UUID unassignedBy = extractUserId(authentication);
+        UUID unassignedBy = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         UnassignDeviceFromVehicleCommand command = VehicleAssignmentHttpMapper.toUnassignDeviceFromVehicleCommand(
@@ -223,7 +223,7 @@ public class VehicleAssignmentController {
     )
     @GetMapping(VEHICLES_ASSIGNMENTS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<VehicleAssignmentDTO>>> getVehicleAssignmentHistory(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @Parameter(description = "Unique identifier of the vehicle whose assignment history to retrieve.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable UUID vehicleId,
             @Parameter(description = "Page number using one-based indexing.", example = "1")
@@ -233,7 +233,7 @@ public class VehicleAssignmentController {
     ) {
 
         // 1. Resolve the authenticated user id from the jwt.
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         GetVehicleAssignmentHistoryCommand command = VehicleAssignmentHttpMapper.toGetVehicleAssignmentHistoryCommand(
@@ -249,19 +249,16 @@ public class VehicleAssignmentController {
         return ResponseEntity.ok(new ApiResponseDTO<>("Vehicle assignment history fetched successfully.", responseData));
     }
 
-    private UUID extractUserId(JwtAuthenticationToken authentication) {
+    private UUID extractUserId(String userIdHeader) {
 
-        // 1. Keycloak stores the user id in the token subject claim.
-        String subject = authentication.getToken().getSubject();
-        if (subject == null || subject.isBlank()) {
-            throw new IllegalArgumentException("Missing user ID in authentication token.");
+        if (userIdHeader == null || userIdHeader.isBlank()) {
+            throw new IllegalArgumentException("Missing user ID header.");
         }
 
-        // 2. Converts subject to UUID used by application/domain contracts.
         try {
-            return UUID.fromString(subject);
+            return UUID.fromString(userIdHeader);
         } catch (IllegalArgumentException exception) {
-            throw new IllegalArgumentException("Invalid user ID format in authentication token.", exception);
+            throw new IllegalArgumentException("Invalid user ID format in header.", exception);
         }
     }
 

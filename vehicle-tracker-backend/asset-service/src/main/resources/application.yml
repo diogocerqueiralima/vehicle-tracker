@@ -7,8 +7,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+
+server:
+  servlet:
+    context-path: /assets

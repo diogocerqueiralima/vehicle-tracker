@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.controllers;
 
 import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
+import com.github.diogocerqueiralima.api.common.headers.ReservedHeaders;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateSimCardCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.DeleteSimCardByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetSimCardByIdCommand;
@@ -22,18 +23,18 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.asset.service.presentation.http.config.ApplicationURIs.*;
+import static com.github.diogocerqueiralima.api.common.uris.ApplicationURIs.*;
 
 /**
  * REST endpoints for SIM card operations.
@@ -97,12 +98,12 @@ public class SimCardController {
     )
     @PostMapping(SIM_CARDS_BASE_URI)
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> create(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @RequestBody CreateSimCardRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         CreateSimCardCommand command = SimCardHttpMapper.toCreateCommand(request, userId);
@@ -160,12 +161,12 @@ public class SimCardController {
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> update(
             @Parameter(description = "Unique identifier of the SIM card to update.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @RequestBody UpdateSimCardRequestDTO request
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         UpdateSimCardCommand command = SimCardHttpMapper.toUpdateCommand(id, request, userId);
@@ -220,11 +221,11 @@ public class SimCardController {
     public ResponseEntity<ApiResponseDTO<SimCardDTO>> getById(
             @Parameter(description = "Unique identifier of the SIM card to retrieve.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = SIM_CARD_ID_PARAM) UUID id,
-            JwtAuthenticationToken authentication
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         GetSimCardByIdCommand command = SimCardHttpMapper.toGetByIdCommand(id, userId);
@@ -279,11 +280,11 @@ public class SimCardController {
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(
             @Parameter(description = "Unique identifier of the SIM card to delete.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(SIM_CARD_ID_PARAM) UUID id,
-            JwtAuthenticationToken authentication
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader
     ) {
 
         // 1. Resolve the authenticated user id from the jwt
-        UUID userId = extractUserId(authentication);
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Maps transport data to an application command.
         DeleteSimCardByIdCommand command = SimCardHttpMapper.toDeleteByIdCommand(id, userId);
@@ -294,9 +295,8 @@ public class SimCardController {
         return ResponseEntity.ok(new ApiResponseDTO<>("SIM card deleted successfully.", null));
     }
 
-    private UUID extractUserId(JwtAuthenticationToken authentication) {
-        String subject = authentication.getToken().getSubject();
-        return UUID.fromString(subject);
+    private UUID extractUserId(String userIdHeader) {
+        return UUID.fromString(userIdHeader);
     }
 
 }

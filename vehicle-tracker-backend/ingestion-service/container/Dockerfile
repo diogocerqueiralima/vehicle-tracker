@@ -6,16 +6,14 @@ COPY gradle /app/gradle
 COPY settings.gradle.kts /app/settings.gradle.kts
 COPY gradlew /app/gradlew
 COPY ingestion-service /app/ingestion-service
-COPY asset-service /app/asset-service
-COPY identity-service /app/identity-service
-COPY error-common /app/error-common
-COPY api-common /app/api-common
 COPY events /app/events
 COPY schema /app/schema
 
+RUN mkdir -p asset-service identity-service error-common api-common api-gateway
+
 RUN ./gradlew :ingestion-service:bootJar --no-daemon
 
-RUN cp /app/ingestion-service/build/libs/ingestion-service-*.jar /app/app.jar
+RUN cp /app/ingestion-service/build/libs/ingestion-service-1.0.0.jar /app/app.jar
 RUN rm -rf ingestion-service events schema gradle gradlew settings.gradle.kts
 
 CMD ["java", "-jar", "/app/app.jar"]

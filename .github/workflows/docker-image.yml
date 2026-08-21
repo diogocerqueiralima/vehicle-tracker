@@ -32,3 +32,6 @@ jobs:
     - name: Push asset-service image
       working-directory: vehicle-tracker-backend/asset-service/container
       run: ./buildContainer.sh
+    - name: Push api-gateway image
+      working-directory: vehicle-tracker-backend/api-gateway/container
+      run: ./buildContainer.sh

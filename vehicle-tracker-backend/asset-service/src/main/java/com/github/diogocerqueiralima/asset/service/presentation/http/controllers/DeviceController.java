@@ -2,6 +2,7 @@ package com.github.diogocerqueiralima.asset.service.presentation.http.controller
 
 import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.api.common.dto.PageDTO;
+import com.github.diogocerqueiralima.api.common.headers.ReservedHeaders;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
@@ -24,18 +25,19 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.UUID;
 
-import static com.github.diogocerqueiralima.asset.service.presentation.http.config.ApplicationURIs.*;
+import static com.github.diogocerqueiralima.api.common.uris.ApplicationURIs.*;
 
 /**
  * REST endpoints for device operations.
@@ -58,8 +60,6 @@ import static com.github.diogocerqueiralima.asset.service.presentation.http.conf
 )
 @RestController
 public class DeviceController {
-
-    private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
     private final DeviceUseCase deviceUseCase;
 
@@ -216,14 +216,15 @@ public class DeviceController {
     public ResponseEntity<ApiResponseDTO<DeviceDTO>> getById(
             @Parameter(description = "Unique identifier of the device to retrieve.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = DEVICE_ID_PARAM) UUID id,
-            JwtAuthenticationToken authentication
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
+            @RequestHeader(value = ReservedHeaders.USER_ROLES, required = false) String rolesHeader
     ) {
 
-        // 1. Resolves the authenticated user id from Keycloak token subject.
-        UUID userId = extractUserId(authentication);
+        // 1. Resolves the authenticated user id from the header injected by the api-gateway.
+        UUID userId = extractUserId(userIdHeader);
 
-        // 2. Detects admin access from mapped Spring Security authorities.
-        boolean isAdmin = hasAdminRole(authentication);
+        // 2. Detects admin access from the roles header injected by the api-gateway.
+        boolean isAdmin = hasAdminRole(rolesHeader);
 
         // 3. Maps transport data to an application command.
         GetDeviceByIdCommand command = DeviceHttpMapper.toGetByIdCommand(id, userId, isAdmin);
@@ -274,15 +275,15 @@ public class DeviceController {
     )
     @GetMapping(DEVICES_BASE_URI)
     public ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> getPage(
-            JwtAuthenticationToken authentication,
+            @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader,
             @Parameter(description = "Page number using one-based indexing.", example = "1")
             @RequestParam(name = PAGE_NUMBER_PARAM, defaultValue = "1") int pageNumber,
             @Parameter(description = "Number of devices per page.", example = "10")
             @RequestParam(name = PAGE_SIZE_PARAM, defaultValue = "10") int pageSize
     ) {
 
-        // 1. Resolves the authenticated user id from Keycloak token subject.
-        UUID userId = extractUserId(authentication);
+        // 1. Resolves the authenticated user id from the header injected by the api-gateway.
+        UUID userId = extractUserId(userIdHeader);
 
         // 2. Maps query params to application command.
         GetDevicePageCommand command = DeviceHttpMapper.toGetPageCommand(pageNumber, pageSize, userId);
@@ -298,20 +299,19 @@ public class DeviceController {
         );
     }
 
-    private UUID extractUserId(JwtAuthenticationToken authentication) {
-
-        // 1. Keycloak stores the user id in token subject claim.
-        String subject = authentication.getToken().getSubject();
-
-        // 2. Converts subject to UUID used by application/domain contracts.
-        return UUID.fromString(subject);
+    private UUID extractUserId(String userIdHeader) {
+        return UUID.fromString(userIdHeader);
     }
 
-    private boolean hasAdminRole(JwtAuthenticationToken authentication) {
+    private boolean hasAdminRole(String rolesHeader) {
 
-        // 1. Uses granted authorities already mapped by SecurityConfig converter.
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> ROLE_ADMIN.equalsIgnoreCase(authority.getAuthority()));
+        if (rolesHeader == null || rolesHeader.isBlank()) {
+            return false;
+        }
+
+        // 1. Roles arrive as a comma-separated list, without the "ROLE_" prefix.
+        return Arrays.stream(rolesHeader.split(","))
+                .anyMatch(role -> "ADMIN".equalsIgnoreCase(role.trim()));
     }
 
 }

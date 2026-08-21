@@ -10,6 +10,7 @@ spring-grpc-dependencies = "1.0.3"
 hibernate = "6.6.29.Final"
 bouncy-castle = "1.83"
 springdoc = "3.0.1"
+spring-cloud = "2025.1.2"
 
 [libraries]
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
@@ -20,7 +21,9 @@ spring-boot-starter-validation = { module = "org.springframework.boot:spring-boo
 spring-integration-mqtt = { module = "org.springframework.integration:spring-integration-mqtt" }
 spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-starter-amqp" }
 spring-boot-grpc = { module = "org.springframework.grpc:spring-grpc-spring-boot-starter" }
+spring-cloud-gateway-webflux = { module = "org.springframework.cloud:spring-cloud-starter-gateway-server-webflux" }
 spring-grpc-dependencies = { module = "org.springframework.grpc:spring-grpc-dependencies", version.ref = "spring-grpc-dependencies" }
+spring-cloud-dependencies = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
 paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho-client-mqttv3" }
 jackson-core = { module = "tools.jackson.core:jackson-core", version.ref = "jackson" }
 jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }

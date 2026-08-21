@@ -1,7 +1,8 @@
-package com.github.diogocerqueiralima.asset.service.presentation.http.config;
+package com.github.diogocerqueiralima.api.common.uris;
 
 /**
- * Constants for asset-service HTTP endpoints.
+ * Constants for asset-service HTTP endpoints. Shared so the api-gateway can reference the
+ * same paths (prefixed by the gateway route) instead of hardcoding them.
  */
 public class ApplicationURIs {
 
@@ -30,4 +31,3 @@ public class ApplicationURIs {
             SIM_CARDS_ASSIGNMENTS_BASE_URI = SIM_CARDS_ID_URI + "/assignments";
 
 }
-
