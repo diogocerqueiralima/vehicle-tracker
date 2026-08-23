@@ -7,8 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.browser.customtabs.CustomTabsIntent
 import com.github.diogocerqueiralima.DependenciesContainer
-import com.github.diogocerqueiralima.domain.services.AuthenticationService
-import com.github.diogocerqueiralima.infrastructure.client.AuthenticationHttpClient
 import com.github.diogocerqueiralima.presentation.authentication.screens.AuthenticationScreen
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModelFactory
@@ -22,12 +20,7 @@ class AuthenticationActivity : ComponentActivity() {
         factoryProducer = {
 
             val dependenciesContainer = application as DependenciesContainer
-            val client = AuthenticationHttpClient(dependenciesContainer.httpClient)
-            val userSessionRepository = dependenciesContainer.userSessionRepository
-            val userPreSessionRepository = dependenciesContainer.userPreSessionRepository
-            val authenticationService = AuthenticationService(client, userSessionRepository, userPreSessionRepository)
-
-            AuthenticationViewModelFactory(authenticationService)
+            AuthenticationViewModelFactory(dependenciesContainer.authenticationService)
         }
     )
 

@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.infrastructure.entities
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -13,6 +14,6 @@ data class VehicleEntity(
     val plate: String,
     val model: String,
     val manufacturer: String,
-    val manufacturingDate: String
+    @SerialName("manufacturing_date") val manufacturingDate: String
 
 )

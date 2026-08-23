@@ -1,12 +1,9 @@
 package com.github.diogocerqueiralima.domain.services
 
 import com.github.diogocerqueiralima.domain.client.AuthenticationClient
-import com.github.diogocerqueiralima.domain.model.Token
 import com.github.diogocerqueiralima.domain.model.UserPreSession
-import com.github.diogocerqueiralima.domain.model.UserSession
 import com.github.diogocerqueiralima.domain.repositories.UserPreSessionRepository
 import com.github.diogocerqueiralima.domain.repositories.UserSessionRepository
-import kotlin.time.Clock
 
 /**
  * Service responsible for handling user authentication and session management.
@@ -24,26 +21,7 @@ class AuthenticationService(
      * @param codeVerifier The code verifier used in the PKCE flow.
      */
     suspend fun exchangeAuthorizationCode(authorizationCode: String, codeVerifier: String) {
-
-        val dto = client.exchangeAuthorizationCode(authorizationCode, codeVerifier)
-        val session = UserSession(
-            accessToken = Token.AccessToken(
-                value = dto.accessToken.value,
-                createdAt = Clock.System.now(),
-                expiresIn = dto.accessToken.expiresIn,
-                renewedAt = null
-            ),
-            refreshToken = Token.RefreshToken(
-                value = dto.refreshToken.value,
-                createdAt = Clock.System.now(),
-                expiresIn = dto.refreshToken.expiresIn
-            ),
-            identityToken = Token.IdentityToken(
-                value = dto.identityToken.value,
-                createdAt = Clock.System.now()
-            )
-        )
-
+        val session = client.exchangeAuthorizationCode(authorizationCode, codeVerifier)
         userSessionRepository.save(session)
     }
 

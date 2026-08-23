@@ -7,6 +7,7 @@ import com.github.diogocerqueiralima.infrastructure.entities.IdentityTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.RefreshTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.UserSessionEntity
 import com.github.diogocerqueiralima.infrastructure.dto.ExchangeAuthorizationCodeResponseDTO
+import com.github.diogocerqueiralima.utils.decodeIdentity
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -49,7 +50,8 @@ fun UserSessionEntity.toSession(): UserSession = UserSession(
     identityToken = Token.IdentityToken(
         value = this.identityToken.value,
         createdAt = Instant.fromEpochMilliseconds(this.identityToken.createdAtEpochMillis)
-    )
+    ),
+    identity = decodeIdentity(this.identityToken.value)
 )
 
 /**
@@ -72,5 +74,6 @@ fun ExchangeAuthorizationCodeResponseDTO.toSession(): UserSession = UserSession(
     identityToken = Token.IdentityToken(
         value = this.idToken,
         createdAt = Clock.System.now()
-    )
+    ),
+    identity = decodeIdentity(this.idToken)
 )

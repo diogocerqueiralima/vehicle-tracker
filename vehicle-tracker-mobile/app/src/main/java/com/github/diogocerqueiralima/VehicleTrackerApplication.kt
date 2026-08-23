@@ -6,6 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.github.diogocerqueiralima.domain.repositories.UserPreSessionRepository
 import com.github.diogocerqueiralima.domain.repositories.UserSessionRepository
+import com.github.diogocerqueiralima.domain.services.AuthenticationService
+import com.github.diogocerqueiralima.domain.services.UserSessionService
+import com.github.diogocerqueiralima.infrastructure.client.AuthenticationHttpClient
 import com.github.diogocerqueiralima.infrastructure.repositories.KeyRepositoryImpl
 import com.github.diogocerqueiralima.infrastructure.repositories.UserPreSessionRepositoryImpl
 import com.github.diogocerqueiralima.infrastructure.repositories.UserSessionRepositoryImpl
@@ -23,8 +26,8 @@ interface DependenciesContainer {
     val httpClient: HttpClient
     val dataStore: DataStore<Preferences>
     val keyStore: KeyStore
-    val userSessionRepository: UserSessionRepository
-    val userPreSessionRepository: UserPreSessionRepository
+    val userSessionService: UserSessionService
+    val authenticationService: AuthenticationService
 
 }
 
@@ -78,12 +81,20 @@ class VehicleTrackerApplication : Application(), DependenciesContainer {
         }
     }
 
-    override val userSessionRepository: UserSessionRepository by lazy {
+    private val userSessionRepository: UserSessionRepository by lazy {
         UserSessionRepositoryImpl(dataStore, KeyRepositoryImpl(keyStore))
     }
 
-    override val userPreSessionRepository: UserPreSessionRepository by lazy {
+    private val userPreSessionRepository: UserPreSessionRepository by lazy {
         UserPreSessionRepositoryImpl(dataStore)
+    }
+
+    override val userSessionService: UserSessionService by lazy {
+        UserSessionService(userSessionRepository)
+    }
+
+    override val authenticationService: AuthenticationService by lazy {
+        AuthenticationService(AuthenticationHttpClient(httpClient), userSessionRepository, userPreSessionRepository)
     }
 
 }
