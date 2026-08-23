@@ -1,9 +1,11 @@
-package com.github.diogocerqueiralima.infrastructure.http
+package com.github.diogocerqueiralima.infrastructure.client
 
 import android.util.Log
 import com.github.diogocerqueiralima.BuildConfig
 import com.github.diogocerqueiralima.domain.client.AuthenticationClient
-import com.github.diogocerqueiralima.infrastructure.http.dto.ExchangeAuthorizationCodeResponseDTO
+import com.github.diogocerqueiralima.domain.model.UserSession
+import com.github.diogocerqueiralima.infrastructure.dto.ExchangeAuthorizationCodeResponseDTO
+import com.github.diogocerqueiralima.infrastructure.mappers.toSession
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.FormDataContent
@@ -25,7 +27,7 @@ class AuthenticationHttpClient(private val client: HttpClient) : AuthenticationC
     override suspend fun exchangeAuthorizationCode(
         authorizationCode: String,
         codeVerifier: String,
-    ): ExchangeAuthorizationCodeResponseDTO {
+    ): UserSession {
 
         val response = client.post(urlString = BuildConfig.TOKEN_URI) {
 
@@ -51,7 +53,7 @@ class AuthenticationHttpClient(private val client: HttpClient) : AuthenticationC
         val dto = response.body<ExchangeAuthorizationCodeResponseDTO>()
 
         Log.d(TAG, "Received token DTO: $dto")
-        return dto
+        return dto.toSession()
     }
 
 }

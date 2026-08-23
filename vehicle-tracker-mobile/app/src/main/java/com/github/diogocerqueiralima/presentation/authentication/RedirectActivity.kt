@@ -8,21 +8,26 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.services.AuthenticationService
-import com.github.diogocerqueiralima.infrastructure.http.AuthenticationHttpClient
-import com.github.diogocerqueiralima.infrastructure.repositories.KeyRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserPreSessionRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserSessionRepositoryImpl
+import com.github.diogocerqueiralima.infrastructure.client.AuthenticationHttpClient
 import com.github.diogocerqueiralima.presentation.authentication.screens.RedirectScreen
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModelFactory
 import com.github.diogocerqueiralima.presentation.home.HomeActivity
+import com.github.diogocerqueiralima.presentation.welcome.WelcomeActivity
 
 const val TAG = "REDIRECT_ACTIVITY"
 
+/**
+ * Activity that handles the redirect from the authentication flow, processes the authorization code or error, and navigates to the appropriate screen.
+ */
 class RedirectActivity : ComponentActivity() {
 
     val homeIntent by lazy {
         Intent(this, HomeActivity::class.java)
+    }
+
+    val welcomeIntent by lazy {
+        Intent(this, WelcomeActivity::class.java)
     }
 
     private val viewModel by viewModels<RedirectViewModel>(
@@ -30,11 +35,8 @@ class RedirectActivity : ComponentActivity() {
 
             val dependenciesContainer = application as DependenciesContainer
             val client = AuthenticationHttpClient(dependenciesContainer.httpClient)
-            val dataStore = dependenciesContainer.dataStore
-            val keyStore = dependenciesContainer.keyStore
-            val keyRepository = KeyRepositoryImpl(keyStore)
-            val userSessionRepository = UserSessionRepositoryImpl(dataStore, keyRepository)
-            val userPreSessionRepository = UserPreSessionRepositoryImpl(dataStore)
+            val userSessionRepository = dependenciesContainer.userSessionRepository
+            val userPreSessionRepository = dependenciesContainer.userPreSessionRepository
             val authenticationService = AuthenticationService(client, userSessionRepository, userPreSessionRepository)
 
             RedirectViewModelFactory(authenticationService)
@@ -59,14 +61,17 @@ class RedirectActivity : ComponentActivity() {
         Log.d(TAG, "Extracted code: $code, state: $state, error: $error")
 
         if (code != null && state != null) {
-            viewModel.handleAuthorizationCode(code, state) {
-                startActivity(homeIntent)
-            }
+            viewModel.handleAuthorizationCode(
+                code = code,
+                state = state,
+                welcomeIntent = { startActivity(welcomeIntent) },
+                homeIntent = { startActivity(homeIntent) }
+            )
             return
         }
 
         viewModel.handleAuthenticationError(error ?: "Unknown error during authentication.") {
-            startActivity(homeIntent)
+            startActivity(welcomeIntent)
         }
     }
 

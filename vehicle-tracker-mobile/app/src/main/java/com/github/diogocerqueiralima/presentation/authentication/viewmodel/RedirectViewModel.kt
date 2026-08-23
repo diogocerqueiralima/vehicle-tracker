@@ -35,9 +35,9 @@ class RedirectViewModel(
      * This method updates the state to Error with the provided error message.
      *
      * @param error The error message received during authentication, if any.
-     * @param homeIntent A function that redirects the user to the home screen, used in case of errors.
+     * @param welcomeIntent A function that redirects the user to the welcome screen, used in case of errors.
      */
-    fun handleAuthenticationError(error: String?, homeIntent: () -> Unit) {
+    fun handleAuthenticationError(error: String?, welcomeIntent: () -> Unit) {
 
         // 1. Ensure we are in the correct state to handle the error
         if (_state.value !is RedirectState.Redirected) return
@@ -47,8 +47,8 @@ class RedirectViewModel(
             message = error ?: "An unexpected error occurred during authentication."
         )
 
-        // 3. Send user back to the home screen
-        homeIntent()
+        // 3. Send user back to the welcome screen
+        welcomeIntent()
     }
 
     /**
@@ -57,9 +57,10 @@ class RedirectViewModel(
      *
      * @param code The authorization code received from the OAuth2 provider.
      * @param state The state parameter received from the OAuth2 provider.
-     * @param homeIntent A function that redirects the user to the home screen, used in case of errors.
+     * @param welcomeIntent A function that redirects the user to the welcome screen, used in case of errors.
+     * @param homeIntent A function that redirects the user to the home screen, used in case of successful authentication.
      */
-    fun handleAuthorizationCode(code: String, state: String, homeIntent: () -> Unit) {
+    fun handleAuthorizationCode(code: String, state: String, welcomeIntent: () -> Unit, homeIntent: () -> Unit) {
 
         // 1. Get the current state
         val currentState = _state.value
@@ -81,8 +82,8 @@ class RedirectViewModel(
                     message = "State parameter does not match. You may be a victim of an attack."
                 )
 
-                // 4.1 Redirect the user to the home screen
-                homeIntent()
+                // 4.1 Redirect the user to the welcome screen
+                welcomeIntent()
                 return@launch
             }
 
@@ -93,13 +94,16 @@ class RedirectViewModel(
             _state.value = RedirectState.Authenticated
 
             // 6. Redirect the user to the app's main screen
-
+            homeIntent()
         }
 
     }
 
 }
 
+/**
+ * Factory class for creating instances of RedirectViewModel with the required dependencies.
+ */
 @Suppress("UNCHECKED_CAST")
 class RedirectViewModelFactory(
     val authenticationService: AuthenticationService,

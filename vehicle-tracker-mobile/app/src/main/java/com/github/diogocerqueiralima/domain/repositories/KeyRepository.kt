@@ -18,4 +18,12 @@ interface KeyRepository {
      */
     fun getOrCreate(alias: String): SecretKey
 
+    /**
+     * Retrieves the SecretKey associated with the given alias.
+     *
+     * @param alias The alias for the SecretKey.
+     * @return The SecretKey if it exists, or null if it does not.
+     */
+    fun get(alias: String): SecretKey?
+
 }

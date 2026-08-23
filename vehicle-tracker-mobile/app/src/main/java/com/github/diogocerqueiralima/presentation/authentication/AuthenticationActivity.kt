@@ -8,14 +8,14 @@ import androidx.activity.viewModels
 import androidx.browser.customtabs.CustomTabsIntent
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.services.AuthenticationService
-import com.github.diogocerqueiralima.infrastructure.http.AuthenticationHttpClient
-import com.github.diogocerqueiralima.infrastructure.repositories.KeyRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserPreSessionRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserSessionRepositoryImpl
+import com.github.diogocerqueiralima.infrastructure.client.AuthenticationHttpClient
 import com.github.diogocerqueiralima.presentation.authentication.screens.AuthenticationScreen
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModelFactory
 
+/**
+ * Activity that handles the authentication process, including starting the authentication flow and handling cancellation.
+ */
 class AuthenticationActivity : ComponentActivity() {
 
     private val viewModel by viewModels<AuthenticationViewModel>(
@@ -23,11 +23,8 @@ class AuthenticationActivity : ComponentActivity() {
 
             val dependenciesContainer = application as DependenciesContainer
             val client = AuthenticationHttpClient(dependenciesContainer.httpClient)
-            val dataStore = dependenciesContainer.dataStore
-            val keyStore = dependenciesContainer.keyStore
-            val keyRepository = KeyRepositoryImpl(keyStore)
-            val userSessionRepository = UserSessionRepositoryImpl(dataStore, keyRepository)
-            val userPreSessionRepository = UserPreSessionRepositoryImpl(dataStore)
+            val userSessionRepository = dependenciesContainer.userSessionRepository
+            val userPreSessionRepository = dependenciesContainer.userPreSessionRepository
             val authenticationService = AuthenticationService(client, userSessionRepository, userPreSessionRepository)
 
             AuthenticationViewModelFactory(authenticationService)

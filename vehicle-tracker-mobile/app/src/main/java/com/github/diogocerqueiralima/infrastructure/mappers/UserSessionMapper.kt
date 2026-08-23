@@ -6,10 +6,14 @@ import com.github.diogocerqueiralima.infrastructure.entities.AccessTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.IdentityTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.RefreshTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.UserSessionEntity
+import com.github.diogocerqueiralima.infrastructure.dto.ExchangeAuthorizationCodeResponseDTO
+import kotlin.time.Clock
 import kotlin.time.Instant
 
 /**
- * Maps a UserSession domain model to a UserSessionEntity for persistence.
+ * Maps a [UserSession] domain model to a [UserSessionEntity] infrastructure entity.
+ * This function creates a new [UserSessionEntity] using the tokens and their associated metadata from the [UserSession].
+ * The creation time for each token is converted to epoch milliseconds for storage in the entity.
  */
 fun UserSession.toEntity(): UserSessionEntity =
     UserSessionEntity(
@@ -30,25 +34,43 @@ fun UserSession.toEntity(): UserSessionEntity =
         )
     )
 
-/**
- * Maps a UserSessionEntity to a UserSession domain model.
- */
-fun UserSessionEntity.toDomain(): UserSession =
-    UserSession(
-        accessToken = Token.AccessToken(
-            value = accessToken.value,
-            createdAt = Instant.fromEpochMilliseconds(accessToken.createdAtEpochMillis),
-            expiresIn = accessToken.expiresInSeconds,
-            renewedAt = accessToken.renewedAtEpochMillis
-                ?.let { Instant.fromEpochMilliseconds(it) }
-        ),
-        refreshToken = Token.RefreshToken(
-            value = refreshToken.value,
-            createdAt = Instant.fromEpochMilliseconds(refreshToken.createdAtEpochMillis),
-            expiresIn = refreshToken.expiresInSeconds
-        ),
-        identityToken = Token.IdentityToken(
-            value = identityToken.value,
-            createdAt = Instant.fromEpochMilliseconds(identityToken.createdAtEpochMillis)
-        )
+fun UserSessionEntity.toSession(): UserSession = UserSession(
+    accessToken = Token.AccessToken(
+        value = this.accessToken.value,
+        createdAt = Instant.fromEpochMilliseconds(this.accessToken.createdAtEpochMillis),
+        expiresIn = this.accessToken.expiresInSeconds,
+        renewedAt = this.accessToken.renewedAtEpochMillis?.let { Instant.fromEpochMilliseconds(it) }
+    ),
+    refreshToken = Token.RefreshToken(
+        value = this.refreshToken.value,
+        createdAt = Instant.fromEpochMilliseconds(this.refreshToken.createdAtEpochMillis),
+        expiresIn = this.refreshToken.expiresInSeconds
+    ),
+    identityToken = Token.IdentityToken(
+        value = this.identityToken.value,
+        createdAt = Instant.fromEpochMilliseconds(this.identityToken.createdAtEpochMillis)
     )
+)
+
+/**
+ * Maps an [ExchangeAuthorizationCodeResponseDTO] to a [UserSession] domain model.
+ * This function creates a new [UserSession] using the tokens and their associated metadata from the response DTO.
+ * The creation time for each token is set to the current system time.
+ */
+fun ExchangeAuthorizationCodeResponseDTO.toSession(): UserSession = UserSession(
+    accessToken = Token.AccessToken(
+        value = this.accessToken,
+        createdAt = Clock.System.now(),
+        expiresIn = this.expiresIn,
+        renewedAt = null
+    ),
+    refreshToken = Token.RefreshToken(
+        value = this.refreshToken,
+        createdAt = Clock.System.now(),
+        expiresIn = this.refreshExpiresIn
+    ),
+    identityToken = Token.IdentityToken(
+        value = this.idToken,
+        createdAt = Clock.System.now()
+    )
+)

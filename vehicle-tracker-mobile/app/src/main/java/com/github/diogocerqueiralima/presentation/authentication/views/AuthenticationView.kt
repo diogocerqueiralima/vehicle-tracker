@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +22,9 @@ import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.SuccessIndicator
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user is waiting for being redirected to the authentication page.
+ */
 @Composable
 fun AuthenticationIdleView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -30,6 +35,9 @@ fun AuthenticationIdleView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user was redirected to the application after the authentication process.
+ */
 @Composable
 fun AuthenticationRedirectView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -40,6 +48,9 @@ fun AuthenticationRedirectView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user has successfully authenticated.
+ */
 @Composable
 fun AuthenticationSuccessView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -50,6 +61,9 @@ fun AuthenticationSuccessView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when an error occurs.
+ */
 @Composable
 fun AuthenticationErrorView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -60,6 +74,9 @@ fun AuthenticationErrorView(modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * This view is responsible for displaying the authentication state of the application when the user cancels the authentication process.
+ */
 @Composable
 fun AuthenticationCancelledView(modifier: Modifier = Modifier) {
     AuthenticationView(
@@ -116,10 +133,13 @@ private fun AuthenticationView(
 @Composable
 fun AuthenticationViewPreview() {
     VehicleTrackerMobileTheme {
-        AuthenticationView(
-            title = "Authenticating...",
-            subtitle = "Please wait while we authenticate your account.",
-            indicator = { ErrorIndicator() }
-        )
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            AuthenticationView(
+                modifier = Modifier.padding(innerPadding),
+                title = "Authenticating...",
+                subtitle = "Please wait while we authenticate your account.",
+                indicator = { ErrorIndicator() }
+            )
+        }
     }
 }

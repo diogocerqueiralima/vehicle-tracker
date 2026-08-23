@@ -28,18 +28,18 @@ class AuthenticationService(
         val dto = client.exchangeAuthorizationCode(authorizationCode, codeVerifier)
         val session = UserSession(
             accessToken = Token.AccessToken(
-                value = dto.accessToken,
+                value = dto.accessToken.value,
                 createdAt = Clock.System.now(),
-                expiresIn = dto.expiresIn,
+                expiresIn = dto.accessToken.expiresIn,
                 renewedAt = null
             ),
             refreshToken = Token.RefreshToken(
-                value = dto.refreshToken,
+                value = dto.refreshToken.value,
                 createdAt = Clock.System.now(),
-                expiresIn = dto.refreshExpiresIn
+                expiresIn = dto.refreshToken.expiresIn
             ),
             identityToken = Token.IdentityToken(
-                value = dto.idToken,
+                value = dto.identityToken.value,
                 createdAt = Clock.System.now()
             )
         )
