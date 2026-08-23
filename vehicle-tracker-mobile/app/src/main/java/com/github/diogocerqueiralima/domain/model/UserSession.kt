@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.domain.model
 
+import java.util.UUID
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -66,12 +67,22 @@ sealed interface Token {
 }
 
 /**
+ * Represents the identity of the currently authenticated user, extracted from their session claims.
+ */
+data class UserIdentity(
+    val id: UUID,
+    val email: String?,
+    val name: String?
+)
+
+/**
  * Represents a user session containing access, refresh, and identity tokens.
  */
 data class UserSession(
     val accessToken: Token.AccessToken,
     val refreshToken: Token.RefreshToken,
-    val identityToken: Token.IdentityToken
+    val identityToken: Token.IdentityToken,
+    val identity: UserIdentity
 ) {
 
     /**

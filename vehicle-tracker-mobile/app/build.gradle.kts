@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.auth)
     implementation(libs.kotlin.serialization)
+    implementation(libs.jwtdecode)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

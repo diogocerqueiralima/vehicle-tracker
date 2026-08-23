@@ -13,6 +13,7 @@ ktor = "3.3.3"
 serialization = "1.10.0-RC"
 datastore = "1.2.0"
 desugarJdkLibs = "2.1.5"
+jwtdecode = "2.0.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 kotlin-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+jwtdecode = { module = "com.auth0.android:jwtdecode", version.ref = "jwtdecode" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -7,8 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.github.diogocerqueiralima.DependenciesContainer
-import com.github.diogocerqueiralima.domain.services.AuthenticationService
-import com.github.diogocerqueiralima.infrastructure.client.AuthenticationHttpClient
 import com.github.diogocerqueiralima.presentation.authentication.screens.RedirectScreen
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModelFactory
@@ -34,12 +32,7 @@ class RedirectActivity : ComponentActivity() {
         factoryProducer = {
 
             val dependenciesContainer = application as DependenciesContainer
-            val client = AuthenticationHttpClient(dependenciesContainer.httpClient)
-            val userSessionRepository = dependenciesContainer.userSessionRepository
-            val userPreSessionRepository = dependenciesContainer.userPreSessionRepository
-            val authenticationService = AuthenticationService(client, userSessionRepository, userPreSessionRepository)
-
-            RedirectViewModelFactory(authenticationService)
+            RedirectViewModelFactory(dependenciesContainer.authenticationService)
         }
     )
 

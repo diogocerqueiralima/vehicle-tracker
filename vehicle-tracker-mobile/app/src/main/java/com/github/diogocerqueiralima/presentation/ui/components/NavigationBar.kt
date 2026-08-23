@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.github.diogocerqueiralima.R
+import com.github.diogocerqueiralima.presentation.devices.DevicesActivity
 import com.github.diogocerqueiralima.presentation.home.HomeActivity
 import com.github.diogocerqueiralima.presentation.vehicles.VehiclesActivity
 import kotlin.reflect.KClass
@@ -26,7 +27,7 @@ enum class BottomNavigationDestination(
 
     Vehicles(labelRes = R.string.nav_vehicles, icon = Icons.Filled.DirectionsCar, activityClass = VehiclesActivity::class),
 
-    Devices(labelRes = R.string.nav_devices, icon = Icons.Filled.Devices, activityClass = VehiclesActivity::class) // Replace with actual DevicesActivity when available
+    Devices(labelRes = R.string.nav_devices, icon = Icons.Filled.Devices, activityClass = DevicesActivity::class)
 }
 
 @Composable
