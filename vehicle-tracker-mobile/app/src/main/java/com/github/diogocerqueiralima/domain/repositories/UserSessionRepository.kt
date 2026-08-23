@@ -18,4 +18,9 @@ interface UserSessionRepository {
      */
     suspend fun save(session: UserSession)
 
+    /**
+     * @return The stored UserSession, or null if no session is found.
+     */
+    suspend fun get(): UserSession?
+
 }

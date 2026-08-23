@@ -6,7 +6,7 @@ import com.github.diogocerqueiralima.infrastructure.entities.AccessTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.IdentityTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.RefreshTokenEntity
 import com.github.diogocerqueiralima.infrastructure.entities.UserSessionEntity
-import com.github.diogocerqueiralima.infrastructure.http.dto.ExchangeAuthorizationCodeResponseDTO
+import com.github.diogocerqueiralima.infrastructure.dto.ExchangeAuthorizationCodeResponseDTO
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -33,6 +33,24 @@ fun UserSession.toEntity(): UserSessionEntity =
             createdAtEpochMillis = identityToken.createdAt.toEpochMilliseconds()
         )
     )
+
+fun UserSessionEntity.toSession(): UserSession = UserSession(
+    accessToken = Token.AccessToken(
+        value = this.accessToken.value,
+        createdAt = Instant.fromEpochMilliseconds(this.accessToken.createdAtEpochMillis),
+        expiresIn = this.accessToken.expiresInSeconds,
+        renewedAt = this.accessToken.renewedAtEpochMillis?.let { Instant.fromEpochMilliseconds(it) }
+    ),
+    refreshToken = Token.RefreshToken(
+        value = this.refreshToken.value,
+        createdAt = Instant.fromEpochMilliseconds(this.refreshToken.createdAtEpochMillis),
+        expiresIn = this.refreshToken.expiresInSeconds
+    ),
+    identityToken = Token.IdentityToken(
+        value = this.identityToken.value,
+        createdAt = Instant.fromEpochMilliseconds(this.identityToken.createdAtEpochMillis)
+    )
+)
 
 /**
  * Maps an [ExchangeAuthorizationCodeResponseDTO] to a [UserSession] domain model.

@@ -1,10 +1,10 @@
-package com.github.diogocerqueiralima.infrastructure.http
+package com.github.diogocerqueiralima.infrastructure.client
 
 import android.util.Log
 import com.github.diogocerqueiralima.BuildConfig
 import com.github.diogocerqueiralima.domain.client.AuthenticationClient
 import com.github.diogocerqueiralima.domain.model.UserSession
-import com.github.diogocerqueiralima.infrastructure.http.dto.ExchangeAuthorizationCodeResponseDTO
+import com.github.diogocerqueiralima.infrastructure.dto.ExchangeAuthorizationCodeResponseDTO
 import com.github.diogocerqueiralima.infrastructure.mappers.toSession
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

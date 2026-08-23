@@ -1,4 +1,4 @@
-package com.github.diogocerqueiralima.infrastructure.http.dto
+package com.github.diogocerqueiralima.infrastructure.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -4,6 +4,8 @@ import com.github.diogocerqueiralima.BuildConfig
 import com.github.diogocerqueiralima.domain.model.Vehicle
 import com.github.diogocerqueiralima.domain.repositories.VehicleRepository
 import com.github.diogocerqueiralima.infrastructure.entities.VehicleEntity
+import com.github.diogocerqueiralima.infrastructure.dto.ApiResponseDTO
+import com.github.diogocerqueiralima.infrastructure.dto.PageDTO
 import com.github.diogocerqueiralima.infrastructure.mappers.toDomain
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -50,8 +52,8 @@ class VehicleRepositoryImpl(private val httpClient: HttpClient) : VehicleReposit
 
         }
 
-        val entities = response.body<List<VehicleEntity>>()
-        return entities.map { it.toDomain() }
+        val dto = response.body<ApiResponseDTO<PageDTO<VehicleEntity>>>()
+        return dto.data?.data?.map { it.toDomain() } ?: emptyList()
     }
 
 }

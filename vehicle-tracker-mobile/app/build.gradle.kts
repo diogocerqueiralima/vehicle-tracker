@@ -25,7 +25,7 @@ android {
         manifestPlaceholders["redirectHost"] = "oauth"
         manifestPlaceholders["redirectPath"] = "/callback"
 
-        buildConfigField("String", "ASSET_SERVICE_URI", "\"https://api.tracker.homelab\"")
+        buildConfigField("String", "ASSET_SERVICE_URI", "\"https://api.tracker.homelab/assets\"")
         buildConfigField("String", "AUTHORIZATION_URI", "\"https://auth.tracker.homelab/realms/vehicle-tracker/protocol/openid-connect/auth\"")
         buildConfigField("String", "CLIENT_ID", "\"tracker\"")
         buildConfigField("String", "REDIRECT_URI", "\"mytracker://oauth/callback\"")

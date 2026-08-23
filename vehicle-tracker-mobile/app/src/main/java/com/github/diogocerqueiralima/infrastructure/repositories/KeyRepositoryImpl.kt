@@ -17,6 +17,10 @@ class KeyRepositoryImpl(val keyStore: KeyStore) : KeyRepository {
         return existingKey ?: createKey(alias)
     }
 
+    override fun get(alias: String): SecretKey? {
+        return keyStore.getKey(alias, null) as? SecretKey
+    }
+
     /**
      *
      * Creates a new AES SecretKey in the Android Keystore with the given alias.

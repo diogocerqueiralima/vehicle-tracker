@@ -8,17 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.services.AuthenticationService
-import com.github.diogocerqueiralima.infrastructure.http.AuthenticationHttpClient
-import com.github.diogocerqueiralima.infrastructure.repositories.KeyRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserPreSessionRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserSessionRepositoryImpl
+import com.github.diogocerqueiralima.infrastructure.client.AuthenticationHttpClient
 import com.github.diogocerqueiralima.presentation.authentication.screens.RedirectScreen
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModel
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.RedirectViewModelFactory
 import com.github.diogocerqueiralima.presentation.home.HomeActivity
 import com.github.diogocerqueiralima.presentation.welcome.WelcomeActivity
-import kotlin.getValue
-import kotlin.jvm.java
 
 const val TAG = "REDIRECT_ACTIVITY"
 
@@ -40,11 +35,8 @@ class RedirectActivity : ComponentActivity() {
 
             val dependenciesContainer = application as DependenciesContainer
             val client = AuthenticationHttpClient(dependenciesContainer.httpClient)
-            val dataStore = dependenciesContainer.dataStore
-            val keyStore = dependenciesContainer.keyStore
-            val keyRepository = KeyRepositoryImpl(keyStore)
-            val userSessionRepository = UserSessionRepositoryImpl(dataStore, keyRepository)
-            val userPreSessionRepository = UserPreSessionRepositoryImpl(dataStore)
+            val userSessionRepository = dependenciesContainer.userSessionRepository
+            val userPreSessionRepository = dependenciesContainer.userPreSessionRepository
             val authenticationService = AuthenticationService(client, userSessionRepository, userPreSessionRepository)
 
             RedirectViewModelFactory(authenticationService)
