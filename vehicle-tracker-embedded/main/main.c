@@ -16,6 +16,9 @@
 
 #define LOG_TAG "MAIN"
 
+#define QR_VERSION 10
+#define QR_MAX_SIDE (17 + (QR_VERSION) * 4)
+
 #define DISPLAY_I2C_PORT 0
 #define DISPLAY_SDA_PIN 21
 #define DISPLAY_SCL_PIN 22
@@ -55,12 +58,13 @@ static void render_qr(esp_qrcode_handle_t qrcode, void* user_data)
     display_context_t* display_context = user_data;
 
     const int size = esp_qrcode_get_size(qrcode);
-    if (size <= 0)
+    if (size <= 0 || size > QR_MAX_SIDE)
     {
+        ESP_LOGE(LOG_TAG, "QR code size %d exceeds max supported side %d", size, QR_MAX_SIDE);
         return;
     }
 
-    uint8_t modules[size * size];
+    static uint8_t modules[QR_MAX_SIDE * QR_MAX_SIDE];
     for (int y = 0; y < size; y++)
     {
         for (int x = 0; x < size; x++)
@@ -157,6 +161,7 @@ void app_main()
     device_identity_to_string(device_id, device_id_str);
 
     esp_qrcode_config_t qr_config = ESP_QRCODE_CONFIG_DEFAULT();
+    qr_config.max_qrcode_version = QR_VERSION;
     qr_config.display_func_with_cb = render_qr;
     qr_config.user_data = &display_context;
     error = esp_qrcode_generate(&qr_config, device_id_str);
