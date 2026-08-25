@@ -61,4 +61,15 @@ esp_err_t display_clear(display_context_t *context);
  */
 esp_err_t display_write_text(display_context_t *context, int x, int y, const char *text);
 
+/**
+ * @brief Renders a square grid of on/off modules (e.g. a QR code, or any other bitmap-like
+ * graphic) on the display, scaled up and centered to fit the panel.
+ *
+ * @param context Pointer to the display context returned by init_display.
+ * @param size Width and height of the grid, in modules.
+ * @param modules Row-major array of size * size bytes; a module is drawn "on" when non-zero.
+ * @return ESP_OK on success, or an appropriate error code on failure
+ */
+esp_err_t display_write_center(display_context_t *context, int size, const uint8_t *modules);
+
 #endif

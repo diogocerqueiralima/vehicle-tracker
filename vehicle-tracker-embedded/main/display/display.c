@@ -137,7 +137,10 @@ esp_err_t init_display(const display_config_t *config, display_context_t *contex
     u8g2_InitDisplay(&context->u8g2);
     u8g2_SetPowerSave(&context->u8g2, 0);
 
-    // 7. Clear any leftover content from GDDRAM
+    // 7 Lower the default contrast: the SSD1306 powers up near max brightness, which blows out fine detail
+    u8g2_SetContrast(&context->u8g2, 20);
+
+    // 8. Clear any leftover content from GDDRAM
     return display_clear(context);
 }
 
@@ -190,6 +193,46 @@ esp_err_t display_write_text(display_context_t *context, int x, int y, const cha
     u8g2_ClearBuffer(&context->u8g2);
     u8g2_SetFont(&context->u8g2, u8g2_font_ncenB08_tr);
     u8g2_DrawStr(&context->u8g2, x, y, text);
+    u8g2_SendBuffer(&context->u8g2);
+
+    return ESP_OK;
+}
+
+esp_err_t display_write_center(display_context_t *context, int size, const uint8_t *modules)
+{
+
+    // 1. Validate input params
+    if (context == nullptr || modules == nullptr || size <= 0)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Scale up to the largest integer factor that still fits the panel's shorter dimension
+    const int panel_dim = u8g2_GetDisplayHeight(&context->u8g2) < u8g2_GetDisplayWidth(&context->u8g2)
+                               ? u8g2_GetDisplayHeight(&context->u8g2)
+                               : u8g2_GetDisplayWidth(&context->u8g2);
+    int scale = panel_dim / size;
+    if (scale < 1)
+    {
+        scale = 1;
+    }
+
+    // 3. Center the scaled grid on the panel
+    const int x_offset = (u8g2_GetDisplayWidth(&context->u8g2) - size * scale) / 2;
+    const int y_offset = (u8g2_GetDisplayHeight(&context->u8g2) - size * scale) / 2;
+
+    // 4. Draw each "on" module as a scale x scale box
+    u8g2_ClearBuffer(&context->u8g2);
+    for (int y = 0; y < size; y++)
+    {
+        for (int x = 0; x < size; x++)
+        {
+            if (modules[y * size + x] != 0)
+            {
+                u8g2_DrawBox(&context->u8g2, x_offset + x * scale, y_offset + y * scale, scale, scale);
+            }
+        }
+    }
     u8g2_SendBuffer(&context->u8g2);
 
     return ESP_OK;
