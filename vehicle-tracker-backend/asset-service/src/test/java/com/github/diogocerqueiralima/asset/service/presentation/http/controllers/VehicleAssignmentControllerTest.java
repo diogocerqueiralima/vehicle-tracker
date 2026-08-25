@@ -21,12 +21,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,7 +73,7 @@ class VehicleAssignmentControllerTest {
         );
 
         ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> response = vehicleAssignmentController.assignDeviceToVehicle(
-                buildAuthentication(userId),
+                userId.toString(),
                 vehicleId,
                 request
         );
@@ -125,7 +122,7 @@ class VehicleAssignmentControllerTest {
         );
 
         ResponseEntity<ApiResponseDTO<VehicleAssignmentDTO>> response = vehicleAssignmentController.unassignDeviceFromVehicle(
-                buildAuthentication(userId),
+                userId.toString(),
                 vehicleId,
                 request
         );
@@ -174,7 +171,7 @@ class VehicleAssignmentControllerTest {
         when(vehicleAssignmentUseCase.getVehicleAssignmentHistory(any())).thenReturn(pageResult);
 
         ResponseEntity<ApiResponseDTO<PageDTO<VehicleAssignmentDTO>>> response = vehicleAssignmentController.getVehicleAssignmentHistory(
-                buildAuthentication(userId),
+                userId.toString(),
                 vehicleId,
                 1,
                 10
@@ -198,16 +195,6 @@ class VehicleAssignmentControllerTest {
         assertThat(commandCaptor.getValue().userId()).isEqualTo(userId);
         assertThat(commandCaptor.getValue().pageNumber()).isEqualTo(1);
         assertThat(commandCaptor.getValue().pageSize()).isEqualTo(10);
-    }
-
-    private JwtAuthenticationToken buildAuthentication(UUID userId) {
-        Jwt jwt = Jwt.withTokenValue("test-jwt-token")
-                .header("alg", "none")
-                .claim("sub", userId.toString())
-                .claims(claims -> claims.putAll(Map.of("realm_access", Map.of("roles", List.of()))))
-                .build();
-
-        return new JwtAuthenticationToken(jwt);
     }
 
 }

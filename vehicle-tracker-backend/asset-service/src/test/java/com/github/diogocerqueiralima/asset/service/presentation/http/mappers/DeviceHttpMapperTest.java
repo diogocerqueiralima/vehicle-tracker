@@ -1,15 +1,13 @@
 package com.github.diogocerqueiralima.asset.service.presentation.http.mappers;
 
 import com.github.diogocerqueiralima.api.common.dto.PageDTO;
-import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
+import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
-import com.github.diogocerqueiralima.asset.service.application.commands.UpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateDeviceRequestDTO;
+import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateOrUpdateDeviceRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.DeviceDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateDeviceRequestDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -22,10 +20,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class DeviceHttpMapperTest {
 
     @Test
-    @DisplayName("Should map create request to command")
-    void should_map_create_request_to_command() {
+    @DisplayName("Should map create-or-update request to command using the path id")
+    void should_map_create_or_update_request_to_command() {
+        UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
-        CreateDeviceRequestDTO request = new CreateDeviceRequestDTO(
+        CreateOrUpdateDeviceRequestDTO request = new CreateOrUpdateDeviceRequestDTO(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
@@ -33,31 +32,11 @@ class DeviceHttpMapperTest {
                 ownerId
         );
 
-        CreateDeviceCommand command = DeviceHttpMapper.toCreateCommand(request);
-
-        assertEquals(request.serialNumber(), command.serialNumber());
-        assertEquals(request.imei(), command.imei());
-        assertEquals(ownerId, command.ownerId());
-    }
-
-    @Test
-    @DisplayName("Should map update request to command")
-    void should_map_update_request_to_command() {
-        UUID id = UUID.randomUUID();
-        UUID ownerId = UUID.randomUUID();
-        UpdateDeviceRequestDTO request = new UpdateDeviceRequestDTO(
-                "SN-002",
-                "TK-1100",
-                "Teltonika",
-                "223456789012345",
-                ownerId
-        );
-
-        UpdateDeviceCommand command = DeviceHttpMapper.toUpdateCommand(id, request);
+        CreateOrUpdateDeviceCommand command = DeviceHttpMapper.toCommand(id, request);
 
         assertEquals(id, command.id());
         assertEquals(request.serialNumber(), command.serialNumber());
-        assertEquals(request.model(), command.model());
+        assertEquals(request.imei(), command.imei());
         assertEquals(ownerId, command.ownerId());
     }
 

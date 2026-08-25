@@ -1,14 +1,12 @@
 package com.github.diogocerqueiralima.asset.service.application.mappers;
 
-import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
-import com.github.diogocerqueiralima.asset.service.application.commands.UpdateDeviceCommand;
+import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.domain.assets.Device;
 import org.springframework.data.domain.Page;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Mapper for device conversions in the application layer.
@@ -20,40 +18,21 @@ public final class DeviceApplicationMapper {
 
     /**
      *
-     * Builds a domain device from a create command and the current timestamp.
+     * Builds a domain device from a create-or-update command, the pre-existing device with the same
+     * id (if any), and the current timestamp. The device id always comes from the command, since the
+     * client is responsible for supplying it.
      *
-     * @param command create command with the device data.
-     * @param now current timestamp for createdAt and updatedAt fields.
-     * @return new domain device with the provided data and timestamps.
+     * @param command create-or-update command with the device data.
+     * @param createdAt creation timestamp of the existing device, or is equal to {@code now} when device doesn't exist.
+     * @param now current timestamp; used as updatedAt always, and as createdAt when there is no existing device.
+     * @return domain device with the provided data, preserving the original creation timestamp on update.
      */
-    public static Device toDomain(CreateDeviceCommand command, Instant now) {
+    public static Device toDomain(CreateOrUpdateDeviceCommand command, Instant createdAt, Instant now) {
         return new Device(
-                UUID.randomUUID(),
+                command.id(),
                 command.ownerId(),
+                createdAt,
                 now,
-                now,
-                command.serialNumber(),
-                command.model(),
-                command.manufacturer(),
-                command.imei()
-        );
-    }
-
-    /**
-     *
-     * Builds a domain device from an update command and the existing device.
-     *
-     * @param command update command with the new device data.
-     * @param existingDevice existing device to be updated.
-     * @param updatedAt timestamp of the update operation.
-     * @return updated domain device with the new data and timestamps.
-     */
-    public static Device toDomain(UpdateDeviceCommand command, Device existingDevice, Instant updatedAt) {
-        return new Device(
-                existingDevice.getId(),
-                command.ownerId(),
-                existingDevice.getCreatedAt(),
-                updatedAt,
                 command.serialNumber(),
                 command.model(),
                 command.manufacturer(),

@@ -6,10 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
 /**
- * Request DTO for device creation.
+ * Request DTO for device creation or update. The device id is taken from the request path.
  */
-@Schema(description = "Request payload for creating a new device.")
-public record CreateDeviceRequestDTO(
+@Schema(description = "Request payload for creating or updating a device.")
+public record CreateOrUpdateDeviceRequestDTO(
 
         @Schema(description = "Manufacturer-assigned serial number of the device.", example = "SN-00123456")
         @JsonProperty("serial_number")
