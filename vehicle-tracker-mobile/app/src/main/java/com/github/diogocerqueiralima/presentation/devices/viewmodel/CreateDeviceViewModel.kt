@@ -10,11 +10,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 /**
  * Represents the current values of the device creation form.
  */
 data class CreateDeviceFormState(
+    val id: UUID,
     val serialNumber: String = "",
     val model: String = "",
     val manufacturer: String = "",
@@ -30,7 +32,8 @@ data class CreateDeviceFormState(
  * Represents the different states of the device creation process.
  */
 sealed interface CreateDeviceState {
-    data class Filling(val form: CreateDeviceFormState = CreateDeviceFormState()) : CreateDeviceState
+    data class Scanning(val hasCameraPermission: Boolean = false, val invalidCodeScanned: Boolean = false) : CreateDeviceState
+    data class Filling(val form: CreateDeviceFormState) : CreateDeviceState
     data class Submitting(val form: CreateDeviceFormState) : CreateDeviceState
     data class Success(val device: Device) : CreateDeviceState
     data class Error(val form: CreateDeviceFormState, val message: String) : CreateDeviceState
@@ -41,8 +44,39 @@ class CreateDeviceViewModel(
     private val userSessionService: UserSessionService
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<CreateDeviceState>(CreateDeviceState.Filling())
+    private val _state = MutableStateFlow<CreateDeviceState>(CreateDeviceState.Scanning())
     val state: StateFlow<CreateDeviceState> = _state.asStateFlow()
+
+    /**
+     * Called when the camera permission required to scan the device QR code is granted or denied.
+     */
+    fun onCameraPermissionResult(granted: Boolean) {
+
+        val state = _state.value
+        if (state !is CreateDeviceState.Scanning) return
+
+        _state.value = state.copy(hasCameraPermission = granted)
+    }
+
+    /**
+     * Called once a QR code has been decoded, moving the flow from scanning to filling the
+     * remaining device details, or flagging the scanned code as invalid.
+     *
+     * @param id Device identifier decoded from the scanned QR code, or null if the code could not
+     * be recognized as a device id.
+     */
+    fun onQrDecoded(id: UUID?) {
+
+        val state = _state.value
+        if (state !is CreateDeviceState.Scanning) return
+
+        _state.value = if (id != null) {
+            CreateDeviceState.Filling(CreateDeviceFormState(id = id))
+        } else {
+            state.copy(invalidCodeScanned = true)
+        }
+        
+    }
 
     fun onSerialNumberChange(serialNumber: String) = updateForm { it.copy(serialNumber = serialNumber) }
 
@@ -57,7 +91,7 @@ class CreateDeviceViewModel(
         val form = when (val state = _state.value) {
             is CreateDeviceState.Filling -> state.form
             is CreateDeviceState.Error -> state.form
-            is CreateDeviceState.Submitting, is CreateDeviceState.Success -> return
+            is CreateDeviceState.Scanning, is CreateDeviceState.Submitting, is CreateDeviceState.Success -> return
         }
 
         _state.value = CreateDeviceState.Filling(transform(form))
@@ -73,7 +107,7 @@ class CreateDeviceViewModel(
         val form = when (val state = _state.value) {
             is CreateDeviceState.Filling -> state.form
             is CreateDeviceState.Error -> state.form
-            is CreateDeviceState.Submitting, is CreateDeviceState.Success -> return
+            is CreateDeviceState.Scanning, is CreateDeviceState.Submitting, is CreateDeviceState.Success -> return
         }
 
         if (!form.isValid) return
@@ -95,7 +129,8 @@ class CreateDeviceViewModel(
 
                 val ownerId = session.identity.id
 
-                val device = deviceService.create(
+                val device = deviceService.createOrUpdate(
+                    id = form.id,
                     serialNumber = form.serialNumber,
                     model = form.model,
                     manufacturer = form.manufacturer,

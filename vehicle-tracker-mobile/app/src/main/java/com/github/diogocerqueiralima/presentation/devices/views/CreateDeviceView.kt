@@ -1,8 +1,18 @@
 package com.github.diogocerqueiralima.presentation.devices.views
 
+import android.view.ScaleGestureDetector
+import androidx.annotation.OptIn
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview as CameraPreview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -15,20 +25,221 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.model.Device
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
+import java.util.UUID
+import java.util.concurrent.Executors
 import kotlin.time.Instant
+
+/**
+ * This view is responsible for scanning a device's QR code and decoding it into a device
+ * identifier. Camera permission is granted/requested by the caller (the hosting activity); this
+ * view only renders based on the state it is given and reports scan results back.
+ *
+ * @param modifier Modifier to be applied to the view.
+ * @param hasCameraPermission Whether the camera permission has been granted.
+ * @param invalidCodeScanned Whether the last scanned code could not be recognized as a device id.
+ * @param onRequestCameraPermission Callback invoked when the user requests the camera permission.
+ * @param onQrDecoded Callback invoked with the decoded device id, or null if the scanned code was invalid.
+ */
+@OptIn(ExperimentalGetImage::class)
+@Composable
+fun ScanDeviceQrView(
+    modifier: Modifier = Modifier,
+    hasCameraPermission: Boolean,
+    invalidCodeScanned: Boolean,
+    onRequestCameraPermission: () -> Unit,
+    onQrDecoded: (UUID?) -> Unit
+) {
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnQrDecoded by rememberUpdatedState(onQrDecoded)
+
+    Column(modifier = modifier.fillMaxSize()) {
+
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+
+            Text(
+                text = stringResource(R.string.scan_device_qr_subtitle),
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            if (invalidCodeScanned) {
+                Text(
+                    text = stringResource(R.string.scan_device_qr_invalid_code),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+        }
+
+        if (!hasCameraPermission) {
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+                    Text(
+                        text = stringResource(R.string.scan_device_qr_camera_permission_denied),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Button(onClick = onRequestCameraPermission) {
+                        Text(text = stringResource(R.string.scan_device_qr_grant_permission))
+                    }
+
+                }
+
+            }
+
+        } else {
+
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { context ->
+
+                    val previewView = PreviewView(context)
+                    val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+                    val analysisExecutor = Executors.newSingleThreadExecutor()
+                    val barcodeScanner = BarcodeScanning.getClient(
+                        BarcodeScannerOptions.Builder()
+                            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                            .build()
+                    )
+
+                    cameraProviderFuture.addListener(
+                        {
+
+                            val cameraProvider = cameraProviderFuture.get()
+
+                            val preview = CameraPreview.Builder().build().also {
+                                it.surfaceProvider = previewView.surfaceProvider
+                            }
+
+                            val imageAnalysis = ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+                                .also { analysis ->
+                                    analysis.setAnalyzer(analysisExecutor) { imageProxy ->
+                                        processImageProxy(barcodeScanner, imageProxy, currentOnQrDecoded)
+                                    }
+                                }
+
+                            cameraProvider.unbindAll()
+                            val camera = cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                CameraSelector.DEFAULT_BACK_CAMERA,
+                                preview,
+                                imageAnalysis
+                            )
+
+                            // Small QR codes are hard to focus on at 1x; start closer in.
+                            val maxZoomRatio = camera.cameraInfo.zoomState.value?.maxZoomRatio ?: 1f
+                            camera.cameraControl.setZoomRatio(minOf(2f, maxZoomRatio))
+
+                            val scaleGestureDetector = ScaleGestureDetector(
+                                context,
+                                object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                                    override fun onScale(detector: ScaleGestureDetector): Boolean {
+
+                                        val zoomState = camera.cameraInfo.zoomState.value ?: return true
+                                        val newZoomRatio = zoomState.zoomRatio * detector.scaleFactor
+
+                                        camera.cameraControl.setZoomRatio(
+                                            newZoomRatio.coerceIn(zoomState.minZoomRatio, zoomState.maxZoomRatio)
+                                        )
+
+                                        return true
+                                    }
+                                }
+                            )
+
+                            previewView.setOnTouchListener { _, event ->
+                                scaleGestureDetector.onTouchEvent(event)
+                                true
+                            }
+
+                        },
+                        ContextCompat.getMainExecutor(context)
+                    )
+
+                    previewView
+                }
+            )
+
+        }
+
+    }
+
+}
+
+@ExperimentalGetImage
+private fun processImageProxy(
+    barcodeScanner: BarcodeScanner,
+    imageProxy: ImageProxy,
+    onResult: (UUID?) -> Unit
+) {
+
+    val mediaImage = imageProxy.image
+    if (mediaImage == null) {
+        imageProxy.close()
+        return
+    }
+
+    val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+    barcodeScanner.process(image)
+        .addOnSuccessListener { barcodes ->
+
+            val rawValue = barcodes.firstOrNull()?.rawValue
+            if (rawValue != null) {
+
+                val deviceId = try {
+                    UUID.fromString(rawValue)
+                } catch (exception: IllegalArgumentException) {
+                    null
+                }
+
+                onResult(deviceId)
+            }
+
+        }
+        .addOnCompleteListener {
+            imageProxy.close()
+        }
+
+}
 
 /**
  * This view represents the device creation form, collecting device details to be submitted.
  *
  * @param modifier Modifier to be applied to the view.
+ * @param id Identifier of the device, scanned from its QR code. Not editable.
  * @param serialNumber Current value of the serial number field.
  * @param onSerialNumberChange Callback invoked when the serial number field changes.
  * @param model Current value of the model field.
@@ -43,6 +254,7 @@ import kotlin.time.Instant
 @Composable
 fun CreateDeviceView(
     modifier: Modifier = Modifier,
+    id: UUID,
     serialNumber: String,
     onSerialNumberChange: (String) -> Unit,
     model: String,
@@ -63,6 +275,15 @@ fun CreateDeviceView(
         Text(
             text = stringResource(R.string.create_device_title),
             style = MaterialTheme.typography.titleLarge
+        )
+
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = id.toString(),
+            onValueChange = {},
+            enabled = false,
+            label = { Text(text = stringResource(R.string.create_device_id_label)) },
+            singleLine = true
         )
 
         OutlinedTextField(
@@ -131,6 +352,7 @@ fun CreateDeviceSubmittingView(modifier: Modifier = Modifier) {
  * alongside the editable fields so the user can correct and retry.
  *
  * @param modifier Modifier to be applied to the view.
+ * @param id Identifier of the device, scanned from its QR code. Not editable.
  * @param serialNumber Current value of the serial number field.
  * @param onSerialNumberChange Callback invoked when the serial number field changes.
  * @param model Current value of the model field.
@@ -146,6 +368,7 @@ fun CreateDeviceSubmittingView(modifier: Modifier = Modifier) {
 @Composable
 fun CreateDeviceErrorView(
     modifier: Modifier = Modifier,
+    id: UUID,
     serialNumber: String,
     onSerialNumberChange: (String) -> Unit,
     model: String,
@@ -169,6 +392,7 @@ fun CreateDeviceErrorView(
         )
 
         CreateDeviceView(
+            id = id,
             serialNumber = serialNumber,
             onSerialNumberChange = onSerialNumberChange,
             model = model,
@@ -231,6 +455,7 @@ fun CreateDeviceViewPreview() {
         Scaffold(modifier = Modifier.fillMaxWidth()) { innerPadding ->
             CreateDeviceView(
                 modifier = Modifier.padding(innerPadding),
+                id = UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                 serialNumber = "SN-00123456",
                 onSerialNumberChange = {},
                 model = "TrackPro X200",
@@ -264,6 +489,7 @@ fun CreateDeviceSuccessViewPreview() {
             CreateDeviceSuccessView(
                 modifier = Modifier.padding(innerPadding),
                 device = Device(
+                    id = UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                     createdAt = Instant.parse("2024-01-15T10:30:00Z"),
                     updatedAt = Instant.parse("2024-06-01T08:00:00Z"),
                     serialNumber = "SN-00123456",
@@ -283,6 +509,7 @@ fun CreateDeviceErrorViewPreview() {
         Scaffold(modifier = Modifier.fillMaxWidth()) { innerPadding ->
             CreateDeviceErrorView(
                 modifier = Modifier.padding(innerPadding),
+                id = UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                 serialNumber = "SN-00123456",
                 onSerialNumberChange = {},
                 model = "TrackPro X200",

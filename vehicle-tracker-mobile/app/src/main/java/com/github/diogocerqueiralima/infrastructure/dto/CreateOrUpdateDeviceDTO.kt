@@ -4,10 +4,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Data class representing the payload sent to the Asset Service to create a device.
+ * Data class representing the payload sent to the Asset Service to create or update a device.
  */
 @Serializable
-data class CreateDeviceDTO(
+data class CreateOrUpdateDeviceDTO(
 
     @SerialName("serial_number") val serialNumber: String,
     val model: String,

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.model.Device
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+import java.util.UUID
 import kotlin.time.Instant
 
 /**
@@ -259,6 +260,7 @@ fun DevicesViewPreview() {
                 modifier = Modifier.padding(innerPadding),
                 devices = listOf(
                     Device(
+                        id = UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                         createdAt = Instant.parse("2024-01-15T10:30:00Z"),
                         updatedAt = Instant.parse("2024-06-01T08:00:00Z"),
                         serialNumber = "SN-00123456",
@@ -267,6 +269,7 @@ fun DevicesViewPreview() {
                         imei = "352099001761481"
                     ),
                     Device(
+                        id = UUID.fromString("5c48f8b0-2d3e-4f1a-9c7b-1a2b3c4d5e6f"),
                         createdAt = Instant.parse("2024-02-10T09:00:00Z"),
                         updatedAt = Instant.parse("2024-05-20T11:15:00Z"),
                         serialNumber = "SN-00123457",
@@ -275,6 +278,7 @@ fun DevicesViewPreview() {
                         imei = "352099001761482"
                     ),
                     Device(
+                        id = UUID.fromString("8e0f1a2b-3c4d-4e5f-8071-2b3c4d5e6f70"),
                         createdAt = Instant.parse("2023-11-05T14:45:00Z"),
                         updatedAt = Instant.parse("2024-03-01T16:30:00Z"),
                         serialNumber = "SN-00987654",

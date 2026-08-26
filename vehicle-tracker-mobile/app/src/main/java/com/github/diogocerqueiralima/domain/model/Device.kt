@@ -1,11 +1,13 @@
 package com.github.diogocerqueiralima.domain.model
 
+import java.util.UUID
 import kotlin.time.Instant
 
 /**
  * Represents a tracking device asset with its identifying and manufacturing attributes.
  */
 data class Device(
+    val id: UUID,
     val createdAt: Instant,
     val updatedAt: Instant,
     val serialNumber: String,

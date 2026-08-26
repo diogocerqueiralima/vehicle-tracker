@@ -42,6 +42,10 @@ class DevicesActivity : BottomNavigationActivity(BottomNavigationDestination.Dev
             )
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
         viewModel.loadDevices()
     }
 
