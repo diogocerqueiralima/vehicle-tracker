@@ -16,13 +16,11 @@ import com.github.diogocerqueiralima.presentation.errors.Error
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.common.InputImage
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
-import kotlin.time.Duration.Companion.milliseconds
 
 const val CREATE_DEVICE_VIEW_MODEL_TAG = "CREATE_DEVICE_VIEW_MODEL"
 

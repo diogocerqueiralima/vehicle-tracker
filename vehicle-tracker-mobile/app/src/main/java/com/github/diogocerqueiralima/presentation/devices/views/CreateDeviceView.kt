@@ -19,8 +19,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,14 +59,22 @@ fun ScanDeviceQrView(
     processImage: (ImageProxy, BarcodeScanner) -> Unit
 ) {
 
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val scanner = remember {
+        BarcodeScanning.getClient(
+            BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                .build()
+        )
+    }
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
 
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
 
-            PreviewView(context).apply {
+            val previewView = PreviewView(context).apply {
 
                 this.scaleType = PreviewView.ScaleType.FILL_CENTER
                 this.layoutParams = ViewGroup.LayoutParams(
@@ -76,9 +84,6 @@ fun ScanDeviceQrView(
                 this.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
 
             }
-
-        },
-        update = { previewView ->
 
             val cameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
@@ -92,13 +97,6 @@ fun ScanDeviceQrView(
                     it.surfaceProvider = previewView.surfaceProvider
                 }
 
-                val scanner = BarcodeScanning.getClient(
-                    BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-                        .build()
-                )
-
-                val analysisExecutor = Executors.newSingleThreadExecutor()
                 val imageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
@@ -145,6 +143,17 @@ fun ScanDeviceQrView(
 
             }, ContextCompat.getMainExecutor(context))
 
+            previewView
+
+        },
+        onRelease = {
+
+            if (cameraProvider.isDone) {
+                cameraProvider.get().unbindAll()
+            }
+
+            scanner.close()
+            analysisExecutor.shutdown()
         }
     )
 
