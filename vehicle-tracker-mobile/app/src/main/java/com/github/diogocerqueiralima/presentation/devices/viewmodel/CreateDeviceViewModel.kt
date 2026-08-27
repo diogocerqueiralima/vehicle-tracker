@@ -45,6 +45,7 @@ data class CreateDeviceFormState(
  */
 enum class CreateDeviceError : Error {
     CAMERA_PERMISSION_DENIED,
+    CAMERA_UNAVAILABLE,
     INVALID_QR_CODE,
     QR_PROCESSING_FAILED
 }
@@ -86,6 +87,19 @@ class CreateDeviceViewModel(
             _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceError.CAMERA_PERMISSION_DENIED)
         }
 
+    }
+
+    /**
+     * Called when the camera could not be bound for scanning, e.g. because the device has none.
+     */
+    fun onCameraUnavailable() {
+
+        val state = _state.value
+        if (state !is CreateDeviceState.Scanning) {
+            return
+        }
+
+        _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceError.CAMERA_UNAVAILABLE)
     }
 
     fun onSerialNumberChange(serialNumber: String) = updateForm { it.copy(serialNumber = serialNumber) }

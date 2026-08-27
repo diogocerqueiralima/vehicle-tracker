@@ -51,12 +51,14 @@ import kotlin.time.Instant
  * @param modifier Modifier to be applied to the view.
  * @param cameraProvider The camera provider to be used for scanning the QR code.
  * @param processImage Callback invoked when a new camera frame is available for processing.
+ * @param onCameraUnavailable Callback invoked when the camera could not be bound, e.g. because the device has none.
  */
 @Composable
 fun ScanDeviceQrView(
     modifier: Modifier = Modifier,
     cameraProvider: ListenableFuture<ProcessCameraProvider>,
-    processImage: (ImageProxy, BarcodeScanner) -> Unit
+    processImage: (ImageProxy, BarcodeScanner) -> Unit,
+    onCameraUnavailable: () -> Unit = {}
 ) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -103,12 +105,17 @@ fun ScanDeviceQrView(
                         .also { it.setAnalyzer(analysisExecutor) { proxy -> processImage(proxy, scanner) } }
 
                 provider.unbindAll()
-                val camera = provider.bindToLifecycle(
-                    lifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageAnalysis
-                )
+                val camera = try {
+                    provider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageAnalysis
+                    )
+                } catch (e: IllegalArgumentException) {
+                    onCameraUnavailable()
+                    return@addListener
+                }
 
                 val maxZoomRatio = camera.cameraInfo.zoomState.value?.maxZoomRatio ?: 1f
                 camera.cameraControl.setZoomRatio(minOf(2f, maxZoomRatio))

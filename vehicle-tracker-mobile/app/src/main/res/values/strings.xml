@@ -46,6 +46,7 @@
     <string name="error_unexpected">An unexpected error occurred.</string>
     <string name="scan_device_qr_camera_permission_denied">Camera permission is required to scan the device QR code</string>
     <string name="scan_device_qr_invalid_code">Unrecognized QR code, please scan the code shown on the device display</string>
+    <string name="scan_device_qr_camera_unavailable">No camera is available on this device to scan the QR code</string>
     <string name="scan_device_qr_grant_permission">Grant camera permission</string>
     <string name="home_title">Welcome back</string>
     <string name="home_subtitle">Here\'s an overview of your fleet</string>

@@ -35,6 +35,7 @@ import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileT
 private fun Error.message(): String = when (this) {
     is CommonError -> commonErrorMessage()
     CreateDeviceError.CAMERA_PERMISSION_DENIED -> stringResource(R.string.scan_device_qr_camera_permission_denied)
+    CreateDeviceError.CAMERA_UNAVAILABLE -> stringResource(R.string.scan_device_qr_camera_unavailable)
     CreateDeviceError.INVALID_QR_CODE -> stringResource(R.string.scan_device_qr_invalid_code)
     CreateDeviceError.QR_PROCESSING_FAILED -> stringResource(R.string.create_device_qr_processing_failed)
     else -> stringResource(R.string.error_unexpected)
@@ -88,7 +89,8 @@ fun CreateDeviceScreen(
                             .fillMaxSize()
                             .padding(innerPadding),
                         cameraProvider = state.cameraProvider,
-                        processImage = viewModel::processImage
+                        processImage = viewModel::processImage,
+                        onCameraUnavailable = viewModel::onCameraUnavailable
                     )
                 }
 
