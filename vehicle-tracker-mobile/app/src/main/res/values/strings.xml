@@ -35,7 +35,15 @@
     <string name="create_device_manufacturer_label">Manufacturer</string>
     <string name="create_device_imei_label">IMEI</string>
     <string name="create_device_submit">Create device</string>
+    <string name="create_device_idle_title">Getting everything ready…</string>
+    <string name="create_device_idle_subtitle">Please wait a moment.</string>
+    <string name="create_device_submitting_title">Creating device…</string>
+    <string name="create_device_submitting_subtitle">Please wait a moment.</string>
     <string name="create_device_success_title">Device created</string>
+    <string name="create_device_error_title">Something went wrong</string>
+    <string name="create_device_qr_processing_failed">Failed to process the scanned QR code.</string>
+    <string name="error_no_active_session">No active user session.</string>
+    <string name="error_unexpected">An unexpected error occurred.</string>
     <string name="scan_device_qr_title">Scan device QR code</string>
     <string name="scan_device_qr_subtitle">Point the camera at the QR code shown on the device display</string>
     <string name="scan_device_qr_camera_permission_denied">Camera permission is required to scan the device QR code</string>

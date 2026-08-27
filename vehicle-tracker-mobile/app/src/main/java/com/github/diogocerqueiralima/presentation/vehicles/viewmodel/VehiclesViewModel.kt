@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.presentation.vehicles.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -9,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+const val VEHICLES_VIEW_MODEL_TAG = "VEHICLES_VIEW_MODEL"
 
 /**
  * Represents the different states of the vehicles list retrieval process.
@@ -39,6 +42,7 @@ class VehiclesViewModel(
                 val vehicles = vehicleService.findAll()
                 _state.value = VehiclesState.Loaded(vehicles)
             } catch (exception: Exception) {
+                Log.e(VEHICLES_VIEW_MODEL_TAG, "Failed to load vehicles", exception)
                 _state.value = VehiclesState.Error(
                     message = exception.message ?: "An unexpected error occurred while loading vehicles."
                 )
