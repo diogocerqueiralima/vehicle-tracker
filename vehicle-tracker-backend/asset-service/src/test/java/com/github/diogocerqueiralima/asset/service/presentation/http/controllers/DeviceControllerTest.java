@@ -6,9 +6,8 @@ import com.github.diogocerqueiralima.asset.service.application.commands.GetDevic
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateDeviceRequestDTO;
+import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateOrUpdateDeviceRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.DeviceDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateDeviceRequestDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,14 +17,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,8 +37,8 @@ class DeviceControllerTest {
     private DeviceController deviceController;
 
     @Test
-    @DisplayName("Should create device and return created response")
-    void should_create_device_and_return_created_response() {
+    @DisplayName("Should create or update device and return ok response")
+    void should_create_or_update_device_and_return_ok_response() {
 
         UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
@@ -61,9 +55,9 @@ class DeviceControllerTest {
                 "123456789012345"
         );
 
-        when(deviceUseCase.create(any())).thenReturn(result);
+        when(deviceUseCase.createOrUpdate(any())).thenReturn(result);
 
-        CreateDeviceRequestDTO request = new CreateDeviceRequestDTO(
+        CreateOrUpdateDeviceRequestDTO request = new CreateOrUpdateDeviceRequestDTO(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
@@ -71,11 +65,11 @@ class DeviceControllerTest {
                 ownerId
         );
 
-        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.create(request);
+        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.createOrUpdate(id, request);
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Device created successfully.", response.getBody().message());
+        assertEquals("Device saved successfully.", response.getBody().message());
         assertNotNull(response.getBody().data());
         assertEquals(id, response.getBody().data().id());
         assertEquals("SN-001", response.getBody().data().serialNumber());
@@ -101,9 +95,9 @@ class DeviceControllerTest {
                 "123456789012345"
         );
 
-        when(deviceUseCase.create(any())).thenReturn(result);
+        when(deviceUseCase.createOrUpdate(any())).thenReturn(result);
 
-        CreateDeviceRequestDTO request = new CreateDeviceRequestDTO(
+        CreateOrUpdateDeviceRequestDTO request = new CreateOrUpdateDeviceRequestDTO(
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
@@ -111,53 +105,12 @@ class DeviceControllerTest {
                 ownerId
         );
 
-        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.create(request);
+        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.createOrUpdate(id, request);
 
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().data());
         assertEquals("TK-1000", response.getBody().data().model());
         assertEquals("Teltonika", response.getBody().data().manufacturer());
-    }
-
-    @Test
-    @DisplayName("Should update device and return ok response")
-    void should_update_device_and_return_ok_response() {
-
-        UUID id = UUID.randomUUID();
-        UUID ownerId = UUID.randomUUID();
-        Instant createdAt = Instant.parse("2026-03-15T12:00:00Z");
-        Instant updatedAt = Instant.parse("2026-03-16T12:00:00Z");
-
-        DeviceResult result = new DeviceResult(
-                id,
-                ownerId,
-                createdAt,
-                updatedAt,
-                "SN-002",
-                "TK-1100",
-                "Teltonika",
-                "223456789012345"
-        );
-
-        when(deviceUseCase.update(any())).thenReturn(result);
-
-        UpdateDeviceRequestDTO request = new UpdateDeviceRequestDTO(
-                "SN-002",
-                "TK-1100",
-                "Teltonika",
-                "223456789012345",
-                ownerId
-        );
-
-        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.update(id, request);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Device updated successfully.", response.getBody().message());
-        assertNotNull(response.getBody().data());
-        assertEquals(id, response.getBody().data().id());
-        assertEquals("SN-002", response.getBody().data().serialNumber());
-        assertEquals("TK-1100", response.getBody().data().model());
     }
 
     @Test
@@ -181,7 +134,7 @@ class DeviceControllerTest {
 
         when(deviceUseCase.getById(any())).thenReturn(result);
 
-        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(id, buildAuthentication(userId));
+        ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.getById(id, userId.toString(), null);
 
         ArgumentCaptor<GetDeviceByIdCommand> commandCaptor = ArgumentCaptor.forClass(GetDeviceByIdCommand.class);
         verify(deviceUseCase).getById(commandCaptor.capture());
@@ -218,7 +171,7 @@ class DeviceControllerTest {
 
         when(deviceUseCase.getPage(any())).thenReturn(new PageResult<>(1, 10, 1, 1, List.of(deviceResult)));
 
-        ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> response = deviceController.getPage(buildAuthentication(userId), 1, 10);
+        ResponseEntity<ApiResponseDTO<PageDTO<DeviceDTO>>> response = deviceController.getPage(userId.toString(), 1, 10);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -228,28 +181,6 @@ class DeviceControllerTest {
         assertEquals(10, response.getBody().data().pageSize());
         assertEquals(1, response.getBody().data().data().size());
         assertEquals(id, response.getBody().data().data().getFirst().id());
-    }
-
-    private JwtAuthenticationToken buildAuthentication(UUID userId) {
-        return buildAuthentication(userId, List.of());
-    }
-
-    private JwtAuthenticationToken buildAuthentication(UUID userId, List<String> roles) {
-        Jwt jwt = new Jwt(
-                "token-value",
-                Instant.parse("2026-03-15T12:00:00Z"),
-                Instant.parse("2026-03-16T12:00:00Z"),
-                Map.of("alg", "none"),
-                Map.of("sub", userId.toString())
-        );
-
-        List<GrantedAuthority> authorities = roles.stream()
-                .map(role -> "ROLE_" + role.toUpperCase())
-                .map(SimpleGrantedAuthority::new)
-                .map(GrantedAuthority.class::cast)
-                .toList();
-
-        return new JwtAuthenticationToken(jwt, authorities, userId.toString());
     }
 
 }

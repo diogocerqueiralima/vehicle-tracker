@@ -1,13 +1,13 @@
 package com.github.diogocerqueiralima.asset.service.application.mappers;
 
-import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
-import com.github.diogocerqueiralima.asset.service.application.commands.UpdateDeviceCommand;
+import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.domain.assets.Device;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,10 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DeviceApplicationMapperTest {
 
     @Test
-    @DisplayName("Should map create command to domain")
-    void should_map_create_command_to_domain() {
+    @DisplayName("Should map create-or-update command to domain using the client-supplied id when no device exists yet")
+    void should_map_command_to_domain_using_client_supplied_id_when_no_device_exists_yet() {
+        UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
-        CreateDeviceCommand command = new CreateDeviceCommand(
+        CreateOrUpdateDeviceCommand command = new CreateOrUpdateDeviceCommand(
+                id,
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
@@ -27,9 +29,9 @@ class DeviceApplicationMapperTest {
         );
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
-        Device device = DeviceApplicationMapper.toDomain(command, now);
+        Device device = DeviceApplicationMapper.toDomain(command, now, now);
 
-        assertThat(device.getId()).isNotNull();
+        assertThat(device.getId()).isEqualTo(id);
         assertThat(device.getCreatedAt()).isEqualTo(now);
         assertThat(device.getUpdatedAt()).isEqualTo(now);
         assertThat(device.getSerialNumber()).isEqualTo(command.serialNumber());
@@ -37,8 +39,8 @@ class DeviceApplicationMapperTest {
     }
 
     @Test
-    @DisplayName("Should map update command to domain using existing device identity")
-    void should_map_update_command_to_domain_using_existing_device_identity() {
+    @DisplayName("Should map create-or-update command to domain preserving the existing device's creation timestamp")
+    void should_map_command_to_domain_preserving_existing_device_creation_timestamp() {
         UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
         Instant createdAt = Instant.parse("2026-03-10T12:00:00Z");
@@ -53,7 +55,7 @@ class DeviceApplicationMapperTest {
                 "123456789012345"
         );
 
-        UpdateDeviceCommand command = new UpdateDeviceCommand(
+        CreateOrUpdateDeviceCommand command = new CreateOrUpdateDeviceCommand(
                 id,
                 "SN-002",
                 "TK-1100",
@@ -63,7 +65,7 @@ class DeviceApplicationMapperTest {
         );
 
         Instant updatedAt = Instant.parse("2026-03-20T10:00:00Z");
-        Device mapped = DeviceApplicationMapper.toDomain(command, existingDevice, updatedAt);
+        Device mapped = DeviceApplicationMapper.toDomain(command, existingDevice.getCreatedAt(), updatedAt);
 
         assertThat(mapped.getId()).isEqualTo(id);
         assertThat(mapped.getCreatedAt()).isEqualTo(createdAt);

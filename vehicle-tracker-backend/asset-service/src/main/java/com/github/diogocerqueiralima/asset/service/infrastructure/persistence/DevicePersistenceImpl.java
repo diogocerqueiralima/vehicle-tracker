@@ -75,11 +75,6 @@ public class DevicePersistenceImpl implements DevicePersistence {
     }
 
     @Override
-    public boolean existsBySerialNumberOrImei(String serialNumber, String imei) {
-        return deviceRepository.existsBySerialNumberOrImei(serialNumber, imei);
-    }
-
-    @Override
     public boolean isSerialNumberOrImeiTakenByAnotherDevice(String serialNumber, String imei, UUID excludingId) {
         return deviceRepository.existsBySerialNumberOrImeiAndIdNot(serialNumber, imei, excludingId);
     }

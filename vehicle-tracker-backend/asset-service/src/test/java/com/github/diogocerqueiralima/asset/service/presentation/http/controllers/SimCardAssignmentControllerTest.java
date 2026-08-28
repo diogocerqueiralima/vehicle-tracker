@@ -18,12 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,7 +64,7 @@ class SimCardAssignmentControllerTest {
         );
 
         ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> response = simCardAssignmentController.assignDeviceToSimCard(
-                buildAuthentication(userId),
+                userId.toString(),
                 simCardId,
                 request
         );
@@ -115,7 +111,7 @@ class SimCardAssignmentControllerTest {
         );
 
         ResponseEntity<ApiResponseDTO<SimCardAssignmentDTO>> response = simCardAssignmentController.unassignDeviceFromSimCard(
-                buildAuthentication(userId),
+                userId.toString(),
                 simCardId,
                 request
         );
@@ -134,16 +130,6 @@ class SimCardAssignmentControllerTest {
         assertThat(response.getBody().data().removalReason()).isEqualTo(SimCardRemovalReason.UPGRADE);
         assertThat(response.getBody().data().active()).isFalse();
         assertThat(commandCaptor.getValue().unassignedBy()).isEqualTo(userId);
-    }
-
-    private JwtAuthenticationToken buildAuthentication(UUID userId) {
-        Jwt jwt = Jwt.withTokenValue("test-jwt-token")
-                .header("alg", "none")
-                .claim("sub", userId.toString())
-                .claims(claims -> claims.putAll(Map.of("realm_access", Map.of("roles", List.of()))))
-                .build();
-
-        return new JwtAuthenticationToken(jwt);
     }
 
 }

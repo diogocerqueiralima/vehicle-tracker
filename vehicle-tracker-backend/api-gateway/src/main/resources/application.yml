@@ -13,9 +13,6 @@ gateway:
       prefix: /assets
       uri: ${ASSET_SERVICE_URI}
       rules:
-        - method: POST
-          path: /devices
-          role: ADMIN
         - method: PUT
           path: /devices/{deviceId}
           role: ADMIN

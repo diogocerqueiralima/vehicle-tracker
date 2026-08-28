@@ -1,5 +1,6 @@
 package com.github.diogocerqueiralima.presentation.devices.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -9,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+const val DEVICES_VIEW_MODEL_TAG = "DEVICES_VIEW_MODEL"
 
 /**
  * Represents the different states of the devices list retrieval process.
@@ -39,6 +42,7 @@ class DevicesViewModel(
                 val devices = deviceService.findAll()
                 _state.value = DevicesState.Loaded(devices)
             } catch (exception: Exception) {
+                Log.e(DEVICES_VIEW_MODEL_TAG, "Failed to load devices", exception)
                 _state.value = DevicesState.Error(
                     message = exception.message ?: "An unexpected error occurred while loading devices."
                 )

@@ -3,16 +3,14 @@ package com.github.diogocerqueiralima.asset.service.presentation.http.controller
 import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO;
 import com.github.diogocerqueiralima.api.common.dto.PageDTO;
 import com.github.diogocerqueiralima.api.common.headers.ReservedHeaders;
-import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
+import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
-import com.github.diogocerqueiralima.asset.service.application.commands.UpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateDeviceRequestDTO;
+import com.github.diogocerqueiralima.asset.service.presentation.http.dto.CreateOrUpdateDeviceRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.dto.DeviceDTO;
-import com.github.diogocerqueiralima.asset.service.presentation.http.dto.UpdateDeviceRequestDTO;
 import com.github.diogocerqueiralima.asset.service.presentation.http.mappers.DeviceHttpMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,11 +21,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -68,110 +64,57 @@ public class DeviceController {
     }
 
     /**
-     * Creates a new device.
+     * Creates a new device or updates an existing one, both identified by the id supplied by the client.
      *
-     * @param request request payload for device creation.
-     * @return created device wrapped in an API response.
+     * @param id device identifier, supplied by the client (e.g. the identity a device generates for itself).
+     * @param request request payload for device creation/update.
+     * @return saved device wrapped in an API response.
      */
     @Operation(
-            summary = "Creates a new device.",
+            summary = "Creates or updates a device.",
             description = """
-                    Accepts a request payload containing device details, creates a new device in the system,
-                    and returns the created device information in the response.
-                    """
-    )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "Successfully created a new device",
-                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device created successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"serial_number\": \"SN-00123456\", \"model\": \"TrackPro X200\", \"manufacturer\": \"Teltonika\", \"imei\": \"352099001761481\"}}"))
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "The device already exists or the request payload is invalid",
-                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
-                    ),
-                    @ApiResponse(
-                            responseCode = "500",
-                            description = "An unexpected error occurred while processing the device creation request",
-                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
-                    )
-            }
-    )
-    @PostMapping(DEVICES_BASE_URI)
-    public ResponseEntity<ApiResponseDTO<DeviceDTO>> create(@RequestBody CreateDeviceRequestDTO request) {
-
-        // 1. Maps transport data to an application command.
-        CreateDeviceCommand command = DeviceHttpMapper.toCreateCommand(request);
-
-        // 2. Delegates creation to the application layer.
-        DeviceResult result = deviceUseCase.create(command);
-
-        // 3. Maps the application result to the response DTO.
-        DeviceDTO deviceDTO = DeviceHttpMapper.toDTO(result);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new ApiResponseDTO<>("Device created successfully.", deviceDTO));
-    }
-
-    /**
-     * Updates an existing device.
-     *
-     * @param id device identifier.
-     * @param request request payload for device update.
-     * @return updated device wrapped in an API response.
-     */
-    @Operation(
-            summary = "Updates an existing device.",
-            description = """
-                    Accepts a request payload containing updated device details, updates the existing device in the system,
-                    and returns the updated device information in the response.
+                    Accepts a device identifier and a request payload containing device details, creates the
+                    device if no device with that id exists yet or updates it otherwise, and returns the
+                    resulting device information in the response.
                     """
     )
     @ApiResponses(
             value = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "Successfully updated the device",
-                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device updated successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"serial_number\": \"SN-00123456\", \"model\": \"TrackPro X200\", \"manufacturer\": \"Teltonika\", \"imei\": \"352099001761481\"}}"))
+                            description = "Successfully created or updated the device",
+                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Device saved successfully.\", \"data\": {\"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\", \"created_at\": \"2024-01-15T10:30:00Z\", \"updated_at\": \"2024-06-01T08:00:00Z\", \"serial_number\": \"SN-00123456\", \"model\": \"TrackPro X200\", \"manufacturer\": \"Teltonika\", \"imei\": \"352099001761481\"}}"))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "The request payload is invalid",
-                            content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "The device with the specified ID was not found",
+                            description = "The serial number or IMEI is already used by another device, or the request payload is invalid",
                             content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
-                            description = "An unexpected error occurred while processing the device update request",
+                            description = "An unexpected error occurred while processing the device create-or-update request",
                             content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"message\": \"Error message.\", \"data\": null}"))
                     )
             }
     )
     @PutMapping(DEVICES_ID_URI)
-    public ResponseEntity<ApiResponseDTO<DeviceDTO>> update(
-            @Parameter(description = "Unique identifier of the device to update.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
+    public ResponseEntity<ApiResponseDTO<DeviceDTO>> createOrUpdate(
+            @Parameter(description = "Unique identifier of the device.", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable(name = DEVICE_ID_PARAM) UUID id,
-            @RequestBody UpdateDeviceRequestDTO request
+            @RequestBody CreateOrUpdateDeviceRequestDTO request
     ) {
 
         // 1. Maps transport data to an application command.
-        UpdateDeviceCommand command = DeviceHttpMapper.toUpdateCommand(id, request);
+        CreateOrUpdateDeviceCommand command = DeviceHttpMapper.toCommand(id, request);
 
-        // 2. Delegates update to the application layer.
-        DeviceResult result = deviceUseCase.update(command);
+        // 2. Delegates creation/update to the application layer.
+        DeviceResult result = deviceUseCase.createOrUpdate(command);
 
         // 3. Maps the application result to the response DTO.
         DeviceDTO deviceDTO = DeviceHttpMapper.toDTO(result);
 
         return ResponseEntity.ok(
-                new ApiResponseDTO<>("Device updated successfully.", deviceDTO)
+                new ApiResponseDTO<>("Device saved successfully.", deviceDTO)
         );
     }
 

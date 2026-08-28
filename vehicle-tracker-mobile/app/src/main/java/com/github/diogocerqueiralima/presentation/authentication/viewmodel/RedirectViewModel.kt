@@ -90,11 +90,22 @@ class RedirectViewModel(
             // 5. Exchange the authorization code for user credentials using the code verifier
             val codeVerifier = preSession.codeVerifier
 
-            authenticationService.exchangeAuthorizationCode(authorizationCode = code, codeVerifier = codeVerifier)
-            _state.value = RedirectState.Authenticated
+            try {
+                authenticationService.exchangeAuthorizationCode(authorizationCode = code, codeVerifier = codeVerifier)
+                _state.value = RedirectState.Authenticated
 
-            // 6. Redirect the user to the app's main screen
-            homeIntent()
+                // 6. Redirect the user to the app's main screen
+                homeIntent()
+            } catch (exception: Exception) {
+
+                Log.e(REDIRECT_TAG, "Failed to exchange authorization code", exception)
+                _state.value = RedirectState.Error(
+                    message = exception.message ?: "An unexpected error occurred during authentication."
+                )
+
+                // 7. Redirect the user to the welcome screen
+                welcomeIntent()
+            }
         }
 
     }

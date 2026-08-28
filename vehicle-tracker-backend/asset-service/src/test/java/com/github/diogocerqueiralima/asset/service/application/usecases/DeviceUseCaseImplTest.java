@@ -1,9 +1,8 @@
 package com.github.diogocerqueiralima.asset.service.application.usecases;
 
-import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
+import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
-import com.github.diogocerqueiralima.asset.service.application.commands.UpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
@@ -42,11 +41,13 @@ class DeviceUseCaseImplTest {
     private DeviceUseCaseImpl deviceUseCase;
 
     @Test
-    @DisplayName("Should create device when serial number and IMEI are unique")
-    void should_create_device_when_serial_number_and_imei_are_unique() {
+    @DisplayName("Should create device with the client-supplied id when no device exists yet and serial number/IMEI are unique")
+    void should_create_device_when_no_device_exists_yet_and_serial_number_and_imei_are_unique() {
+        UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
 
-        CreateDeviceCommand command = new CreateDeviceCommand(
+        CreateOrUpdateDeviceCommand command = new CreateOrUpdateDeviceCommand(
+                id,
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
@@ -56,7 +57,7 @@ class DeviceUseCaseImplTest {
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
         Device savedDevice = new Device(
-                UUID.randomUUID(),
+                id,
                 now,
                 now,
                 command.serialNumber(),
@@ -65,22 +66,26 @@ class DeviceUseCaseImplTest {
                 command.imei()
         );
 
+        when(devicePersistence.findById(id)).thenReturn(Optional.empty());
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(false);
         when(devicePersistence.save(any(Device.class))).thenReturn(savedDevice);
 
-        DeviceResult result = deviceUseCase.create(command);
+        DeviceResult result = deviceUseCase.createOrUpdate(command);
 
-        assertThat(result.id()).isEqualTo(savedDevice.getId());
+        assertThat(result.id()).isEqualTo(id);
         assertThat(result.serialNumber()).isEqualTo(command.serialNumber());
         assertThat(result.imei()).isEqualTo(command.imei());
         verify(devicePersistence).save(any(Device.class));
     }
 
     @Test
-    @DisplayName("Should fail creating when serial number or IMEI already exists")
+    @DisplayName("Should fail creating when no device exists yet but serial number or IMEI already exists")
     void should_fail_creating_when_serial_number_or_imei_already_exists() {
+        UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
 
-        CreateDeviceCommand command = new CreateDeviceCommand(
+        CreateOrUpdateDeviceCommand command = new CreateOrUpdateDeviceCommand(
+                id,
                 "SN-001",
                 "TK-1000",
                 "Teltonika",
@@ -88,10 +93,13 @@ class DeviceUseCaseImplTest {
                 ownerId
         );
 
-        when(devicePersistence.save(any(Device.class))).thenThrow(new DeviceAlreadyExistsException());
+        when(devicePersistence.findById(id)).thenReturn(Optional.empty());
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(true);
 
-        assertThatThrownBy(() -> deviceUseCase.create(command))
+        assertThatThrownBy(() -> deviceUseCase.createOrUpdate(command))
                 .isInstanceOf(DeviceAlreadyExistsException.class);
+
+        verify(devicePersistence, never()).save(any(Device.class));
     }
 
     @Test
@@ -112,7 +120,7 @@ class DeviceUseCaseImplTest {
                 "123456789012345"
         );
 
-        UpdateDeviceCommand command = new UpdateDeviceCommand(
+        CreateOrUpdateDeviceCommand command = new CreateOrUpdateDeviceCommand(
                 id,
                 "SN-002",
                 "TK-1100",
@@ -132,39 +140,16 @@ class DeviceUseCaseImplTest {
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(false);
         when(devicePersistence.save(any(Device.class))).thenReturn(updatedDevice);
 
-        DeviceResult result = deviceUseCase.update(command);
+        DeviceResult result = deviceUseCase.createOrUpdate(command);
 
         assertThat(result.id()).isEqualTo(id);
         assertThat(result.createdAt()).isEqualTo(createdAt);
         assertThat(result.serialNumber()).isEqualTo("SN-002");
         assertThat(result.model()).isEqualTo("TK-1100");
         verify(devicePersistence).save(any(Device.class));
-    }
-
-    @Test
-    @DisplayName("Should fail updating when device does not exist")
-    void should_fail_updating_when_device_does_not_exist() {
-
-        UUID id = UUID.randomUUID();
-        UUID ownerId = UUID.randomUUID();
-        UpdateDeviceCommand command = new UpdateDeviceCommand(
-                id,
-                "SN-002",
-                "TK-1100",
-                "Teltonika",
-                "223456789012345",
-                ownerId
-        );
-
-        when(devicePersistence.findById(id)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> deviceUseCase.update(command))
-                .isInstanceOf(DeviceNotFoundException.class)
-                .hasMessage("Device not found for id: " + id);
-
-        verify(devicePersistence, never()).save(any(Device.class));
     }
 
     @Test
@@ -185,7 +170,7 @@ class DeviceUseCaseImplTest {
                 "123456789012345"
         );
 
-        UpdateDeviceCommand command = new UpdateDeviceCommand(
+        CreateOrUpdateDeviceCommand command = new CreateOrUpdateDeviceCommand(
                 id,
                 "SN-002",
                 "TK-1100",
@@ -195,10 +180,12 @@ class DeviceUseCaseImplTest {
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
-        when(devicePersistence.save(any(Device.class))).thenThrow(new DeviceAlreadyExistsException());
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(true);
 
-        assertThatThrownBy(() -> deviceUseCase.update(command))
+        assertThatThrownBy(() -> deviceUseCase.createOrUpdate(command))
                 .isInstanceOf(DeviceAlreadyExistsException.class);
+
+        verify(devicePersistence, never()).save(any(Device.class));
     }
 
     @Test

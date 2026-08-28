@@ -5,14 +5,14 @@ import com.github.diogocerqueiralima.domain.model.Device
 import com.github.diogocerqueiralima.domain.repositories.DeviceRepository
 import com.github.diogocerqueiralima.infrastructure.entities.DeviceEntity
 import com.github.diogocerqueiralima.infrastructure.dto.ApiResponseDTO
-import com.github.diogocerqueiralima.infrastructure.dto.CreateDeviceDTO
+import com.github.diogocerqueiralima.infrastructure.dto.CreateOrUpdateDeviceDTO
 import com.github.diogocerqueiralima.infrastructure.dto.PageDTO
 import com.github.diogocerqueiralima.infrastructure.mappers.toDomain
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -42,8 +42,8 @@ class DeviceRepositoryImpl(private val httpClient: HttpClient) : DeviceRepositor
 
         }
 
-        val entity = response.body<DeviceEntity?>()
-        return entity?.toDomain()
+        val dto = response.body<ApiResponseDTO<DeviceEntity>>()
+        return dto.data?.toDomain()
     }
 
     override suspend fun findAll(): List<Device> {
@@ -60,13 +60,13 @@ class DeviceRepositoryImpl(private val httpClient: HttpClient) : DeviceRepositor
         return dto.data?.data?.map { it.toDomain() } ?: emptyList()
     }
 
-    override suspend fun create(serialNumber: String, model: String, manufacturer: String, imei: String, ownerId: UUID): Device {
+    override suspend fun createOrUpdate(id: UUID, serialNumber: String, model: String, manufacturer: String, imei: String, ownerId: UUID): Device {
 
-        val response = httpClient.post(DEVICES_BASE_URI) {
+        val response = httpClient.put(DEVICES_ID_URI.replace("{id}", id.toString())) {
 
             contentType(ContentType.Application.Json)
             setBody(
-                CreateDeviceDTO(
+                CreateOrUpdateDeviceDTO(
                     serialNumber = serialNumber,
                     model = model,
                     manufacturer = manufacturer,

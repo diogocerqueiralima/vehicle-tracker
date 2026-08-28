@@ -6,9 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**
- * Command payload used by the presentation layer to request device creation.
+ * Command payload used by the presentation layer to request device creation or update.
  */
-public record CreateDeviceCommand(
+public record CreateOrUpdateDeviceCommand(
+
+        @NotNull(message = "id is required")
+        UUID id,
 
         @NotBlank(message = "serialNumber is required")
         String serialNumber,
@@ -26,4 +29,3 @@ public record CreateDeviceCommand(
         UUID ownerId
 
 ) {}
-

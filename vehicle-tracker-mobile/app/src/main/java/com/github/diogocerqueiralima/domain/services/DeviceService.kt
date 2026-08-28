@@ -18,10 +18,10 @@ class DeviceService(
     suspend fun findAll(): List<Device> = deviceRepository.findAll()
 
     /**
-     * Creates a new device owned by the given user.
+     * Creates or updates a device identified by [id], owned by the given user.
      */
-    suspend fun create(serialNumber: String, model: String, manufacturer: String, imei: String, ownerId: UUID): Device =
-        deviceRepository.create(serialNumber, model, manufacturer, imei, ownerId)
+    suspend fun createOrUpdate(id: UUID, serialNumber: String, model: String, manufacturer: String, imei: String, ownerId: UUID): Device =
+        deviceRepository.createOrUpdate(id, serialNumber, model, manufacturer, imei, ownerId)
 
     /**
      * Retrieves a device by its unique identifier.

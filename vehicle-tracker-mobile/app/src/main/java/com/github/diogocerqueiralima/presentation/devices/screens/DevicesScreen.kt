@@ -128,7 +128,7 @@ fun DevicesScreen(
 private class PreviewDeviceRepository : DeviceRepository {
     override suspend fun findById(id: java.util.UUID): Device? = null
     override suspend fun findAll(): List<Device> = emptyList()
-    override suspend fun create(serialNumber: String, model: String, manufacturer: String, imei: String, ownerId: java.util.UUID): Device =
+    override suspend fun createOrUpdate(id: java.util.UUID, serialNumber: String, model: String, manufacturer: String, imei: String, ownerId: java.util.UUID): Device =
         throw NotImplementedError()
 }
 
@@ -140,6 +140,7 @@ fun DevicesScreenPreview() {
             initialState = DevicesState.Loaded(
                 devices = listOf(
                     Device(
+                        id = java.util.UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                         createdAt = Instant.parse("2024-01-15T10:30:00Z"),
                         updatedAt = Instant.parse("2024-06-01T08:00:00Z"),
                         serialNumber = "SN-00123456",

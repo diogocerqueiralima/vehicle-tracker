@@ -1,9 +1,8 @@
 package com.github.diogocerqueiralima.asset.service.application.usecases;
 
-import com.github.diogocerqueiralima.asset.service.application.commands.CreateDeviceCommand;
+import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
-import com.github.diogocerqueiralima.asset.service.application.commands.UpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.mappers.DeviceApplicationMapper;
 import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -32,47 +32,29 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
     }
 
     @Override
-    public DeviceResult create(CreateDeviceCommand command) {
-
-        // 1. Fails when the serial number or IMEI is already in use.
-        if (devicePersistence.existsBySerialNumberOrImei(command.serialNumber(), command.imei())) {
-            throw new DeviceAlreadyExistsException();
-        }
-
-        // 2. Creates a new device.
-        Instant now = Instant.now();
-        Device device = DeviceApplicationMapper.toDomain(command, now);
-
-        // 3. Saves the device.
-        Device savedDevice = devicePersistence.save(device);
-
-        // 4. Builds the result.
-        return DeviceApplicationMapper.toResult(savedDevice);
-    }
-
-    @Override
     @Transactional
-    public DeviceResult update(UpdateDeviceCommand command) {
+    public DeviceResult createOrUpdate(CreateOrUpdateDeviceCommand command) {
 
         UUID id = command.id();
 
-        // 1. Gets the device with the provided id.
-        Device existingDevice = devicePersistence.findById(id)
-                .orElseThrow(() -> new DeviceNotFoundException(id));
+        // 1. Looks up an existing device with the client-supplied id: present means update, absent means create.
+        Optional<Device> existingDevice = devicePersistence.findById(id);
 
-        // 2. Fails when another device already uses the serial number or IMEI.
+        // 2. Fails when the serial number or IMEI is already used by a different device.
+        //    Excluding id is a no-op when the device does not exist yet, so this covers create and update alike.
         if (devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)) {
             throw new DeviceAlreadyExistsException();
         }
 
-        // 3. Updates the device preserving identity and creation timestamp.
-        Device deviceToSave = DeviceApplicationMapper.toDomain(command, existingDevice, Instant.now());
+        // 3. Builds the device, preserving the original creation timestamp when updating.
+        Instant now = Instant.now();
+        Device deviceToSave = DeviceApplicationMapper.toDomain(command, existingDevice.map(Device::getCreatedAt).orElse(now), now);
 
         // 4. Saves the device.
-        Device updatedDevice = devicePersistence.save(deviceToSave);
+        Device savedDevice = devicePersistence.save(deviceToSave);
 
         // 5. Builds the result.
-        return DeviceApplicationMapper.toResult(updatedDevice);
+        return DeviceApplicationMapper.toResult(savedDevice);
     }
 
     /**

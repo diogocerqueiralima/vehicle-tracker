@@ -69,15 +69,6 @@ public interface DevicePersistence {
     Page<Device> getPageByOwnerId(int pageNumber, int pageSize, UUID ownerId);
 
     /**
-     * Checks whether a device with the given serial number or IMEI already exists.
-     *
-     * @param serialNumber serial number to check.
-     * @param imei IMEI to check.
-     * @return true when a device with either value already exists.
-     */
-    boolean existsBySerialNumberOrImei(String serialNumber, String imei);
-
-    /**
      * Checks whether a device other than the given id already uses the serial number or IMEI.
      *
      * @param serialNumber serial number to check.

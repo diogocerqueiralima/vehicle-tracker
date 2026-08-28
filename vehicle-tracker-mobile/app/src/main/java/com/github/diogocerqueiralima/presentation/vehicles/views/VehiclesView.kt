@@ -18,10 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,7 +33,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.model.Vehicle
+import com.github.diogocerqueiralima.presentation.ui.indicators.ErrorIndicator
+import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+import com.github.diogocerqueiralima.presentation.ui.views.InformationView
 import java.time.LocalDate
 
 /**
@@ -207,14 +208,12 @@ private fun EmptyVehiclesPlaceholder(modifier: Modifier = Modifier) {
  */
 @Composable
 fun VehiclesLoadingView(modifier: Modifier = Modifier) {
-
-    Box(
+    InformationView(
         modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-
+        title = stringResource(R.string.list_vehicles_loading_title),
+        subtitle = stringResource(R.string.list_vehicles_loading_subtitle),
+        indicator = { LoadingIndicator() }
+    )
 }
 
 /**
@@ -225,29 +224,12 @@ fun VehiclesLoadingView(modifier: Modifier = Modifier) {
  */
 @Composable
 fun VehiclesErrorView(modifier: Modifier = Modifier, message: String) {
-
-    Column(
-        modifier = modifier.padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Icon(
-            imageVector = Icons.Default.ErrorOutline,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.error,
-            modifier = Modifier.size(56.dp)
-        )
-
-        Text(
-            text = message,
-            color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(top = 16.dp)
-        )
-
-    }
-
+    InformationView(
+        modifier = modifier,
+        title = stringResource(R.string.list_vehicles_error_title),
+        subtitle = message,
+        indicator = { ErrorIndicator() }
+    )
 }
 
 @Composable

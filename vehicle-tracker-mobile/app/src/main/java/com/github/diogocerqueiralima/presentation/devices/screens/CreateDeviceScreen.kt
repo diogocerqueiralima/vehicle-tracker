@@ -13,15 +13,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.model.Device
-import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceFormState
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceError
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceState
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceViewModel
 import com.github.diogocerqueiralima.presentation.devices.views.CreateDeviceErrorView
 import com.github.diogocerqueiralima.presentation.devices.views.CreateDeviceSubmittingView
 import com.github.diogocerqueiralima.presentation.devices.views.CreateDeviceSuccessView
 import com.github.diogocerqueiralima.presentation.devices.views.CreateDeviceView
+import com.github.diogocerqueiralima.presentation.devices.views.IdleView
+import com.github.diogocerqueiralima.presentation.devices.views.ScanDeviceQrView
+import com.github.diogocerqueiralima.presentation.errors.CommonError
+import com.github.diogocerqueiralima.presentation.errors.Error
+import com.github.diogocerqueiralima.presentation.errors.message as commonErrorMessage
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+
+/**
+ * Resolves the message to display for a device creation error reason.
+ */
+@Composable
+private fun Error.message(): String = when (this) {
+    is CommonError -> commonErrorMessage()
+    CreateDeviceError.CAMERA_PERMISSION_DENIED -> stringResource(R.string.scan_device_qr_camera_permission_denied)
+    CreateDeviceError.CAMERA_UNAVAILABLE -> stringResource(R.string.scan_device_qr_camera_unavailable)
+    CreateDeviceError.INVALID_QR_CODE -> stringResource(R.string.scan_device_qr_invalid_code)
+    CreateDeviceError.QR_PROCESSING_FAILED -> stringResource(R.string.create_device_qr_processing_failed)
+    else -> stringResource(R.string.error_unexpected)
+}
 
 /**
  * This screen is responsible for collecting device details and submitting them for creation.
@@ -38,12 +56,6 @@ fun CreateDeviceScreen(
 ) {
 
     val state = viewModel.state.collectAsState().value
-    val form = when (state) {
-        is CreateDeviceState.Filling -> state.form
-        is CreateDeviceState.Submitting -> state.form
-        is CreateDeviceState.Error -> state.form
-        is CreateDeviceState.Success -> CreateDeviceFormState()
-    }
 
     VehicleTrackerMobileTheme {
         Scaffold(
@@ -63,6 +75,25 @@ fun CreateDeviceScreen(
 
             when (state) {
 
+                is CreateDeviceState.Idle -> {
+                    IdleView(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    )
+                }
+
+                is CreateDeviceState.Scanning -> {
+                    ScanDeviceQrView(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        cameraProvider = state.cameraProvider,
+                        processImage = viewModel::processImage,
+                        onCameraUnavailable = viewModel::onCameraUnavailable
+                    )
+                }
+
                 is CreateDeviceState.Submitting -> {
                     CreateDeviceSubmittingView(
                         modifier = Modifier
@@ -73,33 +104,26 @@ fun CreateDeviceScreen(
 
                 is CreateDeviceState.Error -> {
                     CreateDeviceErrorView(
-                        modifier = Modifier.padding(innerPadding),
-                        serialNumber = form.serialNumber,
-                        onSerialNumberChange = viewModel::onSerialNumberChange,
-                        model = form.model,
-                        onModelChange = viewModel::onModelChange,
-                        manufacturer = form.manufacturer,
-                        onManufacturerChange = viewModel::onManufacturerChange,
-                        imei = form.imei,
-                        onImeiChange = viewModel::onImeiChange,
-                        isValid = form.isValid,
-                        message = state.message,
-                        onSubmit = { viewModel.createDevice(onDeviceCreated) }
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        message = state.reason.message()
                     )
                 }
 
                 is CreateDeviceState.Filling -> {
                     CreateDeviceView(
                         modifier = Modifier.padding(innerPadding),
-                        serialNumber = form.serialNumber,
+                        id = state.form.id,
+                        serialNumber = state.form.serialNumber,
                         onSerialNumberChange = viewModel::onSerialNumberChange,
-                        model = form.model,
+                        model = state.form.model,
                         onModelChange = viewModel::onModelChange,
-                        manufacturer = form.manufacturer,
+                        manufacturer = state.form.manufacturer,
                         onManufacturerChange = viewModel::onManufacturerChange,
-                        imei = form.imei,
+                        imei = state.form.imei,
                         onImeiChange = viewModel::onImeiChange,
-                        isValid = form.isValid,
+                        isValid = state.form.isValid,
                         onSubmit = { viewModel.createDevice(onDeviceCreated) }
                     )
                 }
