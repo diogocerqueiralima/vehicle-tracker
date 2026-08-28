@@ -246,6 +246,6 @@ void app_main()
         ESP_LOGE(LOG_TAG, "Failed to initialize modem: %s", esp_err_to_name(error));
         return;
     }
-
+    
     ESP_LOGI(LOG_TAG, "Modem initialized successfully.");
 }
