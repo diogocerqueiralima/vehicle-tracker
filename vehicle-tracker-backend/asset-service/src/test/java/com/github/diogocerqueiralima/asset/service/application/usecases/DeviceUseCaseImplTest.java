@@ -67,7 +67,7 @@ class DeviceUseCaseImplTest {
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.empty());
-        when(devicePersistence.existsBySerialNumberOrImei(command.serialNumber(), command.imei())).thenReturn(false);
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(false);
         when(devicePersistence.save(any(Device.class))).thenReturn(savedDevice);
 
         DeviceResult result = deviceUseCase.createOrUpdate(command);
@@ -94,7 +94,7 @@ class DeviceUseCaseImplTest {
         );
 
         when(devicePersistence.findById(id)).thenReturn(Optional.empty());
-        when(devicePersistence.existsBySerialNumberOrImei(command.serialNumber(), command.imei())).thenReturn(true);
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(true);
 
         assertThatThrownBy(() -> deviceUseCase.createOrUpdate(command))
                 .isInstanceOf(DeviceAlreadyExistsException.class);

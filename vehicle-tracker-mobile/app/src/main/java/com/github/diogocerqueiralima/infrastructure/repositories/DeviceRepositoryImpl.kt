@@ -42,8 +42,8 @@ class DeviceRepositoryImpl(private val httpClient: HttpClient) : DeviceRepositor
 
         }
 
-        val entity = response.body<DeviceEntity?>()
-        return entity?.toDomain()
+        val dto = response.body<ApiResponseDTO<DeviceEntity>>()
+        return dto.data?.toDomain()
     }
 
     override suspend fun findAll(): List<Device> {

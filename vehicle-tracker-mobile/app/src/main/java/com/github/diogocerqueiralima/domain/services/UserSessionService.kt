@@ -13,7 +13,7 @@ class UserSessionService(
     /**
      * Retrieves the current user session with its identity decoded from the identity token.
      *
-     * @throws IllegalStateException if there is no active user session.
+     * @return the current user session, or null if there is no active user session.
      */
     suspend fun get(): UserSession? {
         return userSessionRepository.get()

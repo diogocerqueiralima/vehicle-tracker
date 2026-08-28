@@ -41,11 +41,8 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
         Optional<Device> existingDevice = devicePersistence.findById(id);
 
         // 2. Fails when the serial number or IMEI is already used by a different device.
-        boolean serialNumberOrImeiTaken = existingDevice.isPresent()
-                ? devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)
-                : devicePersistence.existsBySerialNumberOrImei(command.serialNumber(), command.imei());
-
-        if (serialNumberOrImeiTaken) {
+        //    Excluding id is a no-op when the device does not exist yet, so this covers create and update alike.
+        if (devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)) {
             throw new DeviceAlreadyExistsException();
         }
 
