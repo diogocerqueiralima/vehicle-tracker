@@ -8,9 +8,6 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [ingestion-service, asset-service, api-gateway]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -33,6 +30,12 @@ jobs:
           registry: "${{ secrets.HARBOR_URL }}"
           username: "${{ secrets.HARBOR_USERNAME }}"
           password: "${{ secrets.HARBOR_PASSWORD }}"
-      - name: Build & push ${{ matrix.service }} image
-        working-directory: vehicle-tracker-backend/${{ matrix.service }}/container
+      - name: Build & push ingestion-service image
+        working-directory: vehicle-tracker-backend/ingestion-service/container
+        run: ./buildAndPushContainer.sh
+      - name: Build & push asset-service image
+        working-directory: vehicle-tracker-backend/asset-service/container
+        run: ./buildAndPushContainer.sh
+      - name: Build & push api-gateway image
+        working-directory: vehicle-tracker-backend/api-gateway/container
         run: ./buildAndPushContainer.sh
