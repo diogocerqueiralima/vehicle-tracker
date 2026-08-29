@@ -16,9 +16,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.domain.model.Vehicle
-import com.github.diogocerqueiralima.domain.repositories.VehicleRepository
-import com.github.diogocerqueiralima.domain.services.VehicleService
+import com.github.diogocerqueiralima.domain.vehicles.model.Vehicle
+import com.github.diogocerqueiralima.domain.vehicles.repositories.VehicleRepository
+import com.github.diogocerqueiralima.domain.vehicles.services.VehicleService
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationBar
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent

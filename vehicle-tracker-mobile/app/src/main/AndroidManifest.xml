@@ -81,6 +81,12 @@
                 android:theme="@style/Theme.Vehicletrackermobile"
         >
         </activity>
+        <activity
+                android:name=".presentation.devices.DeviceConfigurationActivity"
+                android:exported="false"
+                android:theme="@style/Theme.Vehicletrackermobile"
+        >
+        </activity>
     </application>
 
 </manifest>

@@ -32,7 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.domain.model.Vehicle
+import com.github.diogocerqueiralima.domain.vehicles.model.Vehicle
 import com.github.diogocerqueiralima.presentation.ui.indicators.ErrorIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme

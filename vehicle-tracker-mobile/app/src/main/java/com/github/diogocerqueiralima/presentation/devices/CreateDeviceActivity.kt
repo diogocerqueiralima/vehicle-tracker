@@ -14,8 +14,8 @@ import androidx.activity.viewModels
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.github.diogocerqueiralima.DependenciesContainer
-import com.github.diogocerqueiralima.domain.services.DeviceService
-import com.github.diogocerqueiralima.infrastructure.repositories.DeviceRepositoryImpl
+import com.github.diogocerqueiralima.domain.devices.services.DeviceService
+import com.github.diogocerqueiralima.infrastructure.devices.repositories.DeviceRepositoryImpl
 import com.github.diogocerqueiralima.presentation.devices.screens.CreateDeviceScreen
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceViewModel
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceViewModelFactory

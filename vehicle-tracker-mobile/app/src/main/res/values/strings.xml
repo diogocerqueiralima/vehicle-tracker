@@ -3,8 +3,8 @@
     <string name="welcome_message_title">Track your vehicles in real-time</string>
     <string name="welcome_message_subtitle">Monitor the location of your vehicles with ease and efficiency.</string>
     <string name="get_started_button_label">Enter the platform</string>
-    <string name="authentication_idle_title">We\'re getting everything ready…</string>
-    <string name="authentication_idle_subtitle">Please wait a moment.</string>
+    <string name="getting_ready_title">We\'re getting everything ready…</string>
+    <string name="please_wait_subtitle">Please wait a moment.</string>
     <string name="authentication_redirect_title">We\'re finishing up…</string>
     <string name="authentication_redirect_subtitle">Just a moment longer.</string>
     <string name="authentication_success_title">Authenticated!</string>
@@ -33,6 +33,11 @@
     <string name="list_devices_loading_title">Loading devices…</string>
     <string name="list_devices_loading_subtitle">Please wait a moment.</string>
     <string name="list_devices_error_title">Something went wrong</string>
+    <string name="device_configuration_connecting_title">Connecting…</string>
+    <string name="device_configuration_connecting_subtitle">Please wait while we connect to your device.</string>
+    <string name="device_configuration_connected_title">Connected</string>
+    <string name="device_configuration_error_title">Something went wrong</string>
+    <string name="device_configuration_connection_failed">Failed to connect to the device.</string>
     <string name="create_device_title">New device</string>
     <string name="create_device_subtitle">Register a new tracking device</string>
     <string name="create_device_id_label">Device ID</string>
@@ -41,8 +46,6 @@
     <string name="create_device_manufacturer_label">Manufacturer</string>
     <string name="create_device_imei_label">IMEI</string>
     <string name="create_device_submit">Create device</string>
-    <string name="create_device_idle_title">Getting everything ready…</string>
-    <string name="create_device_idle_subtitle">Please wait a moment.</string>
     <string name="create_device_submitting_title">Creating device…</string>
     <string name="create_device_submitting_subtitle">Please wait a moment.</string>
     <string name="create_device_success_title">Device created</string>

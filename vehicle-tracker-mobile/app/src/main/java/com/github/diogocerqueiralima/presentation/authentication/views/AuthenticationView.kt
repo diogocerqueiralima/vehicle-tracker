@@ -16,8 +16,8 @@ import com.github.diogocerqueiralima.presentation.ui.views.InformationView
 fun AuthenticationIdleView(modifier: Modifier = Modifier) {
     InformationView(
         modifier = modifier,
-        title = stringResource(R.string.authentication_idle_title),
-        subtitle = stringResource(R.string.authentication_idle_subtitle),
+        title = stringResource(R.string.getting_ready_title),
+        subtitle = stringResource(R.string.please_wait_subtitle),
         indicator = { LoadingIndicator() }
     )
 }

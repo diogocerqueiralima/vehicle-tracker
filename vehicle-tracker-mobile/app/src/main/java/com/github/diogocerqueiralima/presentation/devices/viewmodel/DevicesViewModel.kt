@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.github.diogocerqueiralima.domain.model.Device
-import com.github.diogocerqueiralima.domain.services.DeviceService
+import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.domain.devices.services.DeviceService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,9 +17,11 @@ const val DEVICES_VIEW_MODEL_TAG = "DEVICES_VIEW_MODEL"
  * Represents the different states of the devices list retrieval process.
  */
 sealed interface DevicesState {
+
     data object Loading : DevicesState
     data class Loaded(val devices: List<Device>) : DevicesState
     data class Error(val message: String) : DevicesState
+
 }
 
 class DevicesViewModel(
