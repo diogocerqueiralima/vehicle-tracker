@@ -4,12 +4,17 @@
 #include <stdlib.h>
 #include "esp_log.h"
 #include "host/ble_store.h"
+#include "identity/device_identity.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "security/ble_security.h"
 
 static const char* LOG_TAG = "ble_manager";
-static const char* DEVICE_NAME = "VehicleTracker-ESP32\0";
+static const char* DEVICE_NAME = "ESP32\0";
+
+// Reserved "no assigned Company ID" placeholder (BT SIG), used since we don't have a registered
+// Company ID yet. Manufacturer-specific AD data must be prefixed with a 2-byte Company ID (little-endian).
+#define BLE_UNASSIGNED_COMPANY_ID 0xFFFF
 
 static struct ble_gatt_svc_def* gatt_services_defs = nullptr;
 static int service_count = 0;
@@ -37,16 +42,37 @@ static void start_advertising()
         return;
     }
 
-    // 2. Build advertising payload: general-discoverable, complete local name
+    // 2. Build advertising payload: general-discoverable, complete local name, and device ID in manufacturer-specific data
     struct ble_hs_adv_fields fields = {0};
+
+    // 2.1 Set flags to indicate general discoverable mode and BR/EDR not supported
     fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
+
+    // 2.2 Set the complete local name to the device name
     fields.name = (const uint8_t*)DEVICE_NAME;
     fields.name_len = strlen(DEVICE_NAME);
     fields.name_is_complete = 1;
 
+    // 2.3 Add device ID to advertising payload
+    uint8_t mfg_data[2 + DEVICE_IDENTITY_ID_LEN];
+    mfg_data[0] = (uint8_t)(BLE_UNASSIGNED_COMPANY_ID & 0xFF);
+    mfg_data[1] = (uint8_t)(BLE_UNASSIGNED_COMPANY_ID >> 8);
+
+    const esp_err_t error = device_identity_get(mfg_data + 2);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to load device identity for advertising: %s", esp_err_to_name(error));
+    }
+    else {
+        fields.mfg_data = mfg_data;
+        fields.mfg_data_len = sizeof(mfg_data);
+    }
+
+    // 2.4 Set the advertising fields
     rc = ble_gap_adv_set_fields(&fields);
     if (rc != 0)
     {
+        ESP_LOGE(LOG_TAG, "Failed to set advertising fields: %d", rc);
         return;
     }
 
