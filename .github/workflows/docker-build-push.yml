@@ -1,0 +1,36 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [ingestion-service, asset-service, api-gateway]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Set up WireGuard Connection
+        uses: niklaskeerl/easy-wireguard-action@v2
+        with:
+          WG_CONFIG_FILE: ${{ secrets.WG_CONFIG_FILE }}
+      - name: Trust Harbor CA in OS
+        env:
+          HARBOR_CA_CRT: ${{ secrets.HARBOR_CA_CRT }}
+        run: |
+          printf '%s' "$HARBOR_CA_CRT" | sudo tee /usr/local/share/ca-certificates/harbor-ca.crt > /dev/null
+          sudo update-ca-certificates
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: "${{ secrets.HARBOR_URL }}"
+          username: "${{ secrets.HARBOR_USERNAME }}"
+          password: "${{ secrets.HARBOR_PASSWORD }}"
+      - name: Build & push ${{ matrix.service }} image
+        working-directory: vehicle-tracker-backend/${{ matrix.service }}/container
+        run: ./buildAndPushContainer.sh
