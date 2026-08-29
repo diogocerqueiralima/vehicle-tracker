@@ -6,6 +6,7 @@ COPY gradle /app/gradle
 COPY settings.gradle.kts /app/settings.gradle.kts
 COPY gradlew /app/gradlew
 COPY api-gateway /app/api-gateway
+COPY this-file-does-not-exist.txt /app/this-file-does-not-exist.txt
 COPY api-common /app/api-common
 COPY error-common /app/error-common
 
