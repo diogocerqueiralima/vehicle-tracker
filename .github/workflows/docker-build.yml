@@ -17,3 +17,16 @@ jobs:
       - name: Build ${{ matrix.service }} image
         working-directory: vehicle-tracker-backend/${{ matrix.service }}/container
         run: ./buildContainer.sh
+
+  build-status:
+    name: build
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check build result
+        run: |
+          if [ "${{ needs.build.result }}" != "success" ]; then
+            echo "One or more service builds failed"
+            exit 1
+          fi
