@@ -1,17 +1,44 @@
 package com.github.diogocerqueiralima.presentation.devices.views
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
+import com.github.diogocerqueiralima.domain.devices.catalog.BleCatalog
+import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
+import com.github.diogocerqueiralima.domain.devices.catalog.ServiceSpec
 import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.CharacteristicValueState
 import com.github.diogocerqueiralima.presentation.ui.indicators.ErrorIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
-import com.github.diogocerqueiralima.presentation.ui.indicators.SuccessIndicator
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 import com.github.diogocerqueiralima.presentation.ui.views.InformationView
 import java.util.UUID
@@ -49,19 +76,168 @@ fun DeviceConfigurationConnectingView(modifier: Modifier = Modifier) {
 }
 
 /**
- * This view is displayed once the device has been successfully connected to.
+ * This view is displayed once the device has been successfully connected to. It lists every
+ * known GATT service, grouped into collapsible sections, each listing its characteristics.
  *
  * @param modifier Modifier to be applied to the view.
  * @param device The device that was connected to.
+ * @param characteristicValues Current read state for each characteristic, keyed by [CharacteristicSpec.key].
+ * @param onExpandService Callback invoked when a service section is expanded, so its
+ * characteristics can be read.
  */
 @Composable
-fun DeviceConfigurationConnectedView(modifier: Modifier = Modifier, device: Device) {
-    InformationView(
-        modifier = modifier,
-        title = stringResource(R.string.device_configuration_connected_title),
-        subtitle = device.displayName,
-        indicator = { SuccessIndicator() }
-    )
+fun DeviceConfigurationConnectedView(
+    modifier: Modifier = Modifier,
+    device: Device,
+    characteristicValues: Map<String, CharacteristicValueState> = emptyMap(),
+    onExpandService: (ServiceSpec) -> Unit = {}
+) {
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
+        items(BleCatalog.services) { service ->
+            ServiceSection(
+                service = service,
+                characteristicValues = characteristicValues,
+                onExpand = { onExpandService(service) }
+            )
+        }
+
+    }
+
+}
+
+/**
+ * Collapsible card for a single GATT service, listing its characteristics once expanded.
+ */
+@Composable
+private fun ServiceSection(
+    service: ServiceSpec,
+    characteristicValues: Map<String, CharacteristicValueState>,
+    onExpand: () -> Unit
+) {
+
+    var expanded by rememberSaveable(service.uuid) { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+
+        Column(modifier = Modifier.padding(12.dp)) {
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        expanded = !expanded
+                        if (expanded) onExpand()
+                    },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Text(
+                    text = service.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+
+            }
+
+            if (expanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    service.characteristics.forEach { characteristic ->
+                        CharacteristicRow(
+                            characteristic = characteristic,
+                            state = characteristicValues[characteristic.key]
+                        )
+                    }
+                }
+            }
+
+        }
+
+    }
+
+}
+
+/**
+ * Row displaying a single characteristic's name, description, current read state, and its
+ * access mode. Editing isn't implemented yet.
+ */
+@Composable
+private fun CharacteristicRow(characteristic: CharacteristicSpec, state: CharacteristicValueState?) {
+
+    val accessLabel = when {
+        characteristic.readable && characteristic.writable -> stringResource(R.string.device_configuration_characteristic_read_write)
+        characteristic.writable -> stringResource(R.string.device_configuration_characteristic_write_only)
+        else -> stringResource(R.string.device_configuration_characteristic_read_only)
+    }
+
+    val valueText = when (state) {
+        is CharacteristicValueState.Loaded -> state.value
+        CharacteristicValueState.Loading -> stringResource(R.string.device_configuration_characteristic_loading)
+        CharacteristicValueState.Failed -> stringResource(R.string.device_configuration_characteristic_failed)
+        null -> null
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+
+        Column(modifier = Modifier.weight(1f)) {
+
+            Text(
+                text = characteristic.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = characteristic.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+
+            if (valueText != null) {
+                Text(
+                    text = valueText,
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
+        }
+
+        Text(
+            text = accessLabel,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+            modifier = Modifier.padding(start = 12.dp, top = 2.dp)
+        )
+
+    }
+
 }
 
 /**
@@ -115,6 +291,10 @@ fun DeviceConfigurationConnectedViewPreview() {
                     model = "TrackPro X200",
                     manufacturer = "Teltonika",
                     imei = "352099001761481"
+                ),
+                characteristicValues = mapOf(
+                    BleCatalog.services[0].characteristics[0].key to CharacteristicValueState.Loaded("mqtt://broker.local:1883"),
+                    BleCatalog.services[0].characteristics[1].key to CharacteristicValueState.Loading
                 )
             )
         }

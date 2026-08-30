@@ -7,14 +7,18 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
 import com.github.diogocerqueiralima.domain.devices.model.ScannedDevice
 import com.github.diogocerqueiralima.domain.devices.scanner.DeviceScanner
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import java.nio.ByteBuffer
 import java.util.UUID
+
+private const val TAG = "BLUETOOTH_DEVICE_SCANNER"
 
 /**
  * Implementation of [DeviceScanner] that scans Bluetooth devices.
@@ -55,18 +59,31 @@ class BluetoothDeviceScanner(private val bluetoothScanner: BluetoothLeScanner) :
             override fun onScanResult(callbackType: Int, result: ScanResult) {
 
                 val scannedDevice = result.toScannedDevice(deviceId)
+
+                Log.d(TAG, "Scan result for device $deviceId: address=${scannedDevice.address}, rssi=${scannedDevice.rssi}")
+
                 trySend(scannedDevice)
 
             }
 
             override fun onScanFailed(errorCode: Int) {
+                Log.w(TAG, "Scan failed for device $deviceId, error code: $errorCode")
                 close(InternalErrorException("Scan failed with error code: $errorCode"))
             }
 
         }
 
+        Log.d(TAG, "Starting scan for device: $deviceId")
+
         // 4. Start scanning for devices using the BluetoothLeScanner with the specified filters and settings.
         bluetoothScanner.startScan(filters, settings, callback)
+
+        // 5. Stop scanning once the flow is cancelled/closed (e.g. after a match is found or the timeout fires).
+        awaitClose {
+            Log.d(TAG, "Stopping scan for device: $deviceId")
+            bluetoothScanner.stopScan(callback)
+        }
+
     }
 
     private fun UUID.toByteArray(): ByteArray {

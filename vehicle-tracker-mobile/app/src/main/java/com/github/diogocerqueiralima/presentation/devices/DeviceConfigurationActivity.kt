@@ -1,15 +1,20 @@
 package com.github.diogocerqueiralima.presentation.devices
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.domain.devices.services.DeviceConfigurationService
+import com.github.diogocerqueiralima.infrastructure.devices.connection.BluetoothDeviceConnection
 import com.github.diogocerqueiralima.infrastructure.devices.scanner.BluetoothDeviceScanner
 import com.github.diogocerqueiralima.presentation.devices.screens.DeviceConfigurationScreen
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModel
@@ -50,7 +55,7 @@ class DeviceConfigurationActivity : ComponentActivity() {
 
             val dependenciesContainer = application as DependenciesContainer
             val deviceScanner = BluetoothDeviceScanner(dependenciesContainer.bluetoothManager)
-            val deviceConnection = TODO("Provide a DeviceConnection implementation")
+            val deviceConnection = BluetoothDeviceConnection(applicationContext, dependenciesContainer.bluetoothManager)
             val deviceConfigurationService = DeviceConfigurationService(deviceScanner, deviceConnection)
 
             DeviceConfigurationViewModelFactory(deviceConfigurationService)
@@ -69,14 +74,29 @@ class DeviceConfigurationActivity : ComponentActivity() {
         )
     }
 
+    private val bluetoothPermissions = arrayOf(
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT
+    )
+
+    private val bluetoothPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        viewModel.onBluetoothPermissionResult(results.values.all { it }, device)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        viewModel.connect(device)
+        if (bluetoothPermissions.all { ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED }) {
+            viewModel.connect(device)
+        } else {
+            bluetoothPermissionsLauncher.launch(bluetoothPermissions)
+        }
 
         setContent {
-            DeviceConfigurationScreen(viewModel = viewModel)
+            DeviceConfigurationScreen(viewModel = viewModel, onBack = { finish() })
         }
 
     }
