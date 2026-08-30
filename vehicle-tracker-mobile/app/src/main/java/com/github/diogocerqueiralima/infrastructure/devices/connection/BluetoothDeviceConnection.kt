@@ -113,10 +113,6 @@ class BluetoothDeviceConnection(
 
         Log.d(TAG, "Registering bond state receiver on context: $context (instance: ${this.hashCode()})")
 
-        // TEMPORARY DIAGNOSTIC: using RECEIVER_EXPORTED to test whether RECEIVER_NOT_EXPORTED is
-        // blocking delivery of this protected broadcast on this device/Android version. Revert to
-        // RECEIVER_NOT_EXPORTED once confirmed either way - EXPORTED lets other apps on the device
-        // target this receiver too, which is not the right long-term setting.
         ContextCompat.registerReceiver(
             context,
             bondStateReceiver,
