@@ -34,7 +34,7 @@ class BluetoothDeviceScanner(private val bluetoothScanner: BluetoothLeScanner) :
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
-    override suspend fun scan(deviceId: UUID): Flow<ScannedDevice> = callbackFlow {
+    override fun scan(deviceId: UUID): Flow<ScannedDevice> = callbackFlow {
 
         // 1. Create a ScanFilter to filter devices by manufacturer data (using the deviceId as the manufacturer data).
         val filters = listOf<ScanFilter>(

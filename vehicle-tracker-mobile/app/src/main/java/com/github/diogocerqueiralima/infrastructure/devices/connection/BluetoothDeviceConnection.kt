@@ -117,7 +117,7 @@ class BluetoothDeviceConnection(
             context,
             bondStateReceiver,
             IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED),
-            ContextCompat.RECEIVER_EXPORTED
+            ContextCompat.RECEIVER_EXPORTED // Bluetooth bond state changes are system broadcasts, so this receiver must be exported
         )
 
         Log.d(TAG, "Bond state receiver registered")

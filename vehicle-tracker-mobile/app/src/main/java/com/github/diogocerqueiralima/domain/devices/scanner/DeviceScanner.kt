@@ -12,6 +12,6 @@ interface DeviceScanner {
     /**
      * Scans a device with the given [deviceId].
      */
-    suspend fun scan(deviceId: UUID): Flow<ScannedDevice>
+    fun scan(deviceId: UUID): Flow<ScannedDevice>
 
 }

@@ -5,6 +5,8 @@ import com.github.diogocerqueiralima.domain.devices.connection.DeviceConnection
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.scanner.DeviceScanner
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.timeout
 import java.util.UUID
@@ -33,10 +35,14 @@ class DeviceConfigurationService(
 
         val scannedDevice = deviceScanner.scan(id)
             .timeout(30.seconds)
-            .firstOrNull() ?: run {
-                Log.w(TAG, "Device not found: $id")
+            .catch {
+                Log.w(TAG, "Device not found within timeout: $id")
                 throw NotFoundException(id)
             }
+            .firstOrNull() ?: run {
+            Log.w(TAG, "Device not found: $id")
+            throw NotFoundException(id)
+        }
 
         Log.d(TAG, "Device found: ${scannedDevice.address}. Attempting to connect...")
 
