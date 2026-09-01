@@ -147,7 +147,6 @@ class DeviceConfigurationViewModel(
             }
 
             _characteristicValues.value += characteristic.key to result
-
         }
 
     }
@@ -175,7 +174,6 @@ class DeviceConfigurationViewModel(
             }
 
             _characteristicValues.value += characteristic.key to result
-
         }
 
     }

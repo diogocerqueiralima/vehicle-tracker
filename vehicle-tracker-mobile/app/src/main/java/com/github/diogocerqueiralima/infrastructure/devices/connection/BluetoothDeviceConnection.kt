@@ -6,7 +6,6 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.bluetooth.le.ScanSettings
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -22,7 +21,6 @@ import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorExcep
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.connection.DeviceConnection
 import com.juul.kable.Filter
-import com.juul.kable.ObsoleteKableApi
 import com.juul.kable.Peripheral
 import com.juul.kable.Scanner
 import com.juul.kable.WriteType
@@ -37,6 +35,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.nio.ByteBuffer
 import java.util.UUID
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -65,10 +64,15 @@ class BluetoothDeviceConnection(
     private var peripheral: Peripheral? = null
 
     /**
-     * Suspends until a [BluetoothDevice.ACTION_BOND_STATE_CHANGED] broadcast reports a
-     * non-[BluetoothDevice.BOND_BONDING] state for the device at [address], returning that state.
+     * Registers a receiver for [BluetoothDevice.ACTION_BOND_STATE_CHANGED] and, once it's
+     * listening, invokes [startBonding] to actually kick off bonding — so a fast bond-state
+     * transition (e.g. a cached link key bonding near-instantly) can't be missed by starting
+     * bonding before anything is listening for its result. Suspends until a non-BOND_BONDING
+     * state for [address] is reported, returning that state.
+     *
+     * @throws Exception whatever [startBonding] throws, if it throws.
      */
-    private suspend fun awaitBondState(address: String): Int = suspendCancellableCoroutine { continuation ->
+    private suspend fun awaitBondState(address: String, startBonding: () -> Unit): Int = suspendCancellableCoroutine { continuation ->
 
         val receiver = object : BroadcastReceiver() {
 
@@ -108,93 +112,14 @@ class BluetoothDeviceConnection(
 
         // Only reached if the coroutine is cancelled before onReceive unregisters the receiver itself.
         continuation.invokeOnCancellation { runCatching { context.unregisterReceiver(receiver) } }
-    }
 
-    /**
-     * Returns the MAC address for the device with the given [id]: the address saved from a
-     * previous connection if there is one (already-bonded devices aren't reliably found via a
-     * fresh scan), otherwise scans for it by manufacturer data.
-     *
-     * @throws NotFoundException if the device isn't found within the 30-second scan timeout.
-     */
-    @OptIn(FlowPreview::class)
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    private suspend fun getAddress(id: UUID): String {
-
-        // 1. Check if we have a saved address for this device from a previous connection.
-        val storedAddress = dataStore.data.firstOrNull()?.get(stringPreferencesKey(id.toString()))
-        if (storedAddress != null) {
-            return storedAddress
+        // The receiver is listening now, so it's safe to actually start bonding.
+        try {
+            startBonding()
+        } catch (e: Exception) {
+            context.unregisterReceiver(receiver)
+            continuation.resumeWithException(e)
         }
-
-        Log.d(TAG, "Scanning for device: $id (instance: ${this.hashCode()})")
-
-        // 2. Scan for the device by manufacturer data, timing out after 30 seconds if not found.
-        val scanner = Scanner {
-            filters {
-                match {
-                    manufacturerData = listOf(Filter.ManufacturerData(id = MANUFACTURER_ID, data = id. toByteArray()))
-                }
-            }
-        }
-
-        // 3. Wait for the first advertisement that matches the filter, or throw a NotFoundException if none is found within the timeout.
-        val advertisement = scanner.advertisements
-            .timeout(30.seconds)
-            .catch { e ->
-
-                if (e is TimeoutCancellationException) {
-                    Log.w(TAG, "Device not found within timeout: $id")
-                    throw NotFoundException(id)
-                }
-
-                throw e
-            }
-            .firstOrNull() ?: run {
-            Log.w(TAG, "Device not found: $id")
-            throw NotFoundException(id)
-        }
-
-        Log.d(TAG, "Device found: ${advertisement.address}")
-
-        // 4. Return the address of the found device.
-        return advertisement.address
-    }
-
-    /**
-     * Bonds with [device] if it isn't already bonded, suspending until bonding completes.
-     *
-     * @throws InternalErrorException if bonding fails to start or complete.
-     */
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun bond(device: BluetoothDevice) {
-
-        // 1. If the device is already bonded, return immediately.
-        if (device.bondState != BluetoothDevice.BOND_NONE) {
-            return
-        }
-
-        Log.d(TAG, "Device at address: ${device.address} is not bonded, initiating bonding process")
-
-        // 2. Initiate bonding with the device.
-        val bonding = device.createBond()
-
-        if (!bonding) {
-            Log.w(TAG, "createBond() returned false for address: ${device.address}")
-            throw InternalErrorException("Failed to create bond with device at address: ${device.address}")
-        }
-
-        Log.d(TAG, "Bonding initiated for address: ${device.address}, waiting for bond state change")
-
-        // 3. Wait for the bond state to change to either BONDED or BOND_NONE.
-        val bondState = withTimeoutOrNull(30.seconds) { awaitBondState(device.address) }
-
-        if (bondState != BluetoothDevice.BOND_BONDED) {
-            Log.w(TAG, "Bonding failed for address: ${device.address}, final state: $bondState")
-            throw InternalErrorException("Failed to bond with device at address: ${device.address}")
-        }
-
-        Log.d(TAG, "Bonded successfully with address: ${device.address}")
     }
 
     /**
@@ -206,25 +131,30 @@ class BluetoothDeviceConnection(
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     override suspend fun connect(id: UUID) {
 
-        // 1. Get the device's address, either from a previous connection or by scanning for it.
-        val address = getAddress(id)
+        val storedAddress = getStoredAddress(id)
 
-        Log.d(TAG, "Attempting to connect to: $address")
-
-        // 2. Get the BluetoothDevice object for the address.
-        val device = adapter.getRemoteDevice(address)
-
-        bond(device)
-
-        Log.d(TAG, "Device at address: $address is bonded, proceeding to connect to GATT server")
-
-        // 3. Connect to the GATT server; Kable discovers services automatically as part of connect().
-        val peripheral = Peripheral(address)
-        peripheral.connect()
-        this.peripheral = peripheral
+        // 1. If we have a stored address for this device, try to connect to it first.
+        val address = if (storedAddress != null) {
+            try {
+                connectToAddress(storedAddress)
+                storedAddress
+            } catch (e: Exception) {
+                // 2. If connecting to the stored address fails, clear it and scan for the device again.
+                Log.w(TAG, "Failed to connect using stored address: $storedAddress, clearing it and re-scanning", e)
+                dataStore.edit { preferences -> preferences.remove(addressKey(id)) }
+                val scannedAddress = scanForAddress(id)
+                connectToAddress(scannedAddress)
+                scannedAddress
+            }
+        } else {
+            // 3. If we don't have a stored address, scan for the device and connect to it.
+            val scannedAddress = scanForAddress(id)
+            connectToAddress(scannedAddress)
+            scannedAddress
+        }
 
         // 4. Remember this device's address so future connects can skip scanning for it.
-        dataStore.edit { preferences -> preferences[stringPreferencesKey(id.toString())] = address }
+        dataStore.edit { preferences -> preferences[addressKey(id)] = address }
     }
 
     override suspend fun read(serviceId: Uuid, characteristicId: Uuid): ByteArray {
@@ -262,6 +192,114 @@ class BluetoothDeviceConnection(
         peripheral?.close()
         peripheral = null
 
+    }
+
+    // Helper methods
+
+    private fun addressKey(id: UUID) = stringPreferencesKey(id.toString())
+
+    /**
+     * Returns the MAC address saved for the device with the given [id] from a previous
+     * connection, or `null` if none has been saved yet.
+     */
+    private suspend fun getStoredAddress(id: UUID): String? =
+        dataStore.data.firstOrNull()?.get(addressKey(id))
+
+    /**
+     * Scans for the device advertising [id] as manufacturer data, timing out after 30 seconds if
+     * not found.
+     *
+     * @throws NotFoundException if the device isn't found within the timeout.
+     */
+    @OptIn(FlowPreview::class)
+    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
+    private suspend fun scanForAddress(id: UUID): String {
+
+        Log.d(TAG, "Scanning for device: $id (instance: ${this.hashCode()})")
+
+        val scanner = Scanner {
+            filters {
+                match {
+                    manufacturerData = listOf(Filter.ManufacturerData(id = MANUFACTURER_ID, data = id.toByteArray()))
+                }
+            }
+        }
+
+        val advertisement = scanner.advertisements
+            .timeout(30.seconds)
+            .catch { e ->
+
+                if (e is TimeoutCancellationException) {
+                    Log.w(TAG, "Device not found within timeout: $id")
+                    throw NotFoundException(id)
+                }
+
+                throw e
+            }
+            .firstOrNull() ?: run {
+            Log.w(TAG, "Device not found: $id")
+            throw NotFoundException(id)
+        }
+
+        Log.d(TAG, "Device found: ${advertisement.address}")
+
+        return advertisement.address
+    }
+
+    /**
+     * Bonds with [device] if it isn't already bonded, suspending until bonding completes.
+     *
+     * @throws InternalErrorException if bonding fails to start or complete.
+     */
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private suspend fun bond(device: BluetoothDevice) {
+
+        // 1. If the device is already bonded, return immediately.
+        if (device.bondState != BluetoothDevice.BOND_NONE) {
+            return
+        }
+
+        Log.d(TAG, "Device at address: ${device.address} is not bonded, initiating bonding process")
+
+        // 2 & 3. Start listening for bond state changes, then initiate bonding, then wait for the
+        // bond state to change to either BONDED or BOND_NONE.
+        val bondState = withTimeoutOrNull(30.seconds) {
+            awaitBondState(device.address) {
+                if (!device.createBond()) {
+                    Log.w(TAG, "createBond() returned false for address: ${device.address}")
+                    throw InternalErrorException("Failed to create bond with device at address: ${device.address}")
+                }
+                Log.d(TAG, "Bonding initiated for address: ${device.address}, waiting for bond state change")
+            }
+        }
+
+        if (bondState != BluetoothDevice.BOND_BONDED) {
+            Log.w(TAG, "Bonding failed for address: ${device.address}, final state: $bondState")
+            throw InternalErrorException("Failed to bond with device at address: ${device.address}")
+        }
+
+        Log.d(TAG, "Bonded successfully with address: ${device.address}")
+    }
+
+    /**
+     * Bonds with (if needed) and connects to the GATT server at [address]. On success, sets
+     * [peripheral] to the connected [Peripheral].
+     */
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT])
+    private suspend fun connectToAddress(address: String) {
+
+        Log.d(TAG, "Attempting to connect to: $address")
+
+        val device = adapter.getRemoteDevice(address)
+
+        bond(device)
+
+        Log.d(TAG, "Device at address: $address is bonded, proceeding to connect to GATT server")
+
+        // Kable discovers services automatically as part of connect().
+        val peripheral = Peripheral(address)
+        peripheral.connect()
+        this.peripheral = peripheral
     }
 
     private fun UUID.toByteArray(): ByteArray {
