@@ -25,6 +25,7 @@ import com.juul.kable.Peripheral
 import com.juul.kable.Scanner
 import com.juul.kable.WriteType
 import com.juul.kable.characteristicOf
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.catch
@@ -138,6 +139,9 @@ class BluetoothDeviceConnection(
             try {
                 connectToAddress(storedAddress)
                 storedAddress
+            } catch (e: CancellationException) {
+                Log.e(TAG, "Connection attempt to stored address was cancelled: $storedAddress", e)
+                throw e
             } catch (e: Exception) {
                 // 2. If connecting to the stored address fails, clear it and scan for the device again.
                 Log.w(TAG, "Failed to connect using stored address: $storedAddress, clearing it and re-scanning", e)
