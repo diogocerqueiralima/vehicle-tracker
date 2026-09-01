@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "com.github.diogocerqueiralima"
-        minSdk = 24
+        minSdk = 33
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.barcode.scanning)
+    implementation(libs.kable.core)
 
     testImplementation(libs.junit)
 

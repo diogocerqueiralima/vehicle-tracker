@@ -12,8 +12,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.domain.model.Device
-import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceError
+import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceReason
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceState
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceViewModel
 import com.github.diogocerqueiralima.presentation.devices.views.CreateDeviceErrorView
@@ -22,8 +22,8 @@ import com.github.diogocerqueiralima.presentation.devices.views.CreateDeviceSucc
 import com.github.diogocerqueiralima.presentation.devices.views.CreateDeviceView
 import com.github.diogocerqueiralima.presentation.devices.views.IdleView
 import com.github.diogocerqueiralima.presentation.devices.views.ScanDeviceQrView
-import com.github.diogocerqueiralima.presentation.errors.CommonError
-import com.github.diogocerqueiralima.presentation.errors.Error
+import com.github.diogocerqueiralima.presentation.errors.CommonReason
+import com.github.diogocerqueiralima.presentation.errors.Reason
 import com.github.diogocerqueiralima.presentation.errors.message as commonErrorMessage
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
@@ -32,12 +32,12 @@ import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileT
  * Resolves the message to display for a device creation error reason.
  */
 @Composable
-private fun Error.message(): String = when (this) {
-    is CommonError -> commonErrorMessage()
-    CreateDeviceError.CAMERA_PERMISSION_DENIED -> stringResource(R.string.scan_device_qr_camera_permission_denied)
-    CreateDeviceError.CAMERA_UNAVAILABLE -> stringResource(R.string.scan_device_qr_camera_unavailable)
-    CreateDeviceError.INVALID_QR_CODE -> stringResource(R.string.scan_device_qr_invalid_code)
-    CreateDeviceError.QR_PROCESSING_FAILED -> stringResource(R.string.create_device_qr_processing_failed)
+private fun Reason.message(): String = when (this) {
+    is CommonReason -> commonErrorMessage()
+    CreateDeviceReason.CAMERA_PERMISSION_DENIED -> stringResource(R.string.scan_device_qr_camera_permission_denied)
+    CreateDeviceReason.CAMERA_UNAVAILABLE -> stringResource(R.string.scan_device_qr_camera_unavailable)
+    CreateDeviceReason.INVALID_QR_CODE -> stringResource(R.string.scan_device_qr_invalid_code)
+    CreateDeviceReason.QR_PROCESSING_FAILED -> stringResource(R.string.create_device_qr_processing_failed)
     else -> stringResource(R.string.error_unexpected)
 }
 

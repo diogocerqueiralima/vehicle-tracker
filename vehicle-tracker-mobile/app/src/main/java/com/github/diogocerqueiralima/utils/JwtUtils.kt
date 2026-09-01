@@ -1,8 +1,8 @@
 package com.github.diogocerqueiralima.utils
 
 import com.auth0.android.jwt.JWT
-import com.github.diogocerqueiralima.domain.exceptions.InvalidIdentityTokenException
-import com.github.diogocerqueiralima.domain.model.UserIdentity
+import com.github.diogocerqueiralima.domain.authentication.exceptions.InvalidIdentityTokenException
+import com.github.diogocerqueiralima.domain.authentication.model.UserIdentity
 import java.util.UUID
 
 /**

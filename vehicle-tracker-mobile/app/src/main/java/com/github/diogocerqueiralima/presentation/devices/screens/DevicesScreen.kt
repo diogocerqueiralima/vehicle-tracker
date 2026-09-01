@@ -20,9 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.domain.model.Device
-import com.github.diogocerqueiralima.domain.repositories.DeviceRepository
-import com.github.diogocerqueiralima.domain.services.DeviceService
+import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.domain.devices.repositories.DeviceRepository
+import com.github.diogocerqueiralima.domain.devices.services.DeviceService
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationBar
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent

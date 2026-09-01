@@ -5,8 +5,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import com.github.diogocerqueiralima.DependenciesContainer
-import com.github.diogocerqueiralima.domain.services.VehicleService
-import com.github.diogocerqueiralima.infrastructure.repositories.VehicleRepositoryImpl
+import com.github.diogocerqueiralima.domain.vehicles.services.VehicleService
+import com.github.diogocerqueiralima.infrastructure.vehicles.repositories.VehicleRepositoryImpl
 import com.github.diogocerqueiralima.presentation.ui.activities.BottomNavigationActivity
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
 import com.github.diogocerqueiralima.presentation.vehicles.screens.VehiclesScreen

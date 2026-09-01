@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.github.diogocerqueiralima.domain.model.Vehicle
-import com.github.diogocerqueiralima.domain.services.VehicleService
+import com.github.diogocerqueiralima.domain.vehicles.model.Vehicle
+import com.github.diogocerqueiralima.domain.vehicles.services.VehicleService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

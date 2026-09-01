@@ -1,17 +1,18 @@
 package com.github.diogocerqueiralima
 
 import android.app.Application
+import android.bluetooth.BluetoothManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.github.diogocerqueiralima.domain.repositories.UserPreSessionRepository
-import com.github.diogocerqueiralima.domain.repositories.UserSessionRepository
-import com.github.diogocerqueiralima.domain.services.AuthenticationService
-import com.github.diogocerqueiralima.domain.services.UserSessionService
-import com.github.diogocerqueiralima.infrastructure.client.AuthenticationHttpClient
-import com.github.diogocerqueiralima.infrastructure.repositories.KeyRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserPreSessionRepositoryImpl
-import com.github.diogocerqueiralima.infrastructure.repositories.UserSessionRepositoryImpl
+import com.github.diogocerqueiralima.domain.authentication.repositories.UserPreSessionRepository
+import com.github.diogocerqueiralima.domain.authentication.repositories.UserSessionRepository
+import com.github.diogocerqueiralima.domain.authentication.services.AuthenticationService
+import com.github.diogocerqueiralima.domain.authentication.services.UserSessionService
+import com.github.diogocerqueiralima.infrastructure.authentication.client.AuthenticationHttpClient
+import com.github.diogocerqueiralima.infrastructure.authentication.repositories.KeyRepositoryImpl
+import com.github.diogocerqueiralima.infrastructure.authentication.repositories.UserPreSessionRepositoryImpl
+import com.github.diogocerqueiralima.infrastructure.authentication.repositories.UserSessionRepositoryImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.auth.Auth
@@ -26,6 +27,7 @@ interface DependenciesContainer {
     val httpClient: HttpClient
     val dataStore: DataStore<Preferences>
     val keyStore: KeyStore
+    val bluetoothManager: BluetoothManager
     val userSessionService: UserSessionService
     val authenticationService: AuthenticationService
 
@@ -79,6 +81,10 @@ class VehicleTrackerApplication : Application(), DependenciesContainer {
         KeyStore.getInstance("AndroidKeyStore").apply {
             load(null)
         }
+    }
+
+    override val bluetoothManager: BluetoothManager by lazy {
+        getSystemService(BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager
     }
 
     private val userSessionRepository: UserSessionRepository by lazy {

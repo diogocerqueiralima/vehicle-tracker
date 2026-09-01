@@ -4,11 +4,11 @@ This document provides the parameters and configuration details for the Connecti
 
 ## Structure
 
-**Service UUID**: `6578878c-85c9-4566-9a51-37c9aaea0413`
+**Service UUID**: `1304eaaa-c937-511a-6605-c9858c877865`
 
 | Name | UUID | Type | Actions | Description | Default Value |
 |---|---|---|---|---|---|
-| broker_url | 002af440-7157-45f5-a96f-0c87fa0e5e75 | string | read, write | The URL of the MQTT broker to which the service will connect. | - |
-| keep_alive | 193bdbf3-3f36-4bd1-a06f-e8bc31f1978f | integer | read, write | The keep-alive interval in seconds for the MQTT connection. | 60 |
-| qos | 497378ba-0252-4d84-a07f-05a886d01186 | integer | read, write | The Quality of Service level for MQTT messages (0, 1, or 2). | 0 |
-| recon_interval | 1472f295-a20b-4c4b-b191-7f67b0ecaa7c | integer | read, write | The interval in seconds for attempting to reconnect to the MQTT broker if the connection is lost. | 30 |
+| broker_url | 755e0efa-870c-6f29-f505-577140f42a00 | string | read, write | The URL of the MQTT broker to which the service will connect. | - |
+| keep_alive | 8f97f131-bce8-6f20-d10b-363ff3db3b19 | integer | read, write | The keep-alive interval in seconds for the MQTT connection. | 60 |
+| qos | 8611d086-a805-7f20-840d-5202ba787349 | integer | read, write | The Quality of Service level for MQTT messages (0, 1, or 2). | 0 |
+| recon_interval | 7caaecb0-677f-9131-4b0c-0ba295f27214 | integer | read, write | The interval in seconds for attempting to reconnect to the MQTT broker if the connection is lost. | 30 |

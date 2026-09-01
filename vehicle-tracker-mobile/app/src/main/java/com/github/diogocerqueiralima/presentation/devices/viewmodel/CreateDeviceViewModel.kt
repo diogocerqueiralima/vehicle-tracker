@@ -8,11 +8,11 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.github.diogocerqueiralima.domain.model.Device
-import com.github.diogocerqueiralima.domain.services.DeviceService
-import com.github.diogocerqueiralima.domain.services.UserSessionService
-import com.github.diogocerqueiralima.presentation.errors.CommonError
-import com.github.diogocerqueiralima.presentation.errors.Error
+import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.domain.devices.services.DeviceService
+import com.github.diogocerqueiralima.domain.authentication.services.UserSessionService
+import com.github.diogocerqueiralima.presentation.errors.CommonReason
+import com.github.diogocerqueiralima.presentation.errors.Reason
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.common.InputImage
@@ -43,7 +43,7 @@ data class CreateDeviceFormState(
 /**
  * Errors specific to the device creation flow.
  */
-enum class CreateDeviceError : Error {
+enum class CreateDeviceReason : Reason {
     CAMERA_PERMISSION_DENIED,
     CAMERA_UNAVAILABLE,
     INVALID_QR_CODE,
@@ -59,7 +59,7 @@ sealed interface CreateDeviceState {
     data class Filling(val form: CreateDeviceFormState) : CreateDeviceState
     data class Submitting(val form: CreateDeviceFormState) : CreateDeviceState
     data class Success(val device: Device) : CreateDeviceState
-    data class Error(val form: CreateDeviceFormState = CreateDeviceFormState(), val reason: com.github.diogocerqueiralima.presentation.errors.Error) : CreateDeviceState
+    data class Error(val form: CreateDeviceFormState = CreateDeviceFormState(), val reason: Reason) : CreateDeviceState
 }
 
 class CreateDeviceViewModel(
@@ -84,7 +84,7 @@ class CreateDeviceViewModel(
         if (granted) {
             _state.value = CreateDeviceState.Scanning(cameraProvider)
         } else {
-            _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceError.CAMERA_PERMISSION_DENIED)
+            _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceReason.CAMERA_PERMISSION_DENIED)
         }
 
     }
@@ -99,7 +99,7 @@ class CreateDeviceViewModel(
             return
         }
 
-        _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceError.CAMERA_UNAVAILABLE)
+        _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceReason.CAMERA_UNAVAILABLE)
     }
 
     fun onSerialNumberChange(serialNumber: String) = updateForm { it.copy(serialNumber = serialNumber) }
@@ -146,7 +146,7 @@ class CreateDeviceViewModel(
 
                 val session = userSessionService.get()
                 if (session == null) {
-                    _state.value = CreateDeviceState.Error(form = form, reason = CommonError.NO_ACTIVE_SESSION)
+                    _state.value = CreateDeviceState.Error(form = form, reason = CommonReason.NO_ACTIVE_SESSION)
                     return@launch
                 }
 
@@ -165,7 +165,7 @@ class CreateDeviceViewModel(
                 onDeviceCreated(device)
             } catch (exception: Exception) {
                 Log.e(CREATE_DEVICE_VIEW_MODEL_TAG, "Failed to create device", exception)
-                _state.value = CreateDeviceState.Error(form = form, reason = CommonError.UNEXPECTED_ERROR)
+                _state.value = CreateDeviceState.Error(form = form, reason = CommonReason.UNEXPECTED_ERROR)
             }
 
         }
@@ -209,7 +209,7 @@ class CreateDeviceViewModel(
                             _state.value = CreateDeviceState.Filling(CreateDeviceFormState(id = id))
                         } catch (e: IllegalArgumentException) {
                             Log.e(CREATE_DEVICE_VIEW_MODEL_TAG, "Scanned QR code is not a valid device identifier: $rawValue", e)
-                            _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceError.INVALID_QR_CODE)
+                            _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceReason.INVALID_QR_CODE)
                         }
 
                         break
@@ -219,7 +219,7 @@ class CreateDeviceViewModel(
             }
             .addOnFailureListener { exception ->
                 Log.e(CREATE_DEVICE_VIEW_MODEL_TAG, "Failed to process the scanned QR code", exception)
-                _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceError.QR_PROCESSING_FAILED)
+                _state.value = CreateDeviceState.Error(form = CreateDeviceFormState(), reason = CreateDeviceReason.QR_PROCESSING_FAILED)
             }
             .addOnCompleteListener {
                 proxy.close()

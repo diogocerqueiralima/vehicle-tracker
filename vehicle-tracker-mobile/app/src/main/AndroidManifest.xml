@@ -3,6 +3,9 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
@@ -77,6 +80,12 @@
         </activity>
         <activity
                 android:name=".presentation.devices.CreateDeviceActivity"
+                android:exported="false"
+                android:theme="@style/Theme.Vehicletrackermobile"
+        >
+        </activity>
+        <activity
+                android:name=".presentation.devices.DeviceConfigurationActivity"
                 android:exported="false"
                 android:theme="@style/Theme.Vehicletrackermobile"
         >

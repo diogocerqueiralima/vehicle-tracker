@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import com.github.diogocerqueiralima.DependenciesContainer
-import com.github.diogocerqueiralima.domain.services.DeviceService
-import com.github.diogocerqueiralima.infrastructure.repositories.DeviceRepositoryImpl
+import com.github.diogocerqueiralima.domain.devices.services.DeviceService
+import com.github.diogocerqueiralima.infrastructure.devices.repositories.DeviceRepositoryImpl
 import com.github.diogocerqueiralima.presentation.ui.activities.BottomNavigationActivity
 import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
 import com.github.diogocerqueiralima.presentation.devices.screens.DevicesScreen
@@ -38,7 +38,8 @@ class DevicesActivity : BottomNavigationActivity(BottomNavigationDestination.Dev
             DevicesScreen(
                 viewModel = viewModel,
                 onNavigate = ::navigateTo,
-                onAddDevice = { startActivity(Intent(this, CreateDeviceActivity::class.java)) }
+                onAddDevice = { startActivity(Intent(this, CreateDeviceActivity::class.java)) },
+                onDeviceClick = { device -> startActivity(DeviceConfigurationActivity.intent(this, device)) }
             )
         }
 

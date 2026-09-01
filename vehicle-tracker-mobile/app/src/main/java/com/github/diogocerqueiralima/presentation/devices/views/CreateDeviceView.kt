@@ -28,7 +28,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.domain.model.Device
+import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.presentation.ui.indicators.ErrorIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.SuccessIndicator
@@ -176,8 +176,8 @@ fun ScanDeviceQrView(
 fun IdleView(modifier: Modifier = Modifier) {
     InformationView(
         modifier = modifier,
-        title = stringResource(R.string.create_device_idle_title),
-        subtitle = stringResource(R.string.create_device_idle_subtitle),
+        title = stringResource(R.string.getting_ready_title),
+        subtitle = stringResource(R.string.please_wait_subtitle),
         indicator = { LoadingIndicator() }
     )
 }
