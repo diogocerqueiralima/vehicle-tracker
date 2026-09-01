@@ -16,6 +16,7 @@ desugarJdkLibs = "2.1.5"
 jwtdecode = "2.0.2"
 camerax = "1.6.1"
 mlkitBarcodeScanning = "17.3.0"
+kable = "0.37.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +49,7 @@ androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.r
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcodeScanning" }
+kable-core = { module = "com.juul.kable:kable-core", version.ref = "kable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

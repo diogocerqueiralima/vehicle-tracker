@@ -1,6 +1,10 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package com.github.diogocerqueiralima.domain.devices.connection
 
 import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Interface for operations related to device connections.
@@ -8,11 +12,11 @@ import java.util.UUID
 interface DeviceConnection {
 
     /**
-     * Connects to a device with the given [address].
+     * Scans for the device with the given [id] and connects to it once found.
      *
-     * @param address The address of the device to connect to.
+     * @param id The id of the device to connect to.
      */
-    suspend fun connect(address: String)
+    suspend fun connect(id: UUID)
 
     /**
      * Reads the value of the characteristic identified by [characteristicId], within the
@@ -22,7 +26,7 @@ interface DeviceConnection {
      * @param characteristicId The id of the characteristic to read.
      * @return The value currently held by the characteristic.
      */
-    suspend fun read(serviceId: UUID, characteristicId: UUID): ByteArray
+    suspend fun read(serviceId: Uuid, characteristicId: Uuid): ByteArray
 
     /**
      * Writes [value] to the characteristic identified by [characteristicId], within the
@@ -32,7 +36,7 @@ interface DeviceConnection {
      * @param characteristicId The id of the characteristic to write to.
      * @param value The value to write.
      */
-    suspend fun write(serviceId: UUID, characteristicId: UUID, value: ByteArray)
+    suspend fun write(serviceId: Uuid, characteristicId: Uuid, value: ByteArray)
 
     /**
      * Releases any resources held by this connection.

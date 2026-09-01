@@ -47,6 +47,7 @@ import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileT
 import com.github.diogocerqueiralima.presentation.ui.views.InformationView
 import java.util.UUID
 import kotlin.time.Instant
+import kotlin.uuid.ExperimentalUuidApi
 
 /**
  * This view is displayed while the device configuration flow is starting up, before a device has
@@ -136,6 +137,7 @@ fun DeviceConfigurationConnectedView(
 /**
  * Collapsible card for a single GATT service, listing its characteristics once expanded.
  */
+@OptIn(ExperimentalUuidApi::class)
 @Composable
 private fun ServiceSection(
     service: ServiceSpec,

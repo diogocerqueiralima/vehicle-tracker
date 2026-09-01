@@ -1,14 +1,12 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package com.github.diogocerqueiralima.infrastructure.devices.connection
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
-import android.bluetooth.BluetoothStatusCodes
+import android.bluetooth.le.ScanSettings
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,273 +14,264 @@ import android.content.IntentFilter
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.connection.DeviceConnection
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
+import com.juul.kable.Filter
+import com.juul.kable.ObsoleteKableApi
+import com.juul.kable.Peripheral
+import com.juul.kable.Scanner
+import com.juul.kable.WriteType
+import com.juul.kable.characteristicOf
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.timeout
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
+import java.nio.ByteBuffer
 import java.util.UUID
+import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 private const val TAG = "BLUETOOTH_DEVICE_CONNECTION"
+
+private const val MANUFACTURER_ID = 0xFFFF
 
 /**
  * Implementation of [DeviceConnection] for Bluetooth devices.
  *
- * Registers a single [BroadcastReceiver] for bond state changes on init.
- * GATT callbacks (service discovery, characteristic reads/writes) follow the same
- * shared-flow bridging as bond state: the callback emits, and each operation awaits the
- * matching event via `filter`/`first`.
+ * Scanning, GATT connection, service discovery, and characteristic reads/writes are all
+ * delegated to Kable. Bonding is still handled manually, since it must happen before the GATT
+ * connection is established and Kable has no bonding API of its own: a [BroadcastReceiver] is
+ * registered for the duration of a single bonding wait, then unregistered.
  */
 class BluetoothDeviceConnection(
     private val context: Context,
-    private val adapter: BluetoothAdapter
+    private val adapter: BluetoothAdapter,
+    private val dataStore: DataStore<Preferences>
 ) : DeviceConnection {
 
-    constructor(context: Context, bluetoothManager: BluetoothManager) : this(context, bluetoothManager.adapter)
+    constructor(context: Context, bluetoothManager: BluetoothManager, dataStore: DataStore<Preferences>) :
+        this(context, bluetoothManager.adapter, dataStore)
 
-    private var gatt: BluetoothGatt? = null
+    private var peripheral: Peripheral? = null
 
-    private val bondStateChanges = MutableSharedFlow<BondStateChange>(extraBufferCapacity = 1)
+    /**
+     * Suspends until a [BluetoothDevice.ACTION_BOND_STATE_CHANGED] broadcast reports a
+     * non-[BluetoothDevice.BOND_BONDING] state for the device at [address], returning that state.
+     */
+    private suspend fun awaitBondState(address: String): Int = suspendCancellableCoroutine { continuation ->
 
-    private val servicesDiscovered = MutableSharedFlow<Boolean>(replay = 1)
+        val receiver = object : BroadcastReceiver() {
 
-    private val characteristicReads = MutableSharedFlow<CharacteristicRead>(extraBufferCapacity = 1)
-    private val characteristicWrites = MutableSharedFlow<CharacteristicWrite>(extraBufferCapacity = 1)
+            override fun onReceive(context: Context, intent: Intent) {
 
-    private val bondStateReceiver = object : BroadcastReceiver() {
+                Log.d(TAG, "Received bond state change broadcast for $address")
 
-        override fun onReceive(context: Context, intent: Intent) {
+                val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
 
-            Log.d(TAG, "onReceive: action=${intent.action} (instance: ${this@BluetoothDeviceConnection.hashCode()})")
+                if (device == null || device.address != address) {
+                    return
+                }
 
-            val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                val state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE)
 
-            if (device == null) {
-                Log.w(TAG, "onReceive: EXTRA_DEVICE was null, dropping broadcast")
-                return
+                Log.d(TAG, "Bond state changed for $address: $state")
+
+                if (state == BluetoothDevice.BOND_BONDING) {
+                    return
+                }
+
+                context.unregisterReceiver(this)
+
+                if (continuation.isActive) {
+                    continuation.resume(state)
+                }
             }
 
-            val state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE)
-
-            Log.d(TAG, "Bond state changed for ${device.address}: $state")
-
-            bondStateChanges.tryEmit(BondStateChange(device.address, state))
         }
-
-    }
-
-    private val gattCallback = object : BluetoothGattCallback() {
-
-        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
-
-            Log.d(TAG, "GATT connection state changed: status=$status, newState=$newState")
-
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                g.discoverServices()
-            }
-        }
-
-        override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
-
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d(TAG, "Services discovered successfully")
-            } else {
-                Log.w(TAG, "Failed to discover services, status: $status")
-            }
-
-            servicesDiscovered.tryEmit(status == BluetoothGatt.GATT_SUCCESS)
-        }
-
-        override fun onCharacteristicRead(g: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
-            Log.d(TAG, "Characteristic read: ${characteristic.uuid}, status: $status, ${value.size} bytes")
-            characteristicReads.tryEmit(CharacteristicRead(characteristic.uuid, value, status))
-        }
-
-        override fun onCharacteristicWrite(g: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
-            Log.d(TAG, "Characteristic write: ${characteristic.uuid}, status: $status")
-            characteristicWrites.tryEmit(CharacteristicWrite(characteristic.uuid, status))
-        }
-
-    }
-
-    init {
-
-        Log.d(TAG, "Registering bond state receiver on context: $context (instance: ${this.hashCode()})")
 
         ContextCompat.registerReceiver(
             context,
-            bondStateReceiver,
+            receiver,
             IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED),
             ContextCompat.RECEIVER_EXPORTED // Bluetooth bond state changes are system broadcasts, so this receiver must be exported
         )
 
-        Log.d(TAG, "Bond state receiver registered")
+        // Only reached if the coroutine is cancelled before onReceive unregisters the receiver itself.
+        continuation.invokeOnCancellation { runCatching { context.unregisterReceiver(receiver) } }
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override suspend fun connect(address: String) {
+    /**
+     * Returns the MAC address for the device with the given [id]: the address saved from a
+     * previous connection if there is one (already-bonded devices aren't reliably found via a
+     * fresh scan), otherwise scans for it by manufacturer data.
+     *
+     * @throws NotFoundException if the device isn't found within the 30-second scan timeout.
+     */
+    @OptIn(FlowPreview::class)
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
+    private suspend fun getAddress(id: UUID): String {
 
-        // 1. Get the remote Bluetooth device using the provided address.
+        // 1. Check if we have a saved address for this device from a previous connection.
+        val storedAddress = dataStore.data.firstOrNull()?.get(stringPreferencesKey(id.toString()))
+        if (storedAddress != null) {
+            return storedAddress
+        }
+
+        Log.d(TAG, "Scanning for device: $id (instance: ${this.hashCode()})")
+
+        // 2. Scan for the device by manufacturer data, timing out after 30 seconds if not found.
+        val scanner = Scanner {
+            filters {
+                match {
+                    manufacturerData = listOf(Filter.ManufacturerData(id = MANUFACTURER_ID, data = id. toByteArray()))
+                }
+            }
+        }
+
+        // 3. Wait for the first advertisement that matches the filter, or throw a NotFoundException if none is found within the timeout.
+        val advertisement = scanner.advertisements
+            .timeout(30.seconds)
+            .catch { e ->
+
+                if (e is TimeoutCancellationException) {
+                    Log.w(TAG, "Device not found within timeout: $id")
+                    throw NotFoundException(id)
+                }
+
+                throw e
+            }
+            .firstOrNull() ?: run {
+            Log.w(TAG, "Device not found: $id")
+            throw NotFoundException(id)
+        }
+
+        Log.d(TAG, "Device found: ${advertisement.address}")
+
+        // 4. Return the address of the found device.
+        return advertisement.address
+    }
+
+    /**
+     * Bonds with [device] if it isn't already bonded, suspending until bonding completes.
+     *
+     * @throws InternalErrorException if bonding fails to start or complete.
+     */
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private suspend fun bond(device: BluetoothDevice) {
+
+        // 1. If the device is already bonded, return immediately.
+        if (device.bondState != BluetoothDevice.BOND_NONE) {
+            return
+        }
+
+        Log.d(TAG, "Device at address: ${device.address} is not bonded, initiating bonding process")
+
+        // 2. Initiate bonding with the device.
+        val bonding = device.createBond()
+
+        if (!bonding) {
+            Log.w(TAG, "createBond() returned false for address: ${device.address}")
+            throw InternalErrorException("Failed to create bond with device at address: ${device.address}")
+        }
+
+        Log.d(TAG, "Bonding initiated for address: ${device.address}, waiting for bond state change")
+
+        // 3. Wait for the bond state to change to either BONDED or BOND_NONE.
+        val bondState = withTimeoutOrNull(30.seconds) { awaitBondState(device.address) }
+
+        if (bondState != BluetoothDevice.BOND_BONDED) {
+            Log.w(TAG, "Bonding failed for address: ${device.address}, final state: $bondState")
+            throw InternalErrorException("Failed to bond with device at address: ${device.address}")
+        }
+
+        Log.d(TAG, "Bonded successfully with address: ${device.address}")
+    }
+
+    /**
+     * Resolves the device advertising [id] as manufacturer data and connects to it once found.
+     *
+     * @throws NotFoundException if the device is not found within the scan timeout.
+     * @throws InternalErrorException if bonding or GATT connection fails.
+     */
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
+    override suspend fun connect(id: UUID) {
+
+        // 1. Get the device's address, either from a previous connection or by scanning for it.
+        val address = getAddress(id)
+
+        Log.d(TAG, "Attempting to connect to: $address")
+
+        // 2. Get the BluetoothDevice object for the address.
         val device = adapter.getRemoteDevice(address)
 
-        Log.d(TAG, "Connecting to device at address: $address (instance: ${this.hashCode()})")
-
-        if (device.bondState == BluetoothDevice.BOND_NONE) {
-
-            Log.d(TAG, "Device at address: $address is not bonded, initiating bonding process")
-
-            // 2. Initiate bonding with the device.
-            val bonding = device.createBond()
-
-            if (!bonding) {
-                Log.w(TAG, "createBond() returned false for address: $address")
-                throw InternalErrorException("Failed to create bond with device at address: $address")
-            }
-
-            Log.d(TAG, "Bonding initiated for address: $address, waiting for bond state change")
-
-            // 3. Wait for the bond state to change to either BONDED or BOND_NONE.
-            val bondState = bondStateChanges
-                .filter { it.address == address }
-                .map { it.state }
-                .firstOrNull { it != BluetoothDevice.BOND_BONDING }
-
-            if (bondState != BluetoothDevice.BOND_BONDED) {
-                Log.w(TAG, "Bonding failed for address: $address, final state: $bondState")
-                throw InternalErrorException("Failed to bond with device at address: $address")
-            }
-
-            Log.d(TAG, "Bonded successfully with address: $address, connecting to GATT server")
-        }
+        bond(device)
 
         Log.d(TAG, "Device at address: $address is bonded, proceeding to connect to GATT server")
 
-        // 4. Connect to the GATT server on the device, keeping the handle for later operations.
-        gatt = device.connectGatt(context, false, gattCallback)
+        // 3. Connect to the GATT server; Kable discovers services automatically as part of connect().
+        val peripheral = Peripheral(address)
+        peripheral.connect()
+        this.peripheral = peripheral
+
+        // 4. Remember this device's address so future connects can skip scanning for it.
+        dataStore.edit { preferences -> preferences[stringPreferencesKey(id.toString())] = address }
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override suspend fun read(serviceId: UUID, characteristicId: UUID): ByteArray {
+    override suspend fun read(serviceId: Uuid, characteristicId: Uuid): ByteArray {
 
         Log.d(TAG, "Reading characteristic: $characteristicId (service: $serviceId)")
 
-        val gatt = gatt ?: run {
+        val peripheral = peripheral ?: run {
             Log.w(TAG, "Cannot read $characteristicId: not connected to a GATT server")
             throw InternalErrorException("Not connected to a GATT server")
         }
 
-        // 1. Wait until services have been discovered before looking anything up.
-        if (servicesDiscovered.first().not()) {
-            throw InternalErrorException("Failed to discover services")
-        }
-
-        Log.d(TAG, gatt.services.joinToString(", ") { it.uuid.toString() })
-        Log.d(TAG, gatt.services.flatMap { it.characteristics }.joinToString(", ") { it.uuid.toString() })
-
-        // 2. Find the target characteristic.
-        val characteristic = gatt.getService(serviceId)?.getCharacteristic(characteristicId)
-            ?: throw NotFoundException(characteristicId)
-
-        // 3. Start the read; the actual value arrives later via the callback.
-        if (!gatt.readCharacteristic(characteristic)) {
-            Log.w(TAG, "gatt.readCharacteristic() returned false for: $characteristicId")
-            throw InternalErrorException("Failed to start read for characteristic: $characteristicId")
-        }
-
-        val read = characteristicReads.first { it.characteristicId == characteristicId }
-
-        if (read.status != BluetoothGatt.GATT_SUCCESS) {
-            Log.w(TAG, "Read failed for characteristic: $characteristicId, status: ${read.status}")
-            throw InternalErrorException("Failed to read characteristic: $characteristicId, status: ${read.status}")
-        }
-
-        return read.value
-
+        return peripheral.read(characteristicOf(serviceId, characteristicId))
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override suspend fun write(serviceId: UUID, characteristicId: UUID, value: ByteArray) {
+    override suspend fun write(serviceId: Uuid, characteristicId: Uuid, value: ByteArray) {
 
         Log.d(TAG, "Writing characteristic: $characteristicId (service: $serviceId), ${value.size} bytes")
 
-        val gatt = gatt ?: run {
+        val peripheral = peripheral ?: run {
             Log.w(TAG, "Cannot write $characteristicId: not connected to a GATT server")
             throw InternalErrorException("Not connected to a GATT server")
         }
 
-        // 1. Wait until services have been discovered before looking anything up.
-        if (servicesDiscovered.first().not()) {
-            throw InternalErrorException("Failed to discover services")
-        }
-
-        // 2. Find the target characteristic.
-        val characteristic = gatt.getService(serviceId)?.getCharacteristic(characteristicId)
-            ?: throw NotFoundException(characteristicId)
-
-            // 3. Start the write; the framework confirms/rejects it later via the callback.
-        val started = gatt.writeCharacteristic(
-            characteristic,
+        peripheral.write(
+            characteristicOf(serviceId, characteristicId),
             value,
-            BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-        ) == BluetoothStatusCodes.SUCCESS
-
-        if (!started) {
-            Log.w(TAG, "gatt.writeCharacteristic() failed to start for: $characteristicId")
-            throw InternalErrorException("Failed to start write for characteristic: $characteristicId")
-        }
-
-        val write = characteristicWrites.first { it.characteristicId == characteristicId }
-
-        if (write.status != BluetoothGatt.GATT_SUCCESS) {
-            Log.w(TAG, "Write failed for characteristic: $characteristicId, status: ${write.status}")
-            throw InternalErrorException("Failed to write characteristic: $characteristicId, status: ${write.status}")
-        }
-
+            WriteType.WithResponse
+        )
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun close() {
 
         Log.d(TAG, "Closing device connection")
 
-        context.unregisterReceiver(bondStateReceiver)
-
-        gatt?.disconnect()
-        gatt?.close()
-        gatt = null
+        peripheral?.close()
+        peripheral = null
 
     }
 
-    private data class BondStateChange(val address: String, val state: Int)
+    private fun UUID.toByteArray(): ByteArray {
 
-    private data class CharacteristicWrite(val characteristicId: UUID, val status: Int)
+        val buffer = ByteBuffer.allocate(16)
 
-    private data class CharacteristicRead(val characteristicId: UUID, val value: ByteArray, val status: Int) {
+        buffer.putLong(this.mostSignificantBits)
+        buffer.putLong(this.leastSignificantBits)
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as CharacteristicRead
-
-            if (status != other.status) return false
-            if (characteristicId != other.characteristicId) return false
-            if (!value.contentEquals(other.value)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = status
-            result = 31 * result + characteristicId.hashCode()
-            result = 31 * result + value.contentHashCode()
-            return result
-        }
-
+        return buffer.array()
     }
 
 }

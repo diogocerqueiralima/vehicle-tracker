@@ -15,7 +15,6 @@ import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.domain.devices.services.DeviceConfigurationService
 import com.github.diogocerqueiralima.infrastructure.devices.connection.BluetoothDeviceConnection
-import com.github.diogocerqueiralima.infrastructure.devices.scanner.BluetoothDeviceScanner
 import com.github.diogocerqueiralima.presentation.devices.screens.DeviceConfigurationScreen
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModel
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModelFactory
@@ -54,9 +53,12 @@ class DeviceConfigurationActivity : ComponentActivity() {
         factoryProducer = {
 
             val dependenciesContainer = application as DependenciesContainer
-            val deviceScanner = BluetoothDeviceScanner(dependenciesContainer.bluetoothManager)
-            val deviceConnection = BluetoothDeviceConnection(applicationContext, dependenciesContainer.bluetoothManager)
-            val deviceConfigurationService = DeviceConfigurationService(deviceScanner, deviceConnection)
+            val deviceConnection = BluetoothDeviceConnection(
+                applicationContext,
+                dependenciesContainer.bluetoothManager,
+                dependenciesContainer.dataStore
+            )
+            val deviceConfigurationService = DeviceConfigurationService(deviceConnection)
 
             DeviceConfigurationViewModelFactory(deviceConfigurationService)
         }
