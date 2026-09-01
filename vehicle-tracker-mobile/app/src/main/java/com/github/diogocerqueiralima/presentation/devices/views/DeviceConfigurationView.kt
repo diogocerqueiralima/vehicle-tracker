@@ -14,15 +14,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.domain.devices.catalog.BleCatalog
+import com.github.diogocerqueiralima.domain.devices.catalog.Catalog
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.domain.devices.catalog.ServiceSpec
 import com.github.diogocerqueiralima.domain.devices.model.Device
@@ -84,14 +88,19 @@ fun DeviceConfigurationConnectingView(modifier: Modifier = Modifier) {
  * @param characteristicValues Current read state for each characteristic, keyed by [CharacteristicSpec.key].
  * @param onExpandService Callback invoked when a service section is expanded, so its
  * characteristics can be read.
+ * @param onWriteCharacteristic Callback invoked when the user submits a new value for a
+ * writable characteristic.
  */
 @Composable
 fun DeviceConfigurationConnectedView(
     modifier: Modifier = Modifier,
     device: Device,
     characteristicValues: Map<String, CharacteristicValueState> = emptyMap(),
-    onExpandService: (ServiceSpec) -> Unit = {}
+    onExpandService: (ServiceSpec) -> Unit = {},
+    onWriteCharacteristic: (CharacteristicSpec, String) -> Unit = { _, _ -> }
 ) {
+
+    var editingCharacteristic by remember { mutableStateOf<CharacteristicSpec?>(null) }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -99,14 +108,27 @@ fun DeviceConfigurationConnectedView(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
-        items(BleCatalog.services) { service ->
+        items(Catalog.services) { service ->
             ServiceSection(
                 service = service,
                 characteristicValues = characteristicValues,
-                onExpand = { onExpandService(service) }
+                onExpand = { onExpandService(service) },
+                onCharacteristicClick = { editingCharacteristic = it }
             )
         }
 
+    }
+
+    editingCharacteristic?.let { characteristic ->
+        CharacteristicEditDialog(
+            characteristic = characteristic,
+            initialValue = (characteristicValues[characteristic.key] as? CharacteristicValueState.Loaded)?.value ?: "",
+            onDismiss = { editingCharacteristic = null },
+            onConfirm = { value ->
+                onWriteCharacteristic(characteristic, value)
+                editingCharacteristic = null
+            }
+        )
     }
 
 }
@@ -118,7 +140,8 @@ fun DeviceConfigurationConnectedView(
 private fun ServiceSection(
     service: ServiceSpec,
     characteristicValues: Map<String, CharacteristicValueState>,
-    onExpand: () -> Unit
+    onExpand: () -> Unit,
+    onCharacteristicClick: (CharacteristicSpec) -> Unit
 ) {
 
     var expanded by rememberSaveable(service.uuid) { mutableStateOf(false) }
@@ -167,7 +190,8 @@ private fun ServiceSection(
                     service.characteristics.forEach { characteristic ->
                         CharacteristicRow(
                             characteristic = characteristic,
-                            state = characteristicValues[characteristic.key]
+                            state = characteristicValues[characteristic.key],
+                            onClick = { onCharacteristicClick(characteristic) }
                         )
                     }
                 }
@@ -181,10 +205,14 @@ private fun ServiceSection(
 
 /**
  * Row displaying a single characteristic's name, description, current read state, and its
- * access mode. Editing isn't implemented yet.
+ * access mode. Writable characteristics can be tapped to open an editor for their value.
  */
 @Composable
-private fun CharacteristicRow(characteristic: CharacteristicSpec, state: CharacteristicValueState?) {
+private fun CharacteristicRow(
+    characteristic: CharacteristicSpec,
+    state: CharacteristicValueState?,
+    onClick: () -> Unit
+) {
 
     val accessLabel = when {
         characteristic.readable && characteristic.writable -> stringResource(R.string.device_configuration_characteristic_read_write)
@@ -200,7 +228,9 @@ private fun CharacteristicRow(characteristic: CharacteristicSpec, state: Charact
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .let { if (characteristic.writable) it.clickable(onClick = onClick) else it },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
@@ -237,6 +267,53 @@ private fun CharacteristicRow(characteristic: CharacteristicSpec, state: Charact
         )
 
     }
+
+}
+
+/**
+ * Dialog for entering a new value to write to a writable characteristic.
+ *
+ * @param characteristic The characteristic being edited.
+ * @param initialValue The value to prefill the input with, if any.
+ * @param onDismiss Callback invoked when the dialog is dismissed without confirming.
+ * @param onConfirm Callback invoked with the entered value when the user confirms.
+ */
+@Composable
+private fun CharacteristicEditDialog(
+    characteristic: CharacteristicSpec,
+    initialValue: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+
+    var value by rememberSaveable(characteristic.key) { mutableStateOf(initialValue) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = characteristic.name) },
+        text = {
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = value,
+                onValueChange = { value = it },
+                label = { Text(text = characteristic.description) },
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(value) },
+                enabled = value.isNotBlank()
+            ) {
+                Text(text = stringResource(R.string.device_configuration_characteristic_edit_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.device_configuration_characteristic_edit_cancel))
+            }
+        }
+    )
 
 }
 
@@ -293,8 +370,8 @@ fun DeviceConfigurationConnectedViewPreview() {
                     imei = "352099001761481"
                 ),
                 characteristicValues = mapOf(
-                    BleCatalog.services[0].characteristics[0].key to CharacteristicValueState.Loaded("mqtt://broker.local:1883"),
-                    BleCatalog.services[0].characteristics[1].key to CharacteristicValueState.Loading
+                    Catalog.services[0].characteristics[0].key to CharacteristicValueState.Loaded("mqtt://broker.local:1883"),
+                    Catalog.services[0].characteristics[1].key to CharacteristicValueState.Loading
                 )
             )
         }

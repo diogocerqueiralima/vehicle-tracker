@@ -46,6 +46,8 @@
     <string name="device_configuration_characteristic_read_write">Read and write</string>
     <string name="device_configuration_characteristic_failed">Failed to load</string>
     <string name="device_configuration_characteristic_loading">Loading…</string>
+    <string name="device_configuration_characteristic_edit_confirm">Save</string>
+    <string name="device_configuration_characteristic_edit_cancel">Cancel</string>
     <string name="create_device_title">New device</string>
     <string name="create_device_subtitle">Register a new tracking device</string>
     <string name="create_device_id_label">Device ID</string>

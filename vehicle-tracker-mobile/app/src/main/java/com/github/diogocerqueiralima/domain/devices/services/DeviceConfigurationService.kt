@@ -57,6 +57,14 @@ class DeviceConfigurationService(
         deviceConnection.read(serviceId, characteristicId)
 
     /**
+     * Writes [value] to the characteristic identified by [characteristicId], within the
+     * service identified by [serviceId].
+     */
+    suspend fun write(serviceId: UUID, characteristicId: UUID, value: ByteArray) {
+        deviceConnection.write(serviceId, characteristicId, value)
+    }
+
+    /**
      * Releases any resources held by the underlying device connection.
      */
     fun disconnect() {

@@ -41,7 +41,7 @@ data class ServiceSpec(
  * Static catalog of every GATT service/characteristic the device exposes, mirroring
  * docs/device/ble/{connection,gps,authentication}/overview.md.
  */
-object BleCatalog {
+object Catalog {
 
     private val connectionServiceId = UUID.fromString("1304eaaa-c937-511a-6605-c9858c877865")
     private val gpsServiceId = UUID.fromString("6ed54c3d-ca79-1398-7148-34a9bf29d12d")

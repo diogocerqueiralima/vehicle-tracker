@@ -24,6 +24,25 @@ object CharacteristicCodec {
 
     }
 
+    /**
+     * Encodes a human-readable string into a characteristic's raw wire value, inverse of [decode].
+     *
+     * @throws NumberFormatException if [value] isn't a valid number for a numeric [format].
+     */
+    fun encode(value: String, format: CharacteristicFormat): ByteArray = when (format) {
+
+        CharacteristicFormat.STRING -> value.toByteArray(Charsets.UTF_8)
+
+        CharacteristicFormat.BOOLEAN -> byteArrayOf(if (value.trim().toBooleanStrict()) 1 else 0)
+
+        CharacteristicFormat.UINT8 -> byteArrayOf((value.trim().toInt() and 0xFF).toByte())
+
+        CharacteristicFormat.UINT16 -> value.trim().toLong().toLittleEndianByteArray(2)
+
+        CharacteristicFormat.UINT32 -> value.trim().toLong().toLittleEndianByteArray(4)
+
+    }
+
     private fun ByteArray.toLittleEndianLong(bytes: Int): Long {
 
         if (size != bytes) return 0L
@@ -33,5 +52,12 @@ object CharacteristicCodec {
 
         return ByteBuffer.wrap(padded).order(ByteOrder.LITTLE_ENDIAN).long
     }
+
+    private fun Long.toLittleEndianByteArray(bytes: Int): ByteArray =
+        ByteBuffer.allocate(8)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .putLong(this)
+            .array()
+            .copyOf(bytes)
 
 }

@@ -98,7 +98,8 @@ fun DeviceConfigurationScreen(viewModel: DeviceConfigurationViewModel, onBack: (
                             .padding(innerPadding),
                         device = state.device,
                         characteristicValues = characteristicValues,
-                        onExpandService = viewModel::readService
+                        onExpandService = viewModel::readService,
+                        onWriteCharacteristic = viewModel::writeCharacteristic
                     )
                 }
 
