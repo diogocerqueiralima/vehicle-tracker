@@ -6,6 +6,7 @@
 #include "ble/ble_manager.h"
 #include "ble/services/authentication_service.h"
 #include "ble/services/connection_service.h"
+#include "ble/services/gatt_common.h"
 #include "ble/services/gps_service.h"
 #include "modem/modem.h"
 #include "storage/storage.h"
@@ -50,6 +51,35 @@ static int register_ble_services()
     }
 
     return 0;
+}
+
+// Writes the documented default value of every configuration characteristic that was never written,
+// so a freshly flashed device serves sensible values instead of failing every read. Requires storage
+// to be initialized.
+static esp_err_t seed_ble_service_defaults()
+{
+    esp_err_t error = gatt_common_seed_defaults(&connection_service_def);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to seed connection service defaults: %s", esp_err_to_name(error));
+        return error;
+    }
+
+    error = gatt_common_seed_defaults(&gps_service_def);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to seed GPS service defaults: %s", esp_err_to_name(error));
+        return error;
+    }
+
+    error = gatt_common_seed_defaults(&authentication_service_def);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to seed authentication service defaults: %s", esp_err_to_name(error));
+        return error;
+    }
+
+    return ESP_OK;
 }
 
 // Renders a generated QR code's modules onto the display passed as user_data.
@@ -177,7 +207,16 @@ void app_main()
         return;
     }
 
-    // 3.1 Wire BLE pairing/connection events to the display
+    // 3.1 Seed the documented defaults of the registered services, before the GATT server starts
+    // serving them. A failure here only leaves the unconfigured settings unreadable, so it is not
+    // fatal and the device keeps booting.
+    error = seed_ble_service_defaults();
+    if (error != ESP_OK)
+    {
+        ESP_LOGW(LOG_TAG, "Continuing without seeded defaults: %s", esp_err_to_name(error));
+    }
+
+    // 3.2 Wire BLE pairing/connection events to the display
     ble_manager_set_gap_callback(on_ble_event, &display_context);
 
     // 4. Initialize the BLE manager and start the NimBLE host task

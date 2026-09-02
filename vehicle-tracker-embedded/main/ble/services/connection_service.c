@@ -49,6 +49,12 @@ static bool validate_mqtt_reconnection_interval(const char* data, const uint16_t
     return value > 0;
 }
 
+// Documented default values (docs/device/ble/connection/overview.md), stored in the same wire format
+// the mobile app writes: fixed-width little-endian integers, which is the ESP32's native byte order.
+static constexpr uint16_t DEFAULT_MQTT_KEEP_ALIVE = 60;
+static constexpr uint8_t DEFAULT_MQTT_QOS = 0;
+static constexpr uint32_t DEFAULT_MQTT_RECONNECTION_INTERVAL = 30;
+
 static const ble_uuid128_t connection_service_uuid =
     BLE_UUID128_INIT(0x65, 0x78, 0x87, 0x8c, 0x85, 0xc9, 0x05, 0x66, 0x1a, 0x51, 0x37, 0xc9, 0xaa, 0xea, 0x04, 0x13);
 
@@ -87,6 +93,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = MQTT_KEEP_ALIVE_INTERVAL_NAMESPACE,
             .name = "MQTT keep alive interval",
             .validate = validate_mqtt_keep_alive,
+            .default_value = (const char*)&DEFAULT_MQTT_KEEP_ALIVE,
+            .default_len = sizeof(DEFAULT_MQTT_KEEP_ALIVE),
         },
     },
     {
@@ -99,6 +107,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = MQTT_QOS_NAMESPACE,
             .name = "MQTT QOS",
             .validate = validate_mqtt_qos,
+            .default_value = (const char*)&DEFAULT_MQTT_QOS,
+            .default_len = sizeof(DEFAULT_MQTT_QOS),
         },
     },
     {
@@ -111,6 +121,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = MQTT_RECONNECTION_INTERVAL_NAMESPACE,
             .name = "MQTT reconnection interval",
             .validate = validate_mqtt_reconnection_interval,
+            .default_value = (const char*)&DEFAULT_MQTT_RECONNECTION_INTERVAL,
+            .default_len = sizeof(DEFAULT_MQTT_RECONNECTION_INTERVAL),
         }
     },
     {0},

@@ -41,6 +41,12 @@ static bool validate_gps_mode(const char* data, const uint16_t len)
            (len == strlen(UE_ASSISTED) && strncmp(data, UE_ASSISTED, len) == 0);
 }
 
+// Documented default values (docs/device/ble/gps/overview.md), stored in the same wire format the
+// mobile app writes: fixed-width little-endian integers and raw UTF-8 strings without a terminator.
+static constexpr uint32_t DEFAULT_GPS_UPDATE_INTERVAL = 60;
+static constexpr uint32_t DEFAULT_GPS_TIMEOUT = 60;
+static constexpr char DEFAULT_GPS_MODE[] = "ue-based";
+
 static const ble_uuid128_t gps_service_uuid =
     BLE_UUID128_INIT(0x2d, 0xd1, 0x29, 0xbf, 0xa9, 0x34, 0x48, 0x71, 0x98, 0x13, 0x79, 0xca, 0x3d, 0x4c, 0xd5, 0x6e);
 
@@ -64,6 +70,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = GPS_UPDATE_INTERVAL_NAMESPACE,
             .name = "GPS update interval",
             .validate = validate_gps_update_interval,
+            .default_value = (const char*)&DEFAULT_GPS_UPDATE_INTERVAL,
+            .default_len = sizeof(DEFAULT_GPS_UPDATE_INTERVAL),
         }
     },
     {
@@ -76,6 +84,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = GPS_TIMEOUT_NAMESPACE,
             .name = "GPS timeout",
             .validate = validate_gps_timeout,
+            .default_value = (const char*)&DEFAULT_GPS_TIMEOUT,
+            .default_len = sizeof(DEFAULT_GPS_TIMEOUT),
         }
     },
     {
@@ -88,6 +98,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = GPS_MODE_NAMESPACE,
             .name = "GPS mode",
             .validate = validate_gps_mode,
+            .default_value = DEFAULT_GPS_MODE,
+            .default_len = sizeof(DEFAULT_GPS_MODE) - 1,
         }
     },
     {0},

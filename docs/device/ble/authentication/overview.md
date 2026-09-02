@@ -12,5 +12,5 @@ This document provides the parameters and configuration details for the Authenti
 | certificate | df5c268d-107b-d836-e808-a442ac515561 | string | read, write | The certificate generated from the CSR | - |
 | ca | 39897685-53c9-7092-d542-7dbfc95f7dce | string | read, write | The CA certificate trusted by the device. | - |
 | revoke | 6e5b0cbc-87f6-9c9a-4d43-e29bb72441aa | boolean | write | A flag to revoke the current certificate. | - |
-| expiration | 7c85ca03-73b1-d990-6d4f-8267197e2e0e | string | read, write | The expiration time that will be used to generate the certificate (in seconds) | 1 year |
+| expiration | 7c85ca03-73b1-d990-6d4f-8267197e2e0e | string | read, write | The expiration time that will be used to generate the certificate (in seconds) | `31536000` (1 year) |
 | status | aeb2f94c-b465-568d-264f-8a4ca22abc62 | string | read | The status of the certificate (`valid`, `expired`, `pending`, `revoked`) | - |

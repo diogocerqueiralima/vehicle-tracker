@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include "esp_log.h"
+#include "nvs.h"
 #include "storage/storage.h"
 
 static const char* LOG_TAG = "gatt_common";
@@ -22,17 +23,26 @@ int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble
             // 1. Get the size of the stored value to determine how much data to read.
             size_t len = 0;
             esp_err_t err = get_data_size(ctx->namespace, &len);
+
+            // 1.1 A missing namespace/key is the expected state of a setting that was never written,
+            // so report it as such instead of as a failure.
+            if (err == ESP_ERR_NVS_NOT_FOUND)
+            {
+                ESP_LOGW(LOG_TAG, "%s is not configured yet", ctx->name);
+                return GATT_ATT_ERR_NOT_CONFIGURED;
+            }
+
             if (err != ESP_OK)
             {
                 ESP_LOGE(LOG_TAG, "Failed to get %s size: %s", ctx->name, esp_err_to_name(err));
                 return BLE_ATT_ERR_UNLIKELY;
             }
 
-            // 2. Handle the case where no value is stored yet (len == 0) by returning an error to indicate that the value is not available.
+            // 2. Handle the case where no value is stored yet (len == 0) the same way as a missing key.
             if (len == 0)
             {
-                ESP_LOGE(LOG_TAG, "Stored %s value is empty", ctx->name);
-                return BLE_ATT_ERR_UNLIKELY;
+                ESP_LOGW(LOG_TAG, "Stored %s value is empty", ctx->name);
+                return GATT_ATT_ERR_NOT_CONFIGURED;
             }
 
             // 3. Read the stored value.
@@ -92,4 +102,46 @@ int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble
     }
 
     return 0;
+}
+
+esp_err_t gatt_common_seed_defaults(const struct ble_gatt_svc_def* svc_def)
+{
+    if (svc_def == nullptr || svc_def->characteristics == nullptr)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 1. Walk the characteristics of the service up to the {0} terminator entry.
+    for (const struct ble_gatt_chr_def* chr = svc_def->characteristics; chr->uuid != nullptr; chr++)
+    {
+        const gatt_handler_context_t* ctx = chr->arg;
+
+        // 2. Skip characteristics that have no context or no documented default value.
+        if (ctx == nullptr || ctx->default_value == nullptr || ctx->default_len == 0)
+        {
+            continue;
+        }
+
+        // 3. Only a characteristic that was never written gets its default: ESP_ERR_NVS_NOT_FOUND means
+        // the namespace/key does not exist yet, any other result means the value is already configured
+        // (or unreadable) and must be left untouched.
+        size_t len = 0;
+        const esp_err_t size_err = get_data_size(ctx->namespace, &len);
+        if (size_err != ESP_ERR_NVS_NOT_FOUND)
+        {
+            continue;
+        }
+
+        // 4. Persist the default so subsequent reads of the characteristic succeed.
+        const esp_err_t err = save_data(ctx->namespace, ctx->default_value, ctx->default_len);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(LOG_TAG, "Failed to seed default %s: %s", ctx->name, esp_err_to_name(err));
+            return err;
+        }
+
+        ESP_LOGI(LOG_TAG, "Seeded default %s", ctx->name);
+    }
+
+    return ESP_OK;
 }

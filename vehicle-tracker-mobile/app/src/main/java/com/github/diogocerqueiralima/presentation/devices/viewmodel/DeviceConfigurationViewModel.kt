@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.domain.devices.catalog.ServiceSpec
 import com.github.diogocerqueiralima.domain.devices.model.Device
@@ -37,6 +38,19 @@ sealed interface DeviceConfigurationState {
 }
 
 /**
+ * Why a characteristic's value could not be shown, carried by [CharacteristicValueState.Failed].
+ */
+enum class CharacteristicFailureReason {
+
+    /** The device has no value configured for the characteristic yet. */
+    NOT_CONFIGURED,
+
+    /** The read or write itself failed. */
+    ACCESS_FAILED
+
+}
+
+/**
  * State of a single characteristic's value, as read from the device. Keyed by
  * [CharacteristicSpec.key] in [DeviceConfigurationViewModel.characteristicValues].
  */
@@ -44,7 +58,7 @@ sealed interface CharacteristicValueState {
 
     data object Loading : CharacteristicValueState
     data class Loaded(val value: String) : CharacteristicValueState
-    data object Failed : CharacteristicValueState
+    data class Failed(val reason: CharacteristicFailureReason) : CharacteristicValueState
 
 }
 
@@ -141,9 +155,12 @@ class DeviceConfigurationViewModel(
             val result = try {
                 val bytes = deviceConfigurationService.read(characteristic.serviceId, characteristic.characteristicId)
                 CharacteristicValueState.Loaded(CharacteristicCodec.decode(bytes, characteristic.format))
+            } catch (exception: NotFoundException) {
+                Log.d(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Characteristic is not configured yet: ${characteristic.key}", exception)
+                CharacteristicValueState.Failed(CharacteristicFailureReason.NOT_CONFIGURED)
             } catch (exception: Exception) {
                 Log.e(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Failed to read characteristic: ${characteristic.key}", exception)
-                CharacteristicValueState.Failed
+                CharacteristicValueState.Failed(CharacteristicFailureReason.ACCESS_FAILED)
             }
 
             _characteristicValues.value += characteristic.key to result
@@ -170,7 +187,7 @@ class DeviceConfigurationViewModel(
                 CharacteristicValueState.Loaded(value)
             } catch (exception: Exception) {
                 Log.e(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Failed to write characteristic: ${characteristic.key}", exception)
-                CharacteristicValueState.Failed
+                CharacteristicValueState.Failed(CharacteristicFailureReason.ACCESS_FAILED)
             }
 
             _characteristicValues.value += characteristic.key to result

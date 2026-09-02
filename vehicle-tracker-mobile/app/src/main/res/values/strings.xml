@@ -45,6 +45,7 @@
     <string name="device_configuration_characteristic_read_only">Read only</string>
     <string name="device_configuration_characteristic_read_write">Read and write</string>
     <string name="device_configuration_characteristic_failed">Failed to load</string>
+    <string name="device_configuration_characteristic_not_configured">Not configured</string>
     <string name="device_configuration_characteristic_loading">Loading…</string>
     <string name="device_configuration_characteristic_edit_confirm">Save</string>
     <string name="device_configuration_characteristic_edit_cancel">Cancel</string>
