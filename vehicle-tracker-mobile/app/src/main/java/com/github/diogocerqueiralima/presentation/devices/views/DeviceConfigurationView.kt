@@ -40,6 +40,7 @@ import com.github.diogocerqueiralima.domain.devices.catalog.Catalog
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.domain.devices.catalog.ServiceSpec
 import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.CharacteristicFailureReason
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CharacteristicValueState
 import com.github.diogocerqueiralima.presentation.ui.indicators.ErrorIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
@@ -225,7 +226,10 @@ private fun CharacteristicRow(
     val valueText = when (state) {
         is CharacteristicValueState.Loaded -> state.value
         CharacteristicValueState.Loading -> stringResource(R.string.device_configuration_characteristic_loading)
-        CharacteristicValueState.Failed -> stringResource(R.string.device_configuration_characteristic_failed)
+        is CharacteristicValueState.Failed -> when (state.reason) {
+            CharacteristicFailureReason.NOT_CONFIGURED -> stringResource(R.string.device_configuration_characteristic_not_configured)
+            CharacteristicFailureReason.ACCESS_FAILED -> stringResource(R.string.device_configuration_characteristic_failed)
+        }
         null -> null
     }
 
@@ -373,7 +377,8 @@ fun DeviceConfigurationConnectedViewPreview() {
                 ),
                 characteristicValues = mapOf(
                     Catalog.services[0].characteristics[0].key to CharacteristicValueState.Loaded("mqtt://broker.local:1883"),
-                    Catalog.services[0].characteristics[1].key to CharacteristicValueState.Loading
+                    Catalog.services[0].characteristics[1].key to CharacteristicValueState.Loading,
+                    Catalog.services[0].characteristics[2].key to CharacteristicValueState.Failed(CharacteristicFailureReason.NOT_CONFIGURED)
                 )
             )
         }

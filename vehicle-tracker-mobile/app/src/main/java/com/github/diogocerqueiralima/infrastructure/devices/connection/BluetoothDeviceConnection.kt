@@ -21,6 +21,7 @@ import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorExcep
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.connection.DeviceConnection
 import com.juul.kable.Filter
+import com.juul.kable.GattStatusException
 import com.juul.kable.Peripheral
 import com.juul.kable.Scanner
 import com.juul.kable.WriteType
@@ -40,10 +41,18 @@ import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
 
 private const val TAG = "BLUETOOTH_DEVICE_CONNECTION"
 
 private const val MANUFACTURER_ID = 0xFFFF
+
+/**
+ * Application-specific ATT error code the device answers a read with when the characteristic has
+ * never been configured, from the 0x80-0x9F range reserved for the profile (see docs/device/ble/overview.md).
+ * Any other status is a genuine failure.
+ */
+private const val ATT_ERROR_NOT_CONFIGURED = 0x90
 
 /**
  * Implementation of [DeviceConnection] for Bluetooth devices.
@@ -161,27 +170,44 @@ class BluetoothDeviceConnection(
         dataStore.edit { preferences -> preferences[addressKey(id)] = address }
     }
 
+    /**
+     * @throws NotFoundException if the device has no value configured for the characteristic yet.
+     */
     override suspend fun read(serviceId: Uuid, characteristicId: Uuid): ByteArray {
 
         Log.d(TAG, "Reading characteristic: $characteristicId (service: $serviceId)")
 
+        // 1. If we're not connected to a GATT server, throw an exception.
         val peripheral = peripheral ?: run {
             Log.w(TAG, "Cannot read $characteristicId: not connected to a GATT server")
             throw InternalErrorException("Not connected to a GATT server")
         }
 
-        return peripheral.read(characteristicOf(serviceId, characteristicId))
+        try {
+            return peripheral.read(characteristicOf(serviceId, characteristicId))
+        } catch (e: GattStatusException) {
+
+            // 2. If the read fails with ATT_ERROR_NOT_CONFIGURED, throw a NotFoundException to indicate that the characteristic has no value configured yet.
+            if (e.status == ATT_ERROR_NOT_CONFIGURED) {
+                Log.d(TAG, "Characteristic is not configured on the device: $characteristicId")
+                throw NotFoundException(characteristicId.toJavaUuid())
+            }
+
+            throw e
+        }
     }
 
     override suspend fun write(serviceId: Uuid, characteristicId: Uuid, value: ByteArray) {
 
         Log.d(TAG, "Writing characteristic: $characteristicId (service: $serviceId), ${value.size} bytes")
 
+        // 1. If we're not connected to a GATT server, throw an exception.
         val peripheral = peripheral ?: run {
             Log.w(TAG, "Cannot write $characteristicId: not connected to a GATT server")
             throw InternalErrorException("Not connected to a GATT server")
         }
 
+        // 2. Write the value to the characteristic, using WriteType.WithResponse to ensure the write is acknowledged by the device.
         peripheral.write(
             characteristicOf(serviceId, characteristicId),
             value,

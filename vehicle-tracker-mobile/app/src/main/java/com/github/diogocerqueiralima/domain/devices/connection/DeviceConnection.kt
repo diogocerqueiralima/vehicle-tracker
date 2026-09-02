@@ -25,6 +25,8 @@ interface DeviceConnection {
      * @param serviceId The id of the service that contains the characteristic.
      * @param characteristicId The id of the characteristic to read.
      * @return The value currently held by the characteristic.
+     * @throws com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException if the
+     * characteristic has no value configured on the device yet.
      */
     suspend fun read(serviceId: Uuid, characteristicId: Uuid): ByteArray
 

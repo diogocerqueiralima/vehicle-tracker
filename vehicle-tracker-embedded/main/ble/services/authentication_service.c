@@ -58,6 +58,10 @@ static bool validate_expiration(const char* data, const uint16_t len)
     return true;
 }
 
+// Documented default value (docs/device/ble/authentication/overview.md): one year expressed in
+// seconds, stored as the raw ASCII numeric string the mobile app writes, without a terminator.
+static constexpr char DEFAULT_EXPIRATION[] = "31536000";
+
 static const ble_uuid128_t authentication_service_uuid =
     BLE_UUID128_INIT(0x2e, 0x27, 0x71, 0x2d, 0xfe, 0x1e, 0x49, 0xe7, 0xb5, 0xf1, 0x50, 0xcf, 0x73, 0xf5, 0x7d, 0x34);
 
@@ -137,6 +141,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = EXPIRATION_NAMESPACE,
             .name = "Expiration",
             .validate = validate_expiration,
+            .default_value = DEFAULT_EXPIRATION,
+            .default_len = sizeof(DEFAULT_EXPIRATION) - 1,
         }
     },
     {
