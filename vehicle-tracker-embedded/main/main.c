@@ -144,7 +144,7 @@ static void on_location(const gps_location_t* location, void* arg)
     ESP_LOGI(LOG_TAG, "Location: latitude %f, longitude %f, altitude %fm, speed %f knots, heading %f",
              location->latitude, location->longitude, location->altitude, location->speed, location->heading);
 
-    ESP_LOGI(LOG_TAG, "Fix: type %d, %u satellites, hdop %f, vdop %f, timestamp %lld",
+    ESP_LOGI(LOG_TAG, "Fix: type %d, %u satellites, hdop %f, vdop %f, timestamp %" PRId64,
              location->fix_type, location->satellite_count, location->hdop, location->vdop, location->timestamp);
 }
 

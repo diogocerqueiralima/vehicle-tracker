@@ -96,12 +96,13 @@ static esp_err_t load_mode(gps_mode_t* out_mode)
     }
 
     // 3. Read the stored value. It is written without a terminator, so terminate it before comparing.
-    char buf[len];
+    char buf[len + 1];
     const esp_err_t err = load_data(GPS_MODE_NAMESPACE, buf, len);
     if (err != ESP_OK)
     {
         return err;
     }
+    buf[len] = '\0';
 
     return gps_mode_from_string(buf, out_mode);
 }
