@@ -118,3 +118,28 @@ esp_err_t load_data(const char* key, char* value, size_t len)
     nvs_close(nvs_handle);
     return err;
 }
+
+esp_err_t load_uint32(const char* key, uint32_t* out_value)
+{
+    // 1. Check for null out_value, the key is validated by the calls below
+    if (out_value == NULL)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Query the stored size, a value of a different width was not written as a uint32_t
+    size_t len = 0;
+    const esp_err_t err = get_data_size(key, &len);
+    if (err != ESP_OK)
+    {
+        return err;
+    }
+
+    if (len != sizeof(uint32_t))
+    {
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+    // 3. Read the value into the output parameter
+    return load_data(key, (char*)out_value, sizeof(uint32_t));
+}

@@ -2,8 +2,10 @@
 
 #include <string.h>
 #include "gatt_common.h"
+#include "gps/gps.h"
 
-// Validates that the GPS update interval is exactly 4 bytes (uint32_t) and greater than zero.
+// Validates that the GPS update interval is exactly 4 bytes (uint32_t) and within the interval the
+// GNSS engine reports the location at, which is the one it is subscribed to with.
 static bool validate_gps_update_interval(const char* data, const uint16_t len)
 {
     if (len != sizeof(uint32_t))
@@ -13,7 +15,7 @@ static bool validate_gps_update_interval(const char* data, const uint16_t len)
 
     uint32_t value;
     memcpy(&value, data, sizeof(uint32_t));
-    return value > 0;
+    return value >= GPS_MIN_REPORT_INTERVAL_S && value <= GPS_MAX_REPORT_INTERVAL_S;
 }
 
 // Validates that the GPS timeout is exactly 4 bytes (uint32_t) and greater than zero.
@@ -32,20 +34,17 @@ static bool validate_gps_timeout(const char* data, const uint16_t len)
 // Validates that the GPS mode is one of "standalone", "ue-based", or "ue-assisted".
 static bool validate_gps_mode(const char* data, const uint16_t len)
 {
-    static const char* STANDALONE = "standalone";
-    static const char* UE_BASED = "ue-based";
-    static const char* UE_ASSISTED = "ue-assisted";
 
-    return (len == strlen(STANDALONE) && strncmp(data, STANDALONE, len) == 0) ||
-           (len == strlen(UE_BASED) && strncmp(data, UE_BASED, len) == 0) ||
-           (len == strlen(UE_ASSISTED) && strncmp(data, UE_ASSISTED, len) == 0);
+    gps_mode_t mode;
+    const esp_err_t error = gps_mode_from_string(data, &mode);
+
+    return error == ESP_OK;
 }
 
 // Documented default values (docs/device/ble/gps/overview.md), stored in the same wire format the
 // mobile app writes: fixed-width little-endian integers and raw UTF-8 strings without a terminator.
 static constexpr uint32_t DEFAULT_GPS_UPDATE_INTERVAL = 60;
 static constexpr uint32_t DEFAULT_GPS_TIMEOUT = 60;
-static constexpr char DEFAULT_GPS_MODE[] = "ue-based";
 
 static const ble_uuid128_t gps_service_uuid =
     BLE_UUID128_INIT(0x2d, 0xd1, 0x29, 0xbf, 0xa9, 0x34, 0x48, 0x71, 0x98, 0x13, 0x79, 0xca, 0x3d, 0x4c, 0xd5, 0x6e);
@@ -98,8 +97,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = GPS_MODE_NAMESPACE,
             .name = "GPS mode",
             .validate = validate_gps_mode,
-            .default_value = DEFAULT_GPS_MODE,
-            .default_len = sizeof(DEFAULT_GPS_MODE) - 1,
+            .default_value = MODE_UE_ASSISTED,
+            .default_len = sizeof(MODE_UE_ASSISTED) - 1,
         }
     },
     {0},
