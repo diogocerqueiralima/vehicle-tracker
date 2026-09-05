@@ -97,8 +97,8 @@ static const struct ble_gatt_chr_def characteristics[] = {
             .namespace = GPS_MODE_NAMESPACE,
             .name = "GPS mode",
             .validate = validate_gps_mode,
-            .default_value = MODE_UE_ASSISTED,
-            .default_len = sizeof(MODE_UE_ASSISTED) - 1,
+            .default_value = MODE_UE_BASED,
+            .default_len = sizeof(MODE_UE_BASED) - 1,
         }
     },
     {0},
