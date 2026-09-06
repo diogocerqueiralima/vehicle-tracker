@@ -2,6 +2,7 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_modem_api.h"
+#include <pthread.h>
 
 // What the module reports on its own is handed over as unsolicited result codes, which the modem
 // only reports when its handler is built in.
@@ -14,8 +15,12 @@
 // Modem instance created by modem_init(), shared with the modules that talk to the modem over AT commands.
 static esp_modem_dce_t *dce = nullptr;
 
-// Listeners of what the module reports on its own, registered with modem_add_urc_listener().
+// Listeners of what the module reports on its own, registered with modem_add_urc_listener(). The task
+// that reads the modem walks the list to report a line while the tasks sharing the modem register and
+// remove listeners on it, so it is only touched while the mutex guarding it is held. That mutex is
+// held for as long as a line is reported, so a listener is never handed one once it was removed.
 static modem_urc_listener_t *urc_listeners = nullptr;
+static pthread_mutex_t urc_listeners_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 esp_err_t modem_is_powered_up()
 {
@@ -115,10 +120,14 @@ esp_err_t modem_power_up()
  */
 static void report_line(const char *line)
 {
+	pthread_mutex_lock(&urc_listeners_mutex);
+
 	for (const modem_urc_listener_t *listener = urc_listeners; listener != NULL; listener = listener->next)
 	{
 		listener->callback(line, listener->arg);
 	}
+
+	pthread_mutex_unlock(&urc_listeners_mutex);
 }
 
 /**
@@ -235,11 +244,6 @@ esp_err_t modem_init(char *apn)
     return ESP_OK;
 }
 
-esp_modem_dce_t *modem_get_dce()
-{
-    return dce;
-}
-
 esp_err_t modem_at(const char *command, char *response, const int timeout_ms)
 {
     if (command == NULL)
@@ -266,6 +270,8 @@ esp_err_t modem_add_urc_listener(modem_urc_listener_t *listener)
     }
 
 	// 2. A listener cannot be registered twice, which would hand it the same line twice.
+    pthread_mutex_lock(&urc_listeners_mutex);
+
     for (const modem_urc_listener_t *registered = urc_listeners;
          registered != NULL;
          registered = registered->next)
@@ -273,6 +279,8 @@ esp_err_t modem_add_urc_listener(modem_urc_listener_t *listener)
 
         if (registered == listener)
         {
+        	pthread_mutex_unlock(&urc_listeners_mutex);
+
         	ESP_LOGE(TAG, "Listener is already registered");
             return ESP_ERR_INVALID_STATE;
         }
@@ -282,6 +290,8 @@ esp_err_t modem_add_urc_listener(modem_urc_listener_t *listener)
     // 3. Add the listener to the front of the list, so it is handed the lines before the ones registered before it.
     listener->next = urc_listeners;
     urc_listeners = listener;
+
+    pthread_mutex_unlock(&urc_listeners_mutex);
 
     return ESP_OK;
 }
@@ -296,16 +306,22 @@ esp_err_t modem_remove_urc_listener(modem_urc_listener_t *listener)
     }
 
 	// 2. Remove the listener from the list, which is singly linked so the pointer to it must be updated.
+    pthread_mutex_lock(&urc_listeners_mutex);
+
     for (modem_urc_listener_t **link = &urc_listeners; *link != NULL; link = &(*link)->next)
     {
         if (*link == listener)
         {
 
             *link = listener->next;
+            pthread_mutex_unlock(&urc_listeners_mutex);
+
             return ESP_OK;
         }
-    	
+
     }
+
+    pthread_mutex_unlock(&urc_listeners_mutex);
 
     return ESP_ERR_NOT_FOUND;
 }

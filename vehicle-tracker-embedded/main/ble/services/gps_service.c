@@ -34,9 +34,18 @@ static bool validate_gps_timeout(const char* data, const uint16_t len)
 // Validates that the GPS mode is one of "standalone", "ue-based", or "ue-assisted".
 static bool validate_gps_mode(const char* data, const uint16_t len)
 {
+    if (len == 0)
+    {
+        return false;
+    }
+
+    // The value is written without a terminator, so terminate it before comparing.
+    char buf[len + 1];
+    memcpy(buf, data, len);
+    buf[len] = '\0';
 
     gps_mode_t mode;
-    const esp_err_t error = gps_mode_from_string(data, &mode);
+    const esp_err_t error = gps_mode_from_string(buf, &mode);
 
     return error == ESP_OK;
 }

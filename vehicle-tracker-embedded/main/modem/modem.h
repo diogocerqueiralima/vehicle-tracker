@@ -74,16 +74,6 @@ esp_err_t modem_init(char *apn);
 
 /**
  *
- * @brief Retrieves the modem instance created by modem_init(). AT commands belong in modem_at(),
- * which keeps what the module reports on its own apart from the answers to them, so this is only for
- * what that function does not cover.
- *
- * @return The modem instance, or NULL if the modem was not initialized successfully.
- */
-esp_modem_dce_t *modem_get_dce();
-
-/**
- *
  * @brief Issues an AT command on the modem shared by the modules that talk to it, which must already
  * be initialized with modem_init(). Only one command is issued at a time, a caller that finds
  * another one in flight waits for it to be answered.
@@ -113,9 +103,9 @@ esp_err_t modem_add_urc_listener(modem_urc_listener_t *listener);
 /**
  *
  * @brief Removes a listener registered with modem_add_urc_listener(). A line being reported while
- * this function runs may still reach the listener, so it stops handling what the module reports
- * shortly after this returns rather than the moment it does. It cannot be removed from a callback of
- * a listener.
+ * this function runs is handed to the listener before it is removed, so this waits for that line to
+ * be reported and the listener is handed none once this returns. It cannot be removed from a callback
+ * of a listener, which is the line it would be waiting on.
  *
  * @param listener The listener to remove.
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if no listener was given, ESP_ERR_NOT_FOUND if it
