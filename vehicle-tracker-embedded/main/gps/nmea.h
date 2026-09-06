@@ -18,6 +18,21 @@ typedef enum
 
 /**
  *
+ * @brief Reports which sentence a line carries, reading its identifier alone: neither the fields it
+ * holds nor the checksum they are sent with are validated, so a line this understands is not
+ * necessarily one nmea_parse() accepts. It is meant for a caller that has to know which sentence
+ * arrived before it is merged, a corrupted one included.
+ *
+ * @param sentence The null-terminated line to identify, starting with '$'.
+ * @param out_sentence Variable that receives which sentence it carries, only written on success.
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG if no line or no variable was given,
+ * ESP_ERR_NOT_SUPPORTED if it is not one of the understood sentences, or ESP_ERR_INVALID_RESPONSE if
+ * it carries no identifier at all.
+ */
+esp_err_t nmea_sentence_type(const char* sentence, nmea_sentence_t* out_sentence);
+
+/**
+ *
  * @brief Parses a single NMEA 0183 sentence and merges the attributes it carries into a location
  * sample. Only the sentences the location data is built from are understood: GGA (position,
  * altitude, satellites in use and horizontal dilution), RMC (position, speed, heading and satellite

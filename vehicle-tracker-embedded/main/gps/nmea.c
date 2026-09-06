@@ -14,9 +14,13 @@ static constexpr size_t MAX_FIELDS = 20;
 
 // A sentence is identified by a talker followed by the type of the sentence, only the type matters.
 static constexpr size_t TALKER_LEN = 2;
+static constexpr size_t TYPE_LEN = 3;
 static constexpr char TYPE_GGA[] = "GGA";
 static constexpr char TYPE_RMC[] = "RMC";
 static constexpr char TYPE_GSA[] = "GSA";
+
+// The identifier of a sentence is its first field, so it ends where the first of them does.
+static constexpr char FIELD_SEPARATOR = ',';
 
 // The checksum of a sentence is written after '*' as two hexadecimal digits.
 static constexpr char CHECKSUM_SEPARATOR = '*';
@@ -72,6 +76,14 @@ static constexpr size_t DATE_TIME_FIELD_DIGITS = 2;
 
 // A two digit year below this one belongs to the current century, the standard counts from 1980.
 static constexpr int YEAR_CENTURY_PIVOT = 80;
+
+static constexpr int MIN_MONTH = 1;
+static constexpr int MAX_MONTH = 12;
+static constexpr int MIN_DAY = 1;
+static constexpr int MAX_DAY = 31;
+static constexpr int MAX_HOUR = 23;
+static constexpr int MAX_MINUTE = 59;
+static constexpr double MAX_SECONDS = 61.0;
 
 static constexpr int64_t MS_PER_SECOND = 1000;
 static constexpr int64_t SECONDS_PER_MINUTE = 60;
@@ -240,7 +252,9 @@ static bool parse_timestamp(const char* date, const char* time, int64_t* out_tim
     const int month = parse_digits(date + DATE_TIME_FIELD_DIGITS, DATE_TIME_FIELD_DIGITS);
     int year = parse_digits(date + 2 * DATE_TIME_FIELD_DIGITS, DATE_TIME_FIELD_DIGITS);
 
-    if (day < 0 || month < 0 || year < 0)
+    // The fields are read as digits, so a field the module reported out of its bounds is one the
+    // calendar cannot be walked with: the date it stands for is not the one the sample was taken at.
+    if (year < 0 || month < MIN_MONTH || month > MAX_MONTH || day < MIN_DAY || day > MAX_DAY)
     {
         return false;
     }
@@ -253,6 +267,11 @@ static bool parse_timestamp(const char* date, const char* time, int64_t* out_tim
 
     double seconds = 0;
     if (hour < 0 || minute < 0 || !parse_double(time + 2 * DATE_TIME_FIELD_DIGITS, &seconds))
+    {
+        return false;
+    }
+
+    if (hour > MAX_HOUR || minute > MAX_MINUTE || seconds < 0 || seconds >= MAX_SECONDS)
     {
         return false;
     }
@@ -476,6 +495,57 @@ static size_t split_fields(char* body, char* fields[], const size_t max_fields)
     return count;
 }
 
+esp_err_t nmea_sentence_type(const char* sentence, nmea_sentence_t* out_sentence)
+{
+    if (sentence == nullptr || out_sentence == nullptr)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 1. Every sentence starts with '$' and is identified by its first field.
+    if (sentence[0] != '$')
+    {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    const char* identifier = sentence + 1;
+    const char* separator = strchr(identifier, FIELD_SEPARATOR);
+    if (separator == nullptr)
+    {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    // 2. The identifier is a talker followed by the type of the sentence, so one of another length
+    // is none of the sentences read here.
+    if ((size_t)(separator - identifier) != TALKER_LEN + TYPE_LEN)
+    {
+        return ESP_ERR_NOT_SUPPORTED;
+    }
+
+    // 3. The talker is ignored: the same sentence is reported by every constellation the module tracks.
+    const char* type = identifier + TALKER_LEN;
+
+    if (strncmp(type, TYPE_GGA, TYPE_LEN) == 0)
+    {
+        *out_sentence = NMEA_SENTENCE_GGA;
+        return ESP_OK;
+    }
+
+    if (strncmp(type, TYPE_RMC, TYPE_LEN) == 0)
+    {
+        *out_sentence = NMEA_SENTENCE_RMC;
+        return ESP_OK;
+    }
+
+    if (strncmp(type, TYPE_GSA, TYPE_LEN) == 0)
+    {
+        *out_sentence = NMEA_SENTENCE_GSA;
+        return ESP_OK;
+    }
+
+    return ESP_ERR_NOT_SUPPORTED;
+}
+
 esp_err_t nmea_parse(const char* sentence, gps_location_t* out_location, nmea_sentence_t* out_sentence)
 {
     if (sentence == nullptr || out_location == nullptr)
@@ -483,52 +553,45 @@ esp_err_t nmea_parse(const char* sentence, gps_location_t* out_location, nmea_se
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 1. Validate the sentence and take the part of it that carries the fields.
-    char body[MAX_SENTENCE_LEN];
-    const esp_err_t err = extract_body(sentence, body, sizeof(body));
+    // 1. Read which sentence it is, the rest of what the module reports carries none of the location.
+    nmea_sentence_t parsed;
+    esp_err_t err = nmea_sentence_type(sentence, &parsed);
     if (err != ESP_OK)
     {
         return err;
     }
 
-    // 2. Split it into the fields the sentence is made of, the first one identifies it.
+    // 2. Validate the sentence and take the part of it that carries the fields.
+    char body[MAX_SENTENCE_LEN];
+    err = extract_body(sentence, body, sizeof(body));
+    if (err != ESP_OK)
+    {
+        return err;
+    }
+
+    // 3. Split it into the fields the sentence is made of, the first one identifies it.
     char* fields[MAX_FIELDS];
     const size_t count = split_fields(body, fields, MAX_FIELDS);
 
-    const char* identifier = fields[0];
-    if (strlen(identifier) <= TALKER_LEN)
-    {
-        return ESP_ERR_INVALID_RESPONSE;
-    }
-
-    // 3. Merge the attributes of the sentences the location data is built from, ignoring the talker
-    // that sent them: the same sentence is reported by every constellation the module tracks.
-    const char* type = identifier + TALKER_LEN;
-
-    nmea_sentence_t parsed;
+    // 4. Merge the attributes the sentence carries into the location.
     esp_err_t result;
 
-    if (strcmp(type, TYPE_GGA) == 0)
+    switch (parsed)
     {
-        parsed = NMEA_SENTENCE_GGA;
+    case NMEA_SENTENCE_GGA:
         result = parse_gga(fields, count, out_location);
-    }
-    else if (strcmp(type, TYPE_RMC) == 0)
-    {
-        parsed = NMEA_SENTENCE_RMC;
+        break;
+    case NMEA_SENTENCE_RMC:
         result = parse_rmc(fields, count, out_location);
-    }
-    else if (strcmp(type, TYPE_GSA) == 0)
-    {
-        parsed = NMEA_SENTENCE_GSA;
+        break;
+    case NMEA_SENTENCE_GSA:
         result = parse_gsa(fields, count, out_location);
-    }
-    else
-    {
+        break;
+    default:
         return ESP_ERR_NOT_SUPPORTED;
     }
 
-    // 4. Only report which sentence was read once its attributes were merged, a sentence that could
+    // 5. Only report which sentence was read once its attributes were merged, a sentence that could
     // not be parsed carries nothing to the location.
     if (result == ESP_OK && out_sentence != nullptr)
     {

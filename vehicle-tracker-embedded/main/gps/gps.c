@@ -173,7 +173,7 @@ esp_err_t gps_start(const gps_mode_t mode)
 
     if (running)
     {
-        ESP_LOGE(LOG_TAG, "GNSS engine is already running");
+        ESP_LOGI(LOG_TAG, "GNSS engine is already running");
         return ESP_OK;
     }
 
@@ -273,35 +273,53 @@ static void on_report(const char* line, void* arg)
         return;
     }
 
-    // 3. Merge the sentence into the burst, each of them carries a part of the location. Anything
-    // else the module reports, such as the answer to a command, carries none of it.
+    // 3. Read which sentence the line carries, anything else the module reports, such as the answer
+    // to a command, is no part of a burst.
     nmea_sentence_t sentence = 0;
-    if (nmea_parse(line, &burst, &sentence) != ESP_OK)
+    if (nmea_sentence_type(line, &sentence) != ESP_OK)
     {
         return;
     }
 
-    // 4. Wait for the rest of the burst, the location it carries is only whole once every sentence was merged into it.
+    // 4. A sentence the burst being collected already carries belongs to the next one: the burst it
+    // was collected for lost a sentence, dropped on its way or rejected, so it is never whole and is
+    // never reported. Merging this sentence into it anyway would hand its leftovers to the burst that
+    // does complete and leave every burst after it one sentence out of step, so this sentence starts
+    // a burst of its own instead.
+    if ((burst_sentences & sentence) != 0)
+    {
+        burst = (gps_location_t){};
+        burst_sentences = 0;
+    }
+
+    // 5. Merge the sentence into the burst, each of them carries a part of the location. One that
+    // could not be read carries none of it, so the burst is still missing it.
+    if (nmea_parse(line, &burst, nullptr) != ESP_OK)
+    {
+        return;
+    }
+
+    // 6. Wait for the rest of the burst, the location it carries is only whole once every sentence was merged into it.
     burst_sentences |= sentence;
     if (burst_sentences != BURST_SENTENCES)
     {
         return;
     }
 
-    // 5. The burst is whole, the sentences of the next one are merged into a burst of their own.
+    // 7. The burst is whole, the sentences of the next one are merged into a burst of their own.
     const gps_location_t location = burst;
 
     burst = (gps_location_t){};
     burst_sentences = 0;
 
-    // 6. The module reports a burst every interval whether or not it has a fix, leaving the
+    // 8. The module reports a burst every interval whether or not it has a fix, leaving the
     // attributes it has none for empty. Such a burst carries no location to report.
     if (location.fix_type == GPS_FIX_NONE)
     {
         return;
     }
 
-    // 7. Hand the location to the subscriber.
+    // 9. Hand the location to the subscriber.
     callback(&location, location_callback_arg);
 }
 
@@ -343,11 +361,10 @@ esp_err_t gps_subscribe(const uint32_t interval_seconds, const gps_location_cb_t
     char cmd[AT_COMMAND_MAX_LEN];
     snprintf(cmd, sizeof(cmd), REPORT_COMMAND, (unsigned long)interval_seconds);
 
-    char response[ESP_MODEM_C_API_STR_BUF_SIZE];
+    char response[ESP_MODEM_C_API_STR_BUF_SIZE] = "";
     err = modem_at(cmd, response, GPS_AT_TIMEOUT_MS);
     if (err != ESP_OK)
     {
-        
         ESP_LOGE(LOG_TAG, "Failed to start reporting the location: %s, module answered: %s",
                  esp_err_to_name(err), response);
 
