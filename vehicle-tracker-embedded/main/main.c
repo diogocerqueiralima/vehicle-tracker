@@ -3,11 +3,14 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "ble/ble_manager.h"
 #include "ble/services/authentication_service.h"
 #include "ble/services/connection_service.h"
 #include "ble/services/gatt_common.h"
 #include "ble/services/gps_service.h"
+#include "gps/gps.h"
 #include "modem/modem.h"
 #include "storage/storage.h"
 #include "i2c/i2c.h"
@@ -132,6 +135,17 @@ static void on_ble_event(ble_manager_event_t event, const void* data, void* arg)
     {
         ESP_LOGW(LOG_TAG, "Failed to update display: %s", esp_err_to_name(error));
     }
+}
+
+// Logs every location the GNSS engine reports. Runs in the task that reads the modem, so it does
+// nothing that would keep that task from reading the next report.
+static void on_location(const gps_location_t* location, void* arg)
+{
+    ESP_LOGI(LOG_TAG, "Location: latitude %f, longitude %f, altitude %fm, speed %f knots, heading %f",
+             location->latitude, location->longitude, location->altitude, location->speed, location->heading);
+
+    ESP_LOGI(LOG_TAG, "Fix: type %d, %u satellites, hdop %f, vdop %f, timestamp %" PRId64,
+             location->fix_type, location->satellite_count, location->hdop, location->vdop, location->timestamp);
 }
 
 void app_main()
@@ -287,4 +301,34 @@ void app_main()
     }
     
     ESP_LOGI(LOG_TAG, "Modem initialized successfully.");
+
+    // 10. Load the GPS settings configured over BLE
+    gps_config_t gps_config;
+    error = gps_load_config(&gps_config);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to load GPS configuration: %s", esp_err_to_name(error));
+        return;
+    }
+
+    // 11. Start the GNSS engine so it can acquire a fix while the rest of the device comes up.
+    // Locations are reported afterwards to the subscriber of gps_subscribe().
+    error = gps_start(gps_config.mode);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to start GPS: %s", esp_err_to_name(error));
+        return;
+    }
+
+    ESP_LOGI(LOG_TAG, "GPS started successfully.");
+
+    // 12. Subscribe to the location, which the module then reports on its own every update interval
+    // instead of once per request. A fix takes from a few seconds to a few minutes after a cold
+    // start, until then the module reports a location the subscriber is not handed.
+    error = gps_subscribe(gps_config.update_interval, on_location, nullptr);
+    if (error != ESP_OK)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to subscribe to the location: %s", esp_err_to_name(error));
+    }
+
 }
