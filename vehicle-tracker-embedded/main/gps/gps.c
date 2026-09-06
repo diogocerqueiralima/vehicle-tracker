@@ -347,6 +347,7 @@ esp_err_t gps_subscribe(const uint32_t interval_seconds, const gps_location_cb_t
     err = modem_at(cmd, response, GPS_AT_TIMEOUT_MS);
     if (err != ESP_OK)
     {
+        
         ESP_LOGE(LOG_TAG, "Failed to start reporting the location: %s, module answered: %s",
                  esp_err_to_name(err), response);
 

@@ -313,10 +313,10 @@ static esp_err_t parse_rmc(char* fields[], const size_t count, gps_location_t* o
         return ESP_ERR_INVALID_RESPONSE;
     }
 
-    // The sentence is also sent without a fix, and everything but its time is meaningless then.
+    // The sentence is also sent without a fix, and everything it carries is meaningless then.
     if (fields[RMC_STATUS][0] != RMC_STATUS_VALID)
     {
-        return ESP_OK;
+        return ESP_ERR_INVALID_STATE;
     }
 
     parse_coordinate(fields[RMC_LATITUDE], fields[RMC_NORTH_SOUTH], LATITUDE_DEGREE_DIGITS,
@@ -325,7 +325,14 @@ static esp_err_t parse_rmc(char* fields[], const size_t count, gps_location_t* o
                      &out_location->longitude);
     parse_double(fields[RMC_SPEED], &out_location->speed);
     parse_double(fields[RMC_HEADING], &out_location->heading);
-    parse_timestamp(fields[RMC_DATE], fields[RMC_TIME], &out_location->timestamp);
+
+    // The date is read out of what the satellites broadcast, which takes longer than the fix does, so
+    // the sentence reports one it cannot date yet. An empty date leaves the sample at the epoch, which
+    // reads as the time it was taken at rather than as the missing one it is.
+    if (!parse_timestamp(fields[RMC_DATE], fields[RMC_TIME], &out_location->timestamp))
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
 
     return ESP_OK;
 }

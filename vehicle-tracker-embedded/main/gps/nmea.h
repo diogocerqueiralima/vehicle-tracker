@@ -31,8 +31,9 @@ typedef enum
  * @param out_sentence Variable that receives which sentence was parsed, only written on success, or
  * NULL when the caller has no use for it.
  * @return ESP_OK on success, ESP_ERR_NOT_SUPPORTED if the sentence is not one of the understood
- * ones, ESP_ERR_INVALID_CRC if its checksum does not match, ESP_ERR_INVALID_SIZE if it is longer
- * than the standard allows, or ESP_ERR_INVALID_RESPONSE if it is malformed.
+ * ones, ESP_ERR_INVALID_STATE if it is one of them but was sent without the fix its attributes are
+ * only reported with, ESP_ERR_INVALID_CRC if its checksum does not match, ESP_ERR_INVALID_SIZE if it
+ * is longer than the standard allows, or ESP_ERR_INVALID_RESPONSE if it is malformed.
  */
 esp_err_t nmea_parse(const char* sentence, gps_location_t* out_location, nmea_sentence_t* out_sentence);
 

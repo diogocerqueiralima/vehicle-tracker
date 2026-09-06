@@ -4,7 +4,6 @@
 
 #define GPS_AT_TIMEOUT_MS			2000
 #define GPS_START_TIMEOUT_MS		5000
-#define GPS_STOP_DELAY_MS			1000
 
 // Bounds of the interval the module reports the location at, its command takes it in seconds and holds it in a single byte.
 #define GPS_MIN_REPORT_INTERVAL_S	1
@@ -109,8 +108,7 @@ esp_err_t gps_load_config(gps_config_t* out_config);
  * engine is on, so it must be stopped with gps_stop() before it can be started again.
  *
  * @param mode The fix strategy to start the GNSS engine with.
- * @return ESP_OK on success, ESP_ERR_INVALID_STATE if the GNSS engine is already running, or an
- * appropriate error code on failure.
+ * @return ESP_OK on success, or an appropriate error code on failure.
  */
 esp_err_t gps_start(gps_mode_t mode);
 
