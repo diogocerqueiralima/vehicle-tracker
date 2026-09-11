@@ -86,9 +86,9 @@ If the device fails to renew the Certificate before it expires (for example, due
 
 Certificate revocation invalidates a Certificate before its natural expiry. This can happen in two scenarios:
 
-1. **The user requests a new CSR**: When the user reads a new CSR from the device via BLE, the device generates a new key pair. The Identity Service automatically revokes the previous certificate associated with that device when the new certificate is issued.
+1. **The user revokes the device's credentials**: When the user revokes the credentials via BLE, the device deletes the stored CSR, the installed certificate and the private key they were bound to. The next CSR read then generates a new key pair, and the Identity Service automatically revokes the previous certificate associated with that device when the new certificate is issued.
 2. **The certificate expires**: An expired certificate is automatically considered invalid.
 
 When a Certificate is revoked, the device can no longer authenticate with other services. To restore access, the user must re-enroll the device via BLE by reading the new CSR and installing the new certificate, as described in the [enrollment process](#certificate-enrollment).
 
-It is important to note that certificate revocation due to compromise is not a common scenario. In practice, it typically happens when the user explicitly requests a new CSR or when the certificate reaches its expiration date.
+It is important to note that certificate revocation due to compromise is not a common scenario. In practice, it typically happens when the user explicitly revokes the credentials or when the certificate reaches its expiration date.

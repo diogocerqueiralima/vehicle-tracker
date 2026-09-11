@@ -14,3 +14,27 @@ This document provides the parameters and configuration details for the Authenti
 | revoke | 6e5b0cbc-87f6-9c9a-4d43-e29bb72441aa | boolean | write | A flag to revoke the current certificate. | - |
 | expiration | 7c85ca03-73b1-d990-6d4f-8267197e2e0e | string | read, write | The expiration time that will be used to generate the certificate (in seconds) | `31536000` (1 year) |
 | status | aeb2f94c-b465-568d-264f-8a4ca22abc62 | string | read | The status of the certificate (`valid`, `expired`, `pending`, `revoked`) | - |
+
+## CSR generation
+
+The device does not generate a request on every read. Reading `csr` returns the stored request when there is one, and only builds a new one when the device holds none — on first boot, or after the credentials have been revoked:
+
+```mermaid
+flowchart TD
+    A[Read csr] --> B{CSR stored?}
+    B -- yes --> C[Return the stored CSR]
+    B -- no --> D[Generate a new key pair]
+    D --> E[Build the CSR and sign it with that key]
+    E --> F[Persist the CSR]
+    F --> C
+```
+
+Generating a request creates a **new** NIST P-256 key pair in the device's key store, replacing whatever was there, and the request is signed with it. The common name is the device identifier, the same one the device shows as a QR code for registration. The private key is created without export permission and never leaves the key store, so only the request itself is ever read over BLE. Generation takes a few seconds on first read; later reads are served from storage.
+
+Keeping the request is what makes the read coherent: a PEM-encoded P-256 CSR is around 480 bytes, which is larger than a single ATT packet, so the client reads it in several chunks and every chunk must come from the same request. It also means an enrolled device keeps answering with the request its certificate was issued for — re-reading `csr` does not re-key a working device.
+
+## Installing and revoking
+
+Writing `certificate` stores the issued certificate and leaves the stored CSR untouched.
+
+Writing `1` to `revoke` deletes the stored CSR, the installed certificate and the private key they were bound to, which is what makes the issued certificate unusable: the device can no longer prove it holds the matching key. The next read of `csr` then starts a fresh enrollment with a new key pair. Writing `0` does nothing, and the flag itself is not stored — it is a command rather than a configuration value.
