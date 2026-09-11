@@ -20,8 +20,25 @@
 esp_err_t device_credentials_get_private_key(psa_key_id_t *out_key_id);
 
 /**
- * @brief Generates a PEM-encoded certificate signing request (CSR) for the device's identity,
- * signed by the device's private key. The common name is the device's identifier.
+ * @brief Erases the device's private key from PSA's persistent key store, wiping the key material.
+ *
+ * Any certificate issued for the key stops being usable, as the device can no longer prove it holds
+ * the matching private key. A device with no key is back to its first-boot state: the next call to
+ * device_credentials_get_private_key() or device_credentials_generate_csr() creates a new key pair.
+ *
+ * @return ESP_OK on success, including when there is no key to erase, or an appropriate error code
+ * on failure.
+ */
+esp_err_t device_credentials_delete_private_key();
+
+/**
+ * @brief Generates a new key pair for the device and a PEM-encoded certificate signing request (CSR)
+ * for it, signed by that key pair. The common name is the device's identifier.
+ *
+ * Requesting a CSR is how the user re-enrolls a device whose private key may be compromised, so the
+ * previous key pair is destroyed and replaced. Any certificate already issued for this device no
+ * longer matches the key it holds, and the device stays unable to authenticate until the certificate
+ * issued for this request is installed with device_credentials_save_certificate().
  *
  * @param err Pointer to an esp_err_t variable to receive the error code. Must not be NULL.
  * @return Pointer to a dynamically allocated, null-terminated string containing the PEM-encoded
@@ -39,9 +56,20 @@ char *device_credentials_generate_csr(esp_err_t *err);
 esp_err_t device_credentials_save_certificate(const char *pem);
 
 /**
+ * @brief Deletes the certificate stored for this device, if there is one.
+ *
+ * @return ESP_OK on success, including when no certificate is stored, or an appropriate error code
+ * on failure.
+ */
+esp_err_t device_credentials_delete_certificate();
+
+/**
  * @brief Loads the certificate issued for this device.
  *
- * @param err Pointer to an esp_err_t variable to receive the error code. It's set to ESP_OK on success.
+ * @param err Pointer to an esp_err_t variable to receive the error code. It's set to ESP_OK on
+ * success, to ESP_ERR_NOT_FOUND when the device holds no certificate, and to the failure reported by
+ * storage otherwise. A caller deciding whether the device needs to be enrolled must look for
+ * ESP_ERR_NOT_FOUND specifically, as any other error leaves it unknown whether a certificate exists.
  * @return Pointer to a dynamically allocated, null-terminated string holding the PEM-encoded
  * certificate. The caller is responsible for freeing this memory. Returns NULL when no certificate
  * is stored yet or on failure, and sets *err to the appropriate error code.

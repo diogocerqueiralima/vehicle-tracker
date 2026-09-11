@@ -92,6 +92,34 @@ static int on_gap_event(struct ble_gap_event* event, void* arg)
 
     switch (event->type)
     {
+    case BLE_GAP_EVENT_CONNECT:
+        {
+            if (event->connect.status != 0)
+            {
+                return 0;
+            }
+
+            // Ask the peer to raise the ATT MTU from the 23-byte default to CONFIG_BT_NIMBLE_ATT_PREFERRED_MTU.
+            // Without this the peer decides, and one that never starts the exchange leaves every value larger
+            // than 22 bytes to be read 22 bytes at a time, one access callback per chunk. The negotiated value
+            // is the smaller of the two sides' preferences, so this only ever helps.
+            const int rc = ble_gattc_exchange_mtu(event->connect.conn_handle, nullptr, nullptr);
+
+            // BLE_HS_EALREADY means the peer got there first, which is the outcome this asks for anyway
+            if (rc != 0 && rc != BLE_HS_EALREADY)
+            {
+                ESP_LOGW(LOG_TAG, "Failed to start MTU exchange on connection %d: %d",
+                         event->connect.conn_handle, rc);
+            }
+
+            return 0;
+        }
+    case BLE_GAP_EVENT_MTU:
+        {
+            ESP_LOGI(LOG_TAG, "Connection %d negotiated an ATT MTU of %d bytes",
+                     event->mtu.conn_handle, event->mtu.value);
+            return 0;
+        }
     case BLE_GAP_EVENT_DISCONNECT:
         {
             ESP_LOGI(LOG_TAG, "Disconnected (reason %d), restarting advertising", event->disconnect.reason);

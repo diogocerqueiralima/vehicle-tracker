@@ -9,6 +9,7 @@
 #include "mbedtls/pk.h"
 #include "mbedtls/x509_csr.h"
 #include "identity/device_identity.h"
+#include "nvs.h"
 #include "storage/storage.h"
 
 #define LOG_TAG "DEVICE_CREDENTIALS"
@@ -49,6 +50,64 @@ static esp_err_t psa_status_to_esp_err(const psa_status_t status) {
         default:
             return ESP_FAIL;
     }
+}
+
+// Creates the device's key pair in PSA's persistent key store under the reserved key identifier: a
+// NIST P-256 key that may sign but carries no export permission, so the private key stays in the store.
+static esp_err_t create_private_key(psa_key_id_t *out_key_id) {
+
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
+    psa_set_key_bits(&attributes, DEVICE_CREDENTIALS_KEY_SIZE_BITS);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
+    psa_set_key_algorithm(&attributes, DEVICE_CREDENTIALS_KEY_ALG);
+    psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_PERSISTENT);
+    psa_set_key_id(&attributes, DEVICE_CREDENTIALS_PRIVATE_KEY_ID);
+
+    // PSA writes the key material to its own store and returns just the identifier
+    const psa_status_t status = psa_generate_key(&attributes, out_key_id);
+
+    return psa_status_to_esp_err(status);
+}
+
+// Erases the device's key pair from PSA's persistent key store, wiping the private key material.
+// A key that is not there is the expected state before the first CSR, so it counts as success.
+static esp_err_t destroy_private_key() {
+
+    // 1. Bring up PSA, which loads its persistent key store from NVS
+    psa_status_t status = psa_crypto_init();
+    if (status != PSA_SUCCESS) {
+        return psa_status_to_esp_err(status);
+    }
+
+    // 2. PSA reports an absent persistent key as PSA_ERROR_INVALID_HANDLE, not PSA_ERROR_DOES_NOT_EXIST
+    status = psa_destroy_key(DEVICE_CREDENTIALS_PRIVATE_KEY_ID);
+
+    if (status == PSA_ERROR_INVALID_HANDLE || status == PSA_ERROR_DOES_NOT_EXIST) {
+        return ESP_OK;
+    }
+
+    if (status != PSA_SUCCESS) {
+        ESP_LOGE(LOG_TAG, "Failed to destroy the device private key: %ld", (long) status);
+    }
+
+    return psa_status_to_esp_err(status);
+}
+
+// Replaces the device's key pair with a freshly generated one, discarding the previous private key.
+static esp_err_t rotate_private_key(psa_key_id_t *out_key_id) {
+
+    // 1. Drop the previous key pair: the identifier is reserved for this device's key, and PSA
+    // refuses to generate over an identifier that is already taken
+    const esp_err_t err = destroy_private_key();
+
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    // 2. Generate the key pair the new request is bound to
+    return create_private_key(out_key_id);
 }
 
 // Writes a PEM-encoded CSR for the given subject into out_pem, signed by the referenced PSA key.
@@ -141,18 +200,12 @@ esp_err_t device_credentials_get_private_key(psa_key_id_t *out_key_id) {
         return psa_status_to_esp_err(status);
     }
 
-    // 5. First boot: a persistent NIST P-256 key that may sign but carries no export permission
-    psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
-    psa_set_key_bits(&attributes, DEVICE_CREDENTIALS_KEY_SIZE_BITS);
-    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
-    psa_set_key_algorithm(&attributes, DEVICE_CREDENTIALS_KEY_ALG);
-    psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_PERSISTENT);
-    psa_set_key_id(&attributes, DEVICE_CREDENTIALS_PRIVATE_KEY_ID);
+    // 5. First boot: create the key pair this device signs with from here on
+    return create_private_key(out_key_id);
+}
 
-    // 6. Generate it; PSA writes the key material to its own store and returns just the identifier
-    status = psa_generate_key(&attributes, out_key_id);
-
-    return psa_status_to_esp_err(status);
+esp_err_t device_credentials_delete_private_key() {
+    return destroy_private_key();
 }
 
 char *device_credentials_generate_csr(esp_err_t *err) {
@@ -162,12 +215,14 @@ char *device_credentials_generate_csr(esp_err_t *err) {
         return nullptr;
     }
 
-    // 2. Look up, or create on first boot, the device's private key
+    // 2. Bind the request to a brand new key pair: a new CSR is how the user recovers from a
+    // compromised private key, so the previous one is discarded here and the certificate issued for
+    // it stops being usable (docs/device/authentication/certificate-lifecycle.md)
     psa_key_id_t key_id = PSA_KEY_ID_NULL;
-    esp_err_t error = device_credentials_get_private_key(&key_id);
+    esp_err_t error = rotate_private_key(&key_id);
 
     if (error != ESP_OK) {
-        ESP_LOGE(LOG_TAG, "Failed to load device private key: %s", esp_err_to_name(error));
+        ESP_LOGE(LOG_TAG, "Failed to generate device private key: %s", esp_err_to_name(error));
         *err = error;
         return nullptr;
     }
@@ -221,6 +276,12 @@ esp_err_t device_credentials_save_certificate(const char *pem) {
     return save_data(CERTIFICATE_NAMESPACE, pem, strlen(pem));
 }
 
+esp_err_t device_credentials_delete_certificate() {
+    // Erase the certificate from NVS, where a missing one is already the state this asks for
+    const esp_err_t err = erase_data(CERTIFICATE_NAMESPACE);
+    return err == ESP_ERR_NVS_NOT_FOUND ? ESP_OK : err;
+}
+
 char *device_credentials_load_certificate(esp_err_t *err) {
 
     if (err == nullptr) {
@@ -231,8 +292,17 @@ char *device_credentials_load_certificate(esp_err_t *err) {
     size_t stored_len = 0;
     esp_err_t error = get_data_size(CERTIFICATE_NAMESPACE, &stored_len);
 
-    if (error != ESP_OK) {
+    // 1.1 A missing namespace/key is the expected state of a device that was never enrolled
+    if (error == ESP_ERR_NVS_NOT_FOUND) {
         *err = ESP_ERR_NOT_FOUND;
+        return nullptr;
+    }
+
+    // 1.2 Any other failure is a fault in storage, and reporting it as an absent certificate would
+    // send the caller off to enroll a device that is in fact already enrolled
+    if (error != ESP_OK) {
+        ESP_LOGE(LOG_TAG, "Failed to get device certificate size: %s", esp_err_to_name(error));
+        *err = error;
         return nullptr;
     }
 
