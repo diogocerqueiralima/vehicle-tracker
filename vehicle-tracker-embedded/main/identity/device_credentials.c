@@ -6,8 +6,6 @@
 
 #include "esp_log.h"
 #include "ble/services/authentication_service.h"
-#include "mbedtls/asn1.h"
-#include "mbedtls/base64.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/x509_csr.h"
 #include "identity/device_identity.h"
@@ -187,8 +185,8 @@ char *device_credentials_generate_csr(esp_err_t *err) {
     char device_id_str[DEVICE_IDENTITY_STRING_LEN + 1];
     device_identity_to_string(device_id, device_id_str);
 
-    char subject[sizeof("CN=") + DEVICE_IDENTITY_STRING_LEN];
-    snprintf(subject, sizeof(subject), "CN=%s", device_id_str);
+    char subject[sizeof("CN=, O=MyTracker, C=PT") + DEVICE_IDENTITY_STRING_LEN];
+    snprintf(subject, sizeof(subject), "CN=%s, O=MyTracker, C=PT", device_id_str);
 
     // 4. Write the request into a buffer the caller takes ownership of
     char *pem = malloc(DEVICE_CREDENTIALS_CSR_PEM_LEN);
