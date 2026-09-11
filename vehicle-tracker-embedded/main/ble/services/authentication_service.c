@@ -4,14 +4,6 @@
 #include "gatt_common.h"
 #include "host/ble_gatt.h"
 
-// Validates that the CSR is a PEM-encoded certificate signing request.
-static bool validate_csr(const char* data, const uint16_t len)
-{
-    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE REQUEST-----";
-    const size_t header_len = strlen(PEM_HEADER);
-    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
-}
-
 // Validates that the certificate is a PEM-encoded X.509 certificate.
 static bool validate_certificate(const char* data, const uint16_t len)
 {
@@ -87,13 +79,12 @@ static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_csr_uuid.u,
         .access_cb = gatt_common_access_cb,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
-                 BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
+        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN,
         .val_handle = nullptr,
         .arg = &(gatt_handler_context_t){
             .namespace = CSR_NAMESPACE,
             .name = "CSR",
-            .validate = validate_csr,
+            .validate = nullptr,
         }
     },
     {
