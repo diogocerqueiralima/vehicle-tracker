@@ -6,8 +6,6 @@
 #include "esp_err.h"
 #include "psa/crypto.h"
 
-#define DEVICE_CREDENTIALS_CERTIFICATE_NVS_KEY "device_cert"
-
 /**
  * @brief Returns the identifier of the device's private key, generating the key pair on first call.
  *
@@ -43,7 +41,7 @@ esp_err_t device_credentials_save_certificate(const char *pem);
 /**
  * @brief Loads the certificate issued for this device.
  *
- * @param err Pointer to an esp_err_t variable to receive the error code. Can be NULL if not needed.
+ * @param err Pointer to an esp_err_t variable to receive the error code. It's set to ESP_OK on success.
  * @return Pointer to a dynamically allocated, null-terminated string holding the PEM-encoded
  * certificate. The caller is responsible for freeing this memory. Returns NULL when no certificate
  * is stored yet or on failure, and sets *err to the appropriate error code.

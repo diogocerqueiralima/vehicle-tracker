@@ -5,6 +5,9 @@
 #include <string.h>
 
 #include "esp_log.h"
+#include "ble/services/authentication_service.h"
+#include "mbedtls/asn1.h"
+#include "mbedtls/base64.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/x509_csr.h"
 #include "identity/device_identity.h"
@@ -43,6 +46,8 @@ static esp_err_t psa_status_to_esp_err(const psa_status_t status) {
             return ESP_ERR_NO_MEM;
         case PSA_ERROR_DOES_NOT_EXIST:
             return ESP_ERR_NOT_FOUND;
+        case MBEDTLS_ERR_PK_FEATURE_UNAVAILABLE:
+            return ESP_ERR_NOT_SUPPORTED;
         default:
             return ESP_FAIL;
     }
@@ -130,7 +135,15 @@ esp_err_t device_credentials_get_private_key(psa_key_id_t *out_key_id) {
         return ESP_OK;
     }
 
-    // 4. First boot: a persistent NIST P-256 key that may sign but carries no export permission
+    // 4. Only a missing key means first boot. Any other failure is a fault in the key store, and
+    // generating over it would just collide with the key that is already there. PSA reports an
+    // absent persistent key as PSA_ERROR_INVALID_HANDLE, not PSA_ERROR_DOES_NOT_EXIST
+    if (status != PSA_ERROR_INVALID_HANDLE && status != PSA_ERROR_DOES_NOT_EXIST) {
+        ESP_LOGE(LOG_TAG, "Failed to read the device private key: %ld", (long) status);
+        return psa_status_to_esp_err(status);
+    }
+
+    // 5. First boot: a persistent NIST P-256 key that may sign but carries no export permission
     psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
     psa_set_key_bits(&attributes, DEVICE_CREDENTIALS_KEY_SIZE_BITS);
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
@@ -138,7 +151,7 @@ esp_err_t device_credentials_get_private_key(psa_key_id_t *out_key_id) {
     psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_PERSISTENT);
     psa_set_key_id(&attributes, DEVICE_CREDENTIALS_PRIVATE_KEY_ID);
 
-    // 5. Generate it; PSA writes the key material to its own store and returns just the identifier
+    // 6. Generate it; PSA writes the key material to its own store and returns just the identifier
     status = psa_generate_key(&attributes, out_key_id);
 
     return psa_status_to_esp_err(status);
@@ -207,14 +220,18 @@ esp_err_t device_credentials_save_certificate(const char *pem) {
     }
 
     // 2. Persist the certificate in NVS so it survives reboots
-    return save_data(DEVICE_CREDENTIALS_CERTIFICATE_NVS_KEY, pem, strlen(pem));
+    return save_data(CERTIFICATE_NAMESPACE, pem, strlen(pem));
 }
 
 char *device_credentials_load_certificate(esp_err_t *err) {
 
+    if (err == nullptr) {
+        return nullptr;
+    }
+
     // 1. Ask how much was stored, which also tells whether the device is enrolled at all
     size_t stored_len = 0;
-    esp_err_t error = get_data_size(DEVICE_CREDENTIALS_CERTIFICATE_NVS_KEY, &stored_len);
+    esp_err_t error = get_data_size(CERTIFICATE_NAMESPACE, &stored_len);
 
     if (error != ESP_OK) {
         *err = ESP_ERR_NOT_FOUND;
@@ -230,7 +247,7 @@ char *device_credentials_load_certificate(esp_err_t *err) {
     }
 
     // 3. Load the certificate from storage, which is public and can be read into an application buffer
-    error = load_data(DEVICE_CREDENTIALS_CERTIFICATE_NVS_KEY, pem, stored_len);
+    error = load_data(CERTIFICATE_NAMESPACE, pem, stored_len);
     if (error != ESP_OK) {
         ESP_LOGE(LOG_TAG, "Failed to load device credentials pem: %s", esp_err_to_name(error));
         free(pem);
@@ -240,5 +257,6 @@ char *device_credentials_load_certificate(esp_err_t *err) {
 
     // 4. Null-terminate the string so the caller can measure it with strlen()
     pem[stored_len] = '\0';
+    *err = ESP_OK;
     return pem;
 }
