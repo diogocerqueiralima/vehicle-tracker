@@ -118,3 +118,37 @@ esp_err_t load_data(const char* key, char* value, size_t len)
     nvs_close(nvs_handle);
     return err;
 }
+
+esp_err_t erase_data(const char* key)
+{
+    // 1. Check for null key or key length exceeding maximum allowed size
+    if (key == NULL || strlen(key) >= NVS_KEY_NAME_MAX_SIZE)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    nvs_handle_t nvs_handle;
+
+    // 2. Open NVS handle for the specified key in read-write mode
+    esp_err_t err = nvs_open(key, NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK)
+    {
+        return err;
+    }
+
+    // 3. Remove the value stored under the specified key, which reports ESP_ERR_NVS_NOT_FOUND when
+    // there is nothing to erase
+    err = nvs_erase_key(nvs_handle, key);
+    if (err != ESP_OK)
+    {
+        nvs_close(nvs_handle);
+        return err;
+    }
+
+    // 4. Commit the changes to NVS
+    err = nvs_commit(nvs_handle);
+
+    // 5. Close the NVS handle
+    nvs_close(nvs_handle);
+    return err;
+}

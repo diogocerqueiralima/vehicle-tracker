@@ -51,4 +51,14 @@ esp_err_t save_data(const char* key, const char* value, size_t len);
  */
 esp_err_t load_data(const char* key, char* value, size_t max_len);
 
+/**
+ *
+ * @brief Erase the data stored in non-volatile storage (NVS) under the specified key.
+ *
+ * @param key The key whose value should be erased. Must be a null-terminated string.
+ * @return ESP_OK on success, ESP_ERR_NVS_NOT_FOUND when no value is stored under the key, or an
+ * appropriate error code on failure.
+ */
+esp_err_t erase_data(const char* key);
+
 #endif
