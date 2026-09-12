@@ -284,7 +284,7 @@ static gatt_file_handler_context_t **file_contexts = nullptr;
 static size_t file_context_count = 0;
 
 void gatt_common_file_context_register(gatt_file_handler_context_t *ctx) {
-    
+
     gatt_file_handler_context_t **tmp = realloc(file_contexts, (file_context_count + 1) * sizeof(*file_contexts));
     if (tmp == nullptr) {
         ESP_LOGE(LOG_TAG, "Failed to register %s for disconnect cleanup", ctx->name);
@@ -372,11 +372,16 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
         ctx->read.total_len = total_len;
     }
 
-    // 3. Slice the next chunk out of the cached copy and append it, framed with the header.
-    // The maximum chunk size is the negotiated ATT MTU minus 2 bytes for the ATT opcode and handle,
-    // and minus 8 bytes for the [total_len][offset] header framing every chunk
-    // (the header is not part of the stored value, so it is not counted in total_len).
+    // 3. Serve the next chunk of the cached value, up to the maximum payload size allowed by the current connection's MTU.
     const uint16_t mtu = ble_att_mtu(conn_handle);
+
+    // 4. The MTU must be large enough to hold the 2-byte ATT header and the 8-byte chunk header, otherwise no payload can be sent.
+    if (mtu <= 2 + GATT_FILE_CHUNK_HEADER_LEN) {
+        ESP_LOGE(LOG_TAG, "MTU %d is too small to send any %s chunk", mtu, ctx->name);
+        abandon_read_sequence(ctx);
+        return BLE_ATT_ERR_INSUFFICIENT_RES;
+    }
+
     const size_t max_chunk_payload = (size_t) mtu - 2 - GATT_FILE_CHUNK_HEADER_LEN;
     const size_t total_len = ctx->read.total_len;
     const size_t remaining = total_len - ctx->read.cursor;
@@ -386,6 +391,7 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
     put_u32_le(header, total_len);
     put_u32_le(header + 4, ctx->read.cursor);
 
+    // 5. Append the chunk header and payload to the response mbuf, and update the cursor to reflect the bytes served.
     const int rc = os_mbuf_append(ctxt->om, header, GATT_FILE_CHUNK_HEADER_LEN) ||
                    os_mbuf_append(ctxt->om, ctx->read.buffer + ctx->read.cursor, chunk_len);
 
@@ -399,7 +405,7 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
 
     ESP_LOGI(LOG_TAG, "Successfully read %s chunk (%zu/%zu bytes)", ctx->name, ctx->read.cursor, total_len);
 
-    // 4. Once the sequence is fully served, drop the cached copy and reset the cursor so the next
+    // 6. Once the sequence is fully served, drop the cached copy and reset the cursor so the next
     // read (from this connection or another) starts a fresh pass from the beginning.
     if (done) {
         abandon_read_sequence(ctx);
