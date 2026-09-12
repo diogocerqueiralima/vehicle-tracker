@@ -16,3 +16,6 @@ gateway:
         - method: PUT
           path: /devices/{deviceId}
           role: ADMIN
+    - id: identity-service
+      prefix: /identity
+      uri: ${IDENTITY_SERVICE_URI}
