@@ -117,11 +117,15 @@ public class CertificateService {
     /**
      *
      * Revokes a certificate by its serial number. It looks up the certificate using the provided finder function,
-     * and if found, it revokes the certificate and persists the updated state using the provided persistence function.
+     * and if found and issued to a device the requesting user owns, it revokes the certificate and persists the
+     * updated state using the provided persistence function.
      *
-     * @param command the command containing the serial number of the certificate to be revoked
+     * @param command the command containing the serial number of the certificate to be revoked and the user
+     *                making the request
      * @param finder a function to find the certificate by its serial number, returning an Optional of the certificate
      * @param persistence a function to persist the revoked certificate
+     * @throws CertificateNotFoundException if no certificate is stored for the serial number
+     * @throws DeviceNotOwnedException if the device the certificate was issued to is not the user's
      */
     @SuppressWarnings("unchecked")
     public <T extends Certificate> void revoke(
@@ -129,8 +133,24 @@ public class CertificateService {
             Function<BigInteger, Optional<T>> finder,
             Function<T, T> persistence
     ) {
+
+        // 1. Look up the certificate the caller asked to revoke.
         T certificate = finder.apply(command.serialNumber())
                 .orElseThrow(() -> new CertificateNotFoundException(command.serialNumber()));
+
+        // 2. The certificate was issued to a device, whose id is the common name it was signed for.
+        UUID deviceId = getDeviceIdFromCertificateSubject(certificate.getSubject())
+                .orElseThrow(() ->
+                        new BadRequestException("Common Name must be a valid UUID representing the device ID")
+                );
+
+        // 3. Only the owner of that device may revoke what it holds. A serial number is readable by
+        // anyone who has the certificate, so holding one is not proof of anything on its own.
+        if (!deviceProvider.isOwnedBy(deviceId, command.userId())) {
+            throw new DeviceNotOwnedException(deviceId, command.userId());
+        }
+
+        log.info("Revoking certificate with SerialNumber={} issued to DeviceId={}", command.serialNumber(), deviceId);
 
         persistence.apply((T) certificate.revoke());
     }

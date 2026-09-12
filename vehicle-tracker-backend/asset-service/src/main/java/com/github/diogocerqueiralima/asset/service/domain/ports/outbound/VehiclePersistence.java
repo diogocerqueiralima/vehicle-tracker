@@ -47,7 +47,7 @@ public interface VehiclePersistence {
      * @param ownerId owner identifier.
      * @return true when the vehicle exists and is owned by the owner, otherwise false.
      */
-    boolean isOwner(UUID id, UUID ownerId);
+    boolean isOwnedBy(UUID id, UUID ownerId);
 
     /**
      * Retrieves a one-based pageNumber of vehicles.

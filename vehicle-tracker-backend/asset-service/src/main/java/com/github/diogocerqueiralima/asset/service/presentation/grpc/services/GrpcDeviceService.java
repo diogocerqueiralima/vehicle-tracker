@@ -1,14 +1,14 @@
 package com.github.diogocerqueiralima.asset.service.presentation.grpc.services;
 
+import com.github.diogocerqueiralima.asset.service.application.commands.DeviceIsOwnedByUserCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.inbound.DeviceUseCase;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.presentation.grpc.mappers.DeviceGrpcMapper;
-import com.github.diogocerqueiralima.schema.proto.DeviceId;
-import com.github.diogocerqueiralima.schema.proto.DeviceResponse;
-import com.github.diogocerqueiralima.schema.proto.DeviceServiceGrpc;
+import com.github.diogocerqueiralima.error.common.exceptions.ForbiddenException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
+import com.github.diogocerqueiralima.schema.proto.*;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
@@ -58,7 +58,7 @@ public class GrpcDeviceService extends DeviceServiceGrpc.DeviceServiceImplBase {
                     new StatusRuntimeException(Status.INVALID_ARGUMENT.withDescription(e.getMessage()))
             );
 
-        } catch (DeviceNotFoundException e) {
+        } catch (NotFoundException e) {
 
             // 5. Returns a NOT_FOUND error if the device is not found for the provided id.
             responseObserver.onError(
@@ -79,6 +79,37 @@ public class GrpcDeviceService extends DeviceServiceGrpc.DeviceServiceImplBase {
                     new StatusRuntimeException(Status.INTERNAL.withDescription(e.getMessage()))
             );
 
+        }
+
+    }
+
+    @Override
+    public void deviceIsOwnedByUser(DeviceIsOwnedByUserRequest request, StreamObserver<DeviceIsOwnedByUserResponse> responseObserver) {
+
+        try {
+
+            deviceUseCase.isOwnedBy(
+                    new DeviceIsOwnedByUserCommand(
+                            UUID.fromString(request.getDeviceId()),
+                            UUID.fromString(request.getUserId())
+                    )
+            );
+
+            responseObserver.onNext(DeviceIsOwnedByUserResponse.newBuilder().build());
+            responseObserver.onCompleted();
+
+        } catch (ForbiddenException e) {
+            responseObserver.onError(
+                    new StatusRuntimeException(Status.PERMISSION_DENIED.withDescription(e.getMessage()))
+            );
+        } catch (IllegalArgumentException e) {
+            responseObserver.onError(
+                    new StatusRuntimeException(Status.INVALID_ARGUMENT.withDescription(e.getMessage()))
+            );
+        } catch (Exception e) {
+            responseObserver.onError(
+                    new StatusRuntimeException(Status.INTERNAL.withDescription(e.getMessage()))
+            );
         }
 
     }

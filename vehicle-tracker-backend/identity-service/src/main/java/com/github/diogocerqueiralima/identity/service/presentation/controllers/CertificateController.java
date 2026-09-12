@@ -96,7 +96,7 @@ public class CertificateController {
             description = """
                     Revokes a certificate identified by its serial number. This operation marks the certificate as revoked,
                     preventing it from being used for secure communications. The serial number is provided as a path variable
-                    in the request URI.
+                    in the request URI. Only the owner of the device the certificate was issued to may revoke it.
                     """
     )
     @ApiResponses(
@@ -115,7 +115,7 @@ public class CertificateController {
                     ),
                     @ApiResponse(
                             responseCode = "403",
-                            description = "The server understood the request but refuses to authorize it"
+                            description = "The device the certificate was issued to does not belong to the authenticated user"
                     ),
                     @ApiResponse(
                             responseCode = "404",
@@ -128,8 +128,16 @@ public class CertificateController {
             }
     )
     @PostMapping(CERTIFICATE_REVOKE_URI)
-    public ResponseEntity<Void> revoke(@PathVariable BigInteger serialNumber) {
-        certificateUseCase.revoke(new LookupCertificateBySerialNumberCommand(serialNumber));
+    public ResponseEntity<Void> revoke(
+            @PathVariable BigInteger serialNumber, @RequestHeader(ReservedHeaders.USER_ID) String userIdHeader
+    ) {
+
+        // 1. Extracts the user ID from the request header and converts it to a UUID.
+        UUID userId = UUID.fromString(userIdHeader);
+
+        // 2. Delegates the revocation to the application layer, which only allows it for a device the user owns.
+        certificateUseCase.revoke(new LookupCertificateBySerialNumberCommand(serialNumber, userId));
+
         return ResponseEntity.ok().build();
     }
 

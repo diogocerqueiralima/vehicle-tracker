@@ -48,11 +48,6 @@ public class DevicePersistenceImpl implements DevicePersistence {
     }
 
     @Override
-    public boolean isOwner(UUID id, UUID ownerId) {
-        return deviceRepository.existsByIdAndOwnerId(id, ownerId);
-    }
-
-    @Override
     public Page<Device> getPage(int pageNumber, int pageSize) {
 
         // 1. Converts one-based inbound pageNumber number to Spring Data zero-based index.
@@ -77,6 +72,11 @@ public class DevicePersistenceImpl implements DevicePersistence {
     @Override
     public boolean isSerialNumberOrImeiTakenByAnotherDevice(String serialNumber, String imei, UUID excludingId) {
         return deviceRepository.existsBySerialNumberOrImeiAndIdNot(serialNumber, imei, excludingId);
+    }
+
+    @Override
+    public boolean isOwnedBy(UUID deviceId, UUID userId) {
+        return deviceRepository.existsByIdAndOwnerId(deviceId, userId);
     }
 
 }

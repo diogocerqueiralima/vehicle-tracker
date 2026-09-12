@@ -92,12 +92,12 @@ public class VehicleAssignmentUseCaseImpl implements VehicleAssignmentUseCase {
                 .orElseThrow(() -> new VehicleAssignmentNotFoundException(deviceId, vehicleId));
 
         // 2. Check if the user is the owner of the vehicle
-        if (!vehiclePersistence.isOwner(vehicleId, command.unassignedBy())) {
+        if (!vehiclePersistence.isOwnedBy(vehicleId, command.unassignedBy())) {
             throw new VehicleNotFoundException(vehicleId);
         }
 
         // 3. Check if the user is the owner of the device
-        if (!devicePersistence.isOwner(deviceId, command.unassignedBy())) {
+        if (!devicePersistence.isOwnedBy(deviceId, command.unassignedBy())) {
             throw new DeviceNotFoundException(deviceId);
         }
 

@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.asset.service.application.usecases;
 
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
+import com.github.diogocerqueiralima.asset.service.application.commands.DeviceIsOwnedByUserCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
 import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
@@ -11,6 +12,8 @@ import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DeviceP
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.domain.assets.Device;
+import com.github.diogocerqueiralima.error.common.exceptions.ForbiddenException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,7 +79,7 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
                 isAdmin
                 ? devicePersistence.findById(id)
                 : devicePersistence.findByIdAndOwnerId(id, userId)
-        ).orElseThrow(() -> new DeviceNotFoundException(id));
+        ).orElseThrow(() -> new NotFoundException("Device not found for the provided id."));
 
         // 3. Maps the domain object to the response contract.
         return DeviceApplicationMapper.toResult(device);
@@ -101,6 +104,19 @@ public class DeviceUseCaseImpl implements DeviceUseCase {
 
         // 3. Converts domain pageNumber payload to application output contract.
         return DeviceApplicationMapper.toPageResult(devicePageResult);
+    }
+
+    @Override
+    public void isOwnedBy(DeviceIsOwnedByUserCommand command) {
+
+        // 1. Resolves the target id and user id directly from the inbound command.
+        UUID id = command.deviceId();
+        UUID userId = command.userId();
+
+        // 2. Checks if the device is owned by the specified user.
+        if (!devicePersistence.isOwnedBy(id, userId)) {
+            throw new ForbiddenException("Device is not owned by the specified user.");
+        }
     }
 
 }

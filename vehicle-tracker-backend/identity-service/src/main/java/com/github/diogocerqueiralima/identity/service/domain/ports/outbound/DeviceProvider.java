@@ -16,4 +16,16 @@ public interface DeviceProvider {
      */
     Optional<Device> findById(UUID id);
 
+    /**
+     *
+     * Checks whether a device belongs to a given user. A device that does not exist is not owned by
+     * anyone, so it is reported the same way as one owned by somebody else: the caller is told only
+     * whether it may act on the device, not whether it is there.
+     *
+     * @param deviceId the unique identifier of the device whose ownership is being checked
+     * @param userId the unique identifier of the user the device is expected to belong to
+     * @return true if the device exists and belongs to the user, false otherwise
+     */
+    boolean isOwnedBy(UUID deviceId, UUID userId);
+
 }

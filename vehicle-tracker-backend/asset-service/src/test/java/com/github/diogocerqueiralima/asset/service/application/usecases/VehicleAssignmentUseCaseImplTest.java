@@ -235,8 +235,8 @@ class VehicleAssignmentUseCaseImplTest {
                 VehicleRemovalReason.RETIRED
         );
 
-        when(devicePersistence.isOwner(deviceId, command.unassignedBy())).thenReturn(true);
-        when(vehiclePersistence.isOwner(vehicleId, command.unassignedBy())).thenReturn(true);
+        when(devicePersistence.isOwnedBy(deviceId, command.unassignedBy())).thenReturn(true);
+        when(vehiclePersistence.isOwnedBy(vehicleId, command.unassignedBy())).thenReturn(true);
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
                 .thenReturn(Optional.of(activeAssignment));
         when(vehicleAssignmentPersistence.save(any(VehicleAssignment.class))).thenReturn(closedAssignment);

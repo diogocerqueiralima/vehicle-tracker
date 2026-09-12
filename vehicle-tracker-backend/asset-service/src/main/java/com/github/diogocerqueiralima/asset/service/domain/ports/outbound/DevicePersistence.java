@@ -40,16 +40,6 @@ public interface DevicePersistence {
     Optional<Device> findByIdAndOwnerId(UUID id, UUID ownerId);
 
     /**
-     *
-     * Checks whether a device with the provided id exists and is owned by the provided owner id.
-     *
-     * @param id device identifier.
-     * @param ownerId owner identifier.
-     * @return true when the device exists and is owned by the owner, otherwise false.
-     */
-    boolean isOwner(UUID id, UUID ownerId);
-
-    /**
      * Retrieves a one-based pageNumber of devices.
      *
      * @param pageNumber one-based pageNumber number.
@@ -77,5 +67,15 @@ public interface DevicePersistence {
      * @return true when another device with either value already exists.
      */
     boolean isSerialNumberOrImeiTakenByAnotherDevice(String serialNumber, String imei, UUID excludingId);
+
+    /**
+     *
+     * Checks if a device is owned by a specific user.
+     *
+     * @param deviceId the unique identifier of the device to check ownership.
+     * @param userId the unique identifier of the user to check ownership against.
+     * @return true if the device is owned by the user, false otherwise.
+     */
+    boolean isOwnedBy(UUID deviceId, UUID userId);
 
 }
