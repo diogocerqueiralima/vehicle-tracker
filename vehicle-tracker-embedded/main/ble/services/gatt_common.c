@@ -338,6 +338,7 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
     // 2. Load the stored value once per sequence, on its first chunk, and reuse it for every
     // later chunk instead of reloading the whole value from NVS on every single read.
     if (ctx->read.buffer == nullptr) {
+
         size_t total_len = 0;
         const esp_err_t size_err = get_data_size(ctx->namespace, &total_len);
 
@@ -351,6 +352,14 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
 
         if (size_err != ESP_OK) {
             ESP_LOGE(LOG_TAG, "Failed to get %s size: %s", ctx->name, esp_err_to_name(size_err));
+            abandon_read_sequence(ctx);
+            return BLE_ATT_ERR_UNLIKELY;
+        }
+
+        // 2.2 Honor the cap on the read side too, instead of allocating whatever size NVS reports.
+        if (total_len > ctx->max_len) {
+            ESP_LOGE(LOG_TAG, "Stored %s value of %zu bytes exceeds the %zu byte cap", ctx->name, total_len,
+                     ctx->max_len);
             abandon_read_sequence(ctx);
             return BLE_ATT_ERR_UNLIKELY;
         }
