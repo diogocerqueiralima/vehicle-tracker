@@ -3,12 +3,12 @@ package com.github.diogocerqueiralima.asset.service.application.usecases;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
 import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.domain.assets.Device;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -261,8 +261,8 @@ class DeviceUseCaseImplTest {
         when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> deviceUseCase.getById(command))
-                .isInstanceOf(DeviceNotFoundException.class)
-                .hasMessage("Device not found for id: " + id);
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage("Device not found for the provided id.");
     }
 
     @Test

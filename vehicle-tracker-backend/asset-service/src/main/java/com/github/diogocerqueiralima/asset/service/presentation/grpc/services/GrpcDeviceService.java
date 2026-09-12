@@ -95,7 +95,7 @@ public class GrpcDeviceService extends DeviceServiceGrpc.DeviceServiceImplBase {
                     )
             );
 
-            responseObserver.onNext(DeviceIsOwnedByUserResponse.newBuilder().build());
+            responseObserver.onNext(DeviceIsOwnedByUserResponse.newBuilder().setIsOwned(true).build());
             responseObserver.onCompleted();
 
         } catch (ForbiddenException e) {

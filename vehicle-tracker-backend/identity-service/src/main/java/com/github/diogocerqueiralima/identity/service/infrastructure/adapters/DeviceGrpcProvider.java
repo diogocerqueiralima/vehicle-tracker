@@ -66,14 +66,14 @@ public class DeviceGrpcProvider implements DeviceProvider {
             // 1. The remote service answers by completing the call, and reports a device the user
             // does not own by failing it with PERMISSION_DENIED. The is_owned field it sends back
             // is not set, so the status is what carries the answer.
-            blockingStub.deviceIsOwnedByUser(
-                    DeviceIsOwnedByUserRequest.newBuilder()
-                            .setDeviceId(deviceId.toString())
-                            .setUserId(userId.toString())
-                            .build()
-            );
-
-            return true;
+            return blockingStub
+                    .deviceIsOwnedByUser(
+                            DeviceIsOwnedByUserRequest.newBuilder()
+                                    .setDeviceId(deviceId.toString())
+                                    .setUserId(userId.toString())
+                                    .build()
+                    )
+                    .getIsOwned();
 
         } catch (StatusRuntimeException e) {
 
