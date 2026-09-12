@@ -39,3 +39,6 @@ jobs:
       - name: Build & push api-gateway image
         working-directory: vehicle-tracker-backend/api-gateway/container
         run: ./buildAndPushContainer.sh
+      - name: Build & push identity-service image
+        working-directory: vehicle-tracker-backend/identity-service/container
+        run: ./buildAndPushContainer.sh
