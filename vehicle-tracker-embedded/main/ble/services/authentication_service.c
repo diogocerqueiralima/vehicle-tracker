@@ -18,11 +18,17 @@ static const char* LOG_TAG = "authentication_service";
  * Subsequent reads return the stored CSR, so the key pair the user is enrolling is not replaced while the
  * certificate for it is being issued.
  *
+ * A device that already holds a certificate is enrolled, and the read is refused with
+ * BLE_ATT_ERR_VALUE_NOT_ALLOWED: serving a request would replace the key pair that certificate was
+ * issued for and leave the device unable to authenticate. Revoking the credentials deletes the
+ * certificate and starts a fresh enrollment.
+ *
  * @param conn_handle the connection handle of the BLE connection
  * @param attr_handle the attribute handle of the characteristic being accessed
  * @param ctxt the GATT access context containing the operation type and response buffer
  * @param arg the argument passed to the callback, not used in this function
- * @return the ATT error code, 0 on success, or a specific error code on failure
+ * @return the ATT error code, 0 on success, BLE_ATT_ERR_VALUE_NOT_ALLOWED when the device is
+ * already enrolled, or a specific error code on failure
  */
 static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg)
 {
@@ -38,18 +44,36 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
 
     ESP_LOGI(LOG_TAG, "Reading CSR");
 
-    // 2. Ask how much is stored, which also tells whether a CSR was ever generated.
-    size_t len = 0;
-    esp_err_t err = get_data_size(CSR_NAMESPACE, &len);
+    // 2. An installed certificate means the device is enrolled, so it has no request to hand out.
+    size_t certificate_len = 0;
+    esp_err_t err = get_data_size(CERTIFICATE_NAMESPACE, &certificate_len);
 
-    // 2.1 A missing namespace/key means this is the first read; anything else is a storage failure.
+    // 2.1 A missing namespace/key means no certificate was ever installed; anything else is a storage failure.
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to get certificate size: %s", esp_err_to_name(err));
+        return BLE_ATT_ERR_UNLIKELY;
+    }
+
+    // 2.2 An empty entry holds no certificate, so it leaves the device enrollable.
+    if (err == ESP_OK && certificate_len > 0)
+    {
+        ESP_LOGW(LOG_TAG, "Refusing to read CSR: the device is already enrolled");
+        return BLE_ATT_ERR_VALUE_NOT_ALLOWED;
+    }
+
+    // 3. Ask how much is stored, which also tells whether a CSR was ever generated.
+    size_t len = 0;
+    err = get_data_size(CSR_NAMESPACE, &len);
+
+    // 3.1 A missing namespace/key means this is the first read; anything else is a storage failure.
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
     {
         ESP_LOGE(LOG_TAG, "Failed to get CSR size: %s", esp_err_to_name(err));
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 3. Return the CSR of a previous read, treating an empty entry as if nothing was stored.
+    // 4. Return the CSR of a previous read, treating an empty entry as if nothing was stored.
     if (err == ESP_OK && len > 0)
     {
         char buf[len];
@@ -70,7 +94,7 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
         return 0;
     }
 
-    // 4. First read: generate the device's key pair, replacing any previous one, and the request bound to it.
+    // 5. First read: generate the device's key pair, replacing any previous one, and the request bound to it.
     char* pem = device_credentials_generate_csr(&err);
     if (pem == nullptr)
     {
@@ -78,7 +102,7 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 5. Persist it before handing it out, so later reads return the request the backend is signing.
+    // 6. Persist it before handing it out, so later reads return the request the backend is signing.
     const size_t pem_len = strlen(pem);
     err = save_data(CSR_NAMESPACE, pem, pem_len);
 
@@ -89,7 +113,7 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 6. Append the generated request to the response buffer and release the buffer it was built in.
+    // 7. Append the generated request to the response buffer and release the buffer it was built in.
     const int rc = os_mbuf_append(ctxt->om, pem, pem_len);
     free(pem);
 
