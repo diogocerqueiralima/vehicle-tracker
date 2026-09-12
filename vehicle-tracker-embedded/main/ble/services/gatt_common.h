@@ -3,6 +3,7 @@
 #define GATT_COMMON_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "esp_err.h"
 #include "host/ble_gatt.h"
@@ -47,5 +48,55 @@ int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble
  * @return ESP_OK on success, or an appropriate error code on failure.
  */
 esp_err_t gatt_common_seed_defaults(const struct ble_gatt_svc_def* svc_def);
+
+/**
+ * @brief Context structure for GATT "file" characteristics: values that may be larger than the
+ * 512-byte BLE ATT attribute value cap, transferred in chunks framed as
+ * [total_len: u32 LE][offset: u32 LE][payload...], one chunk per client-issued GATT operation.
+ *
+ * The write/read fields are mutable transfer state, not configuration: they track an in-progress
+ * write and the current read sequence for this characteristic. There is room for exactly one
+ * in-progress transfer per direction per characteristic, which is enough for the single BLE central
+ * this device is provisioned by at a time; a read or write from a different conn_handle than the
+ * one currently owning a sequence always restarts that sequence rather than being rejected, so a
+ * dropped connection can never wedge the characteristic for the next one.
+ *
+ * The stored value has no partial-read API in NVS (nvs_get_blob always reads the whole blob), so a
+ * read sequence loads it into read.buffer once, on its first chunk, and serves every subsequent
+ * chunk of that same sequence out of that cached copy instead of reloading the whole value again
+ * per chunk; the buffer is freed once the sequence completes or is abandoned for a new one.
+ */
+typedef struct
+{
+    const char* namespace;
+    const char* name;
+    bool (*validate)(const char* data, size_t len);
+    size_t max_len;
+    struct
+    {
+        uint16_t conn_handle;
+        uint8_t* buffer;
+        size_t total_len;
+        size_t received;
+    } write;
+    struct
+    {
+        uint16_t conn_handle;
+        bool started;
+        size_t cursor;
+        uint8_t* buffer;
+        size_t total_len;
+    } read;
+} gatt_file_handler_context_t;
+
+/**
+ * @brief GATT characteristic access callback for "file" characteristics, shared by all
+ * configuration services. Reassembles chunked writes into NVS storage and serves chunked reads
+ * back out of it, using the gatt_file_handler_context_t arg to carry the namespace, validation
+ * function, size cap and per-characteristic transfer state. See gatt_file_handler_context_t for
+ * the wire format and sequencing rules.
+ */
+int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt,
+                                void* arg);
 
 #endif

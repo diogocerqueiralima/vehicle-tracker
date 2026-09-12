@@ -199,7 +199,7 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
 }
 
 // Validates that the certificate is a PEM-encoded X.509 certificate.
-static bool validate_certificate(const char* data, const uint16_t len)
+static bool validate_certificate(const char* data, const size_t len)
 {
     static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
     const size_t header_len = strlen(PEM_HEADER);
@@ -207,12 +207,17 @@ static bool validate_certificate(const char* data, const uint16_t len)
 }
 
 // Validates that the CA certificate is a PEM-encoded X.509 certificate.
-static bool validate_ca(const char* data, const uint16_t len)
+static bool validate_ca(const char* data, const size_t len)
 {
     static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
     const size_t header_len = strlen(PEM_HEADER);
     return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
 }
+
+// Sanity cap on a certificate/CA chunked transfer: comfortably covers a leaf certificate plus a
+// couple of intermediates in PEM, with headroom, while still bounding the scratch buffer
+// gatt_common_file_access_cb allocates for an in-progress write.
+static constexpr size_t CERTIFICATE_MAX_LEN = 4096;
 
 // Validates that the expiration is a non-empty numeric string representing a duration in seconds.
 static bool validate_expiration(const char* data, const uint16_t len)
@@ -268,26 +273,28 @@ static const struct ble_gatt_chr_def characteristics[] = {
     },
     {
         .uuid = &authentication_certificate_uuid.u,
-        .access_cb = gatt_common_access_cb,
+        .access_cb = gatt_common_file_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
                  BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
-        .arg = &(gatt_handler_context_t){
+        .arg = &(gatt_file_handler_context_t){
             .namespace = CERTIFICATE_NAMESPACE,
             .name = "Certificate",
             .validate = validate_certificate,
+            .max_len = CERTIFICATE_MAX_LEN,
         }
     },
     {
         .uuid = &authentication_ca_uuid.u,
-        .access_cb = gatt_common_access_cb,
+        .access_cb = gatt_common_file_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
                  BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
-        .arg = &(gatt_handler_context_t){
+        .arg = &(gatt_file_handler_context_t){
             .namespace = CA_NAMESPACE,
             .name = "CA certificate",
             .validate = validate_ca,
+            .max_len = CERTIFICATE_MAX_LEN,
         }
     },
     {
