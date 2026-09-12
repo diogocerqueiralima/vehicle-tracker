@@ -49,6 +49,14 @@
     <string name="device_configuration_characteristic_loading">Loading…</string>
     <string name="device_configuration_characteristic_edit_confirm">Save</string>
     <string name="device_configuration_characteristic_edit_cancel">Cancel</string>
+    <string name="device_configuration_file_download">Download</string>
+    <string name="device_configuration_file_upload">Upload</string>
+    <string name="device_configuration_file_downloading">Downloading…</string>
+    <string name="device_configuration_file_uploading">Uploading…</string>
+    <string name="device_configuration_file_saved">Saved as %1$s</string>
+    <string name="device_configuration_file_installed">Installed</string>
+    <string name="device_configuration_file_invalid">This file is not a certificate</string>
+    <string name="device_configuration_file_failed">Failed, try again</string>
     <string name="create_device_title">New device</string>
     <string name="create_device_subtitle">Register a new tracking device</string>
     <string name="create_device_id_label">Device ID</string>

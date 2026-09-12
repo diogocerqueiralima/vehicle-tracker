@@ -60,7 +60,7 @@ class DeviceConfigurationActivity : ComponentActivity() {
             )
             val deviceConfigurationService = DeviceConfigurationService(deviceConnection)
 
-            DeviceConfigurationViewModelFactory(deviceConfigurationService)
+            DeviceConfigurationViewModelFactory(deviceConfigurationService, applicationContext.contentResolver)
         }
     )
 
@@ -87,6 +87,12 @@ class DeviceConfigurationActivity : ComponentActivity() {
         viewModel.onBluetoothPermissionResult(results.values.all { it }, device)
     }
 
+    private val openDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        viewModel.onFilePicked(uri)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -98,7 +104,14 @@ class DeviceConfigurationActivity : ComponentActivity() {
         }
 
         setContent {
-            DeviceConfigurationScreen(viewModel = viewModel, onBack = { finish() })
+            DeviceConfigurationScreen(
+                viewModel = viewModel,
+                onBack = { finish() },
+                onUploadCharacteristic = { characteristic ->
+                    viewModel.requestUpload(characteristic)
+                    openDocumentLauncher.launch(arrayOf("*/*"))
+                }
+            )
         }
 
     }
