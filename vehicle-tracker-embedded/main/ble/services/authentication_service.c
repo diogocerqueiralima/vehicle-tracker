@@ -19,18 +19,18 @@ static const char* LOG_TAG = "authentication_service";
  * certificate for it is being issued. A read that would have to build a new request (no CSR is stored yet)
  * is refused instead when a certificate is already installed, since generating one would rotate the key out
  * from under it; the device must be revoked first.
+ * Once a request exists (already stored, or freshly generated here), it is served through the same chunked
+ * [total_len][offset] read protocol every other file characteristic uses, via gatt_common_file_read_chunk.
  *
  * @param conn_handle the connection handle of the BLE connection
  * @param attr_handle the attribute handle of the characteristic being accessed
  * @param ctxt the GATT access context containing the operation type and response buffer
- * @param arg the argument passed to the callback, not used in this function
+ * @param arg the gatt_file_handler_context_t for the CSR characteristic
  * @return the ATT error code, 0 on success, or a specific error code on failure
  */
 static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg)
 {
-    (void)conn_handle;
     (void)attr_handle;
-    (void)arg;
 
     // 1. The characteristic is declared read-only, so any other operation is a host-level mismatch.
     if (ctxt->op != BLE_GATT_ACCESS_OP_READ_CHR)
@@ -51,25 +51,10 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 3. Return the CSR of a previous read, treating an empty entry as if nothing was stored.
+    // 3. A CSR exists (from a previous read): serve it through the shared chunked reader as-is.
     if (err == ESP_OK && len > 0)
     {
-        char buf[len];
-        err = load_data(CSR_NAMESPACE, buf, len);
-
-        if (err != ESP_OK)
-        {
-            ESP_LOGE(LOG_TAG, "Failed to load CSR: %s", esp_err_to_name(err));
-            return BLE_ATT_ERR_UNLIKELY;
-        }
-
-        if (os_mbuf_append(ctxt->om, buf, len) != 0)
-        {
-            return BLE_ATT_ERR_INSUFFICIENT_RES;
-        }
-
-        ESP_LOGI(LOG_TAG, "Successfully read CSR");
-        return 0;
+        return gatt_common_file_read_chunk(conn_handle, arg, ctxt);
     }
 
     // 4. First read: generate the device's key pair, replacing any previous one, and the request bound to it.
@@ -90,25 +75,18 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     // 5. Persist it before handing it out, so later reads return the request the backend is signing.
     const size_t pem_len = strlen(pem);
     err = save_data(CSR_NAMESPACE, pem, pem_len);
+    free(pem);
 
     if (err != ESP_OK)
     {
         ESP_LOGE(LOG_TAG, "Failed to save CSR: %s", esp_err_to_name(err));
-        free(pem);
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 6. Append the generated request to the response buffer and release the buffer it was built in.
-    const int rc = os_mbuf_append(ctxt->om, pem, pem_len);
-    free(pem);
-
-    if (rc != 0)
-    {
-        return BLE_ATT_ERR_INSUFFICIENT_RES;
-    }
-
     ESP_LOGI(LOG_TAG, "Successfully generated CSR");
-    return 0;
+
+    // 6. Serve the freshly generated (and now stored) request through the shared chunked reader.
+    return gatt_common_file_read_chunk(conn_handle, arg, ctxt);
 }
 
 /**
@@ -219,6 +197,11 @@ static bool validate_ca(const char* data, const size_t len)
 // gatt_common_file_access_cb allocates for an in-progress write.
 static constexpr size_t CERTIFICATE_MAX_LEN = 4096;
 
+// Only meaningful for gatt_common_file_read_chunk's read side, since csr never accepts a write
+// (the characteristic is declared read-only): a P-256 CSR PEM with a UUID common name runs to
+// roughly 450 bytes, so this leaves ample headroom.
+static constexpr size_t CSR_MAX_LEN = 1024;
+
 // Validates that the expiration is a non-empty numeric string representing a duration in seconds.
 static bool validate_expiration(const char* data, const uint16_t len)
 {
@@ -269,7 +252,12 @@ static const struct ble_gatt_chr_def characteristics[] = {
         .access_cb = csr_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN,
         .val_handle = nullptr,
-        .arg = nullptr,
+        .arg = &(gatt_file_handler_context_t){
+            .namespace = CSR_NAMESPACE,
+            .name = "CSR",
+            .validate = nullptr,
+            .max_len = CSR_MAX_LEN,
+        }
     },
     {
         .uuid = &authentication_certificate_uuid.u,

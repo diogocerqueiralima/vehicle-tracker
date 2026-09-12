@@ -99,4 +99,15 @@ typedef struct
 int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt,
                                 void* arg);
 
+/**
+ * @brief Serves one chunk of a file characteristic's stored value as a read, using the
+ * gatt_file_handler_context_t's read state and wire format. Exposed on its own, alongside
+ * gatt_common_file_access_cb, so a characteristic with bespoke read-side behavior (e.g.
+ * authentication_service's csr, which generates its value on first read instead of expecting it
+ * pre-populated) can ensure the value exists and then delegate to the same chunked read logic a
+ * plain file characteristic uses.
+ */
+int gatt_common_file_read_chunk(uint16_t conn_handle, gatt_file_handler_context_t* ctx,
+                                 struct ble_gatt_access_ctxt* ctxt);
+
 #endif

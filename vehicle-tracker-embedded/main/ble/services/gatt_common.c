@@ -4,15 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "esp_log.h"
+#include "host/ble_att.h"
 #include "nvs.h"
 #include "storage/storage.h"
 
 static const char* LOG_TAG = "gatt_common";
 
-// Chunk payload size for file reads, kept well under the 512-byte BLE ATT attribute value cap
-// once the 8-byte [total_len][offset] header is added.
+// Byte length of the [total_len][offset] header framing every read/write chunk.
 #define GATT_FILE_CHUNK_HEADER_LEN 8
-#define GATT_FILE_MAX_CHUNK_PAYLOAD 480
 
 static void put_u32_le(uint8_t* buf, const uint32_t value)
 {
@@ -325,7 +324,7 @@ static void abandon_read_sequence(gatt_file_handler_context_t* ctx)
  * @param ctxt the GATT access context containing the operation type and the mbuf to append the chunk to
  * @return the ATT error code, 0 on success, or a specific error code on failure
  */
-static int gatt_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_context_t* ctx,
+int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_context_t* ctx,
                                 struct ble_gatt_access_ctxt* ctxt)
 {
     // 1. If this is the first read from this connection, or a different connection than the one
@@ -384,9 +383,14 @@ static int gatt_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
     }
 
     // 3. Slice the next chunk out of the cached copy and append it, framed with the header.
+    // The maximum chunk size is the negotiated ATT MTU minus 2 bytes for the ATT opcode and handle,
+    // and minus 8 bytes for the [total_len][offset] header framing every chunk
+    // (the header is not part of the stored value, so it is not counted in total_len).
+    const uint16_t mtu = ble_att_mtu(conn_handle);
+    const size_t max_chunk_payload = (size_t)mtu - 2 - GATT_FILE_CHUNK_HEADER_LEN;
     const size_t total_len = ctx->read.total_len;
     const size_t remaining = total_len - ctx->read.cursor;
-    const size_t chunk_len = remaining < GATT_FILE_MAX_CHUNK_PAYLOAD ? remaining : GATT_FILE_MAX_CHUNK_PAYLOAD;
+    const size_t chunk_len = remaining < max_chunk_payload ? remaining : max_chunk_payload;
 
     uint8_t header[GATT_FILE_CHUNK_HEADER_LEN];
     put_u32_le(header, total_len);
@@ -426,7 +430,7 @@ int gatt_common_file_access_cb(const uint16_t conn_handle, uint16_t attr_handle,
     switch (ctxt->op)
     {
     case BLE_GATT_ACCESS_OP_READ_CHR:
-        return gatt_file_read_chunk(conn_handle, ctx, ctxt);
+        return gatt_common_file_read_chunk(conn_handle, ctx, ctxt);
     case BLE_GATT_ACCESS_OP_WRITE_CHR:
         return gatt_file_write_chunk(conn_handle, ctx, ctxt);
     default:
