@@ -401,11 +401,14 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
     put_u32_le(header, total_len);
     put_u32_le(header + 4, ctx->read.cursor);
 
-    // 5. Append the chunk header and payload to the response mbuf, and update the cursor to reflect the bytes served.
-    const int rc = os_mbuf_append(ctxt->om, header, GATT_FILE_CHUNK_HEADER_LEN) ||
-                   os_mbuf_append(ctxt->om, ctx->read.buffer + ctx->read.cursor, chunk_len);
+    // 5. Append the chunk header, then the payload, checking each append explicitly instead of
+    // relying on || to short-circuit past the second call when the first one fails.
+    if (os_mbuf_append(ctxt->om, header, GATT_FILE_CHUNK_HEADER_LEN) != 0) {
+        abandon_read_sequence(ctx);
+        return BLE_ATT_ERR_INSUFFICIENT_RES;
+    }
 
-    if (rc != 0) {
+    if (os_mbuf_append(ctxt->om, ctx->read.buffer + ctx->read.cursor, chunk_len) != 0) {
         abandon_read_sequence(ctx);
         return BLE_ATT_ERR_INSUFFICIENT_RES;
     }
