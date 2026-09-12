@@ -50,21 +50,11 @@ int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble
 esp_err_t gatt_common_seed_defaults(const struct ble_gatt_svc_def* svc_def);
 
 /**
- * @brief Context structure for GATT "file" characteristics: values that may be larger than the
- * 512-byte BLE ATT attribute value cap, transferred in chunks framed as
- * [total_len: u32 LE][offset: u32 LE][payload...], one chunk per client-issued GATT operation.
- *
- * The write/read fields are mutable transfer state, not configuration: they track an in-progress
- * write and the current read sequence for this characteristic. There is room for exactly one
- * in-progress transfer per direction per characteristic, which is enough for the single BLE central
- * this device is provisioned by at a time; a read or write from a different conn_handle than the
- * one currently owning a sequence always restarts that sequence rather than being rejected, so a
- * dropped connection can never wedge the characteristic for the next one.
- *
- * The stored value has no partial-read API in NVS (nvs_get_blob always reads the whole blob), so a
- * read sequence loads it into read.buffer once, on its first chunk, and serves every subsequent
- * chunk of that same sequence out of that cached copy instead of reloading the whole value again
- * per chunk; the buffer is freed once the sequence completes or is abandoned for a new one.
+ * @brief Context structure for GATT characteristic access callbacks that handle file-like values.
+ * Contains the namespace, name, a validation function and the maximum allowed length for the
+ * configuration item being accessed, as well as the per-characteristic state of any in-progress
+ * read or write sequence. The read/write state is connection-specific, so it is reset on
+ * disconnect by gatt_common_on_disconnect().
  */
 typedef struct
 {
@@ -109,5 +99,28 @@ int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struc
  */
 int gatt_common_file_read_chunk(uint16_t conn_handle, gatt_file_handler_context_t* ctx,
                                  struct ble_gatt_access_ctxt* ctxt);
+
+/**
+ * @brief Registers a file characteristic's context so gatt_common_on_disconnect() can tear down
+ * whatever read/write sequence it has in progress when its owning connection drops. Every
+ * gatt_file_handler_context_t must be registered once, before ble_manager_init() starts accepting
+ * connections - otherwise a dropped connection leaks its in-progress write buffer forever and a
+ * later connection that NimBLE happens to hand the same conn_handle resumes the read sequence at
+ * a stale cursor instead of starting fresh.
+ *
+ * @param ctx Pointer to the context to register; must remain valid for the life of the program.
+ */
+void gatt_common_file_context_register(gatt_file_handler_context_t* ctx);
+
+/**
+ * @brief Tears down any read/write sequence a just-dropped connection left in progress on any
+ * registered file characteristic: frees the cached read buffer or the in-progress write buffer
+ * and resets the sequence state. NimBLE reuses conn_handle values across connections, so without
+ * this a reconnecting client that gets the same conn_handle back would resume a stale read cursor,
+ * and a write buffer for a transfer that never completes would never be freed.
+ *
+ * @param conn_handle The connection handle that just disconnected.
+ */
+void gatt_common_on_disconnect(uint16_t conn_handle);
 
 #endif

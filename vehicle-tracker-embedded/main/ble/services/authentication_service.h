@@ -17,4 +17,10 @@
  */
 extern const struct ble_gatt_svc_def authentication_service_def;
 
+/**
+ * @brief Registers this service's file characteristics (CSR, certificate, CA) with gatt_common
+ * for disconnect cleanup. Must be called before ble_manager_init() starts accepting connections.
+ */
+void authentication_service_init(void);
+
 #endif

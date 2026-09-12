@@ -246,18 +246,34 @@ static const ble_uuid128_t authentication_expiration_uuid =
 static const ble_uuid128_t authentication_status_uuid =
     BLE_UUID128_INIT(0x62, 0xbc, 0x2a, 0xa2, 0x4c, 0x8a, 0x4f, 0x26, 0x8d, 0x56, 0x65, 0xb4, 0x4c, 0xf9, 0xb2, 0xae);
 
+static gatt_file_handler_context_t csr_context = {
+    .namespace = CSR_NAMESPACE,
+    .name = "CSR",
+    .validate = nullptr,
+    .max_len = CSR_MAX_LEN,
+};
+
+static gatt_file_handler_context_t certificate_context = {
+    .namespace = CERTIFICATE_NAMESPACE,
+    .name = "Certificate",
+    .validate = validate_certificate,
+    .max_len = CERTIFICATE_MAX_LEN,
+};
+
+static gatt_file_handler_context_t ca_context = {
+    .namespace = CA_NAMESPACE,
+    .name = "CA certificate",
+    .validate = validate_ca,
+    .max_len = CERTIFICATE_MAX_LEN,
+};
+
 static const struct ble_gatt_chr_def characteristics[] = {
     {
         .uuid = &authentication_csr_uuid.u,
         .access_cb = csr_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN,
         .val_handle = nullptr,
-        .arg = &(gatt_file_handler_context_t){
-            .namespace = CSR_NAMESPACE,
-            .name = "CSR",
-            .validate = nullptr,
-            .max_len = CSR_MAX_LEN,
-        }
+        .arg = &csr_context,
     },
     {
         .uuid = &authentication_certificate_uuid.u,
@@ -265,12 +281,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
                  BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
-        .arg = &(gatt_file_handler_context_t){
-            .namespace = CERTIFICATE_NAMESPACE,
-            .name = "Certificate",
-            .validate = validate_certificate,
-            .max_len = CERTIFICATE_MAX_LEN,
-        }
+        .arg = &certificate_context,
     },
     {
         .uuid = &authentication_ca_uuid.u,
@@ -278,12 +289,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
                  BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
-        .arg = &(gatt_file_handler_context_t){
-            .namespace = CA_NAMESPACE,
-            .name = "CA certificate",
-            .validate = validate_ca,
-            .max_len = CERTIFICATE_MAX_LEN,
-        }
+        .arg = &ca_context,
     },
     {
         .uuid = &authentication_revoke_uuid.u,
@@ -325,3 +331,10 @@ const struct ble_gatt_svc_def authentication_service_def = {
     .uuid = &authentication_service_uuid.u,
     .characteristics = characteristics,
 };
+
+void authentication_service_init()
+{
+    gatt_common_file_context_register(&csr_context);
+    gatt_common_file_context_register(&certificate_context);
+    gatt_common_file_context_register(&ca_context);
+}
