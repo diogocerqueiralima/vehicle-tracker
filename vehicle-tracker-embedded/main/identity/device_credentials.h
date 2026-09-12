@@ -2,6 +2,7 @@
 
 #define DEVICE_CREDENTIALS_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include "esp_err.h"
 #include "psa/crypto.h"
@@ -32,18 +33,32 @@ esp_err_t device_credentials_get_private_key(psa_key_id_t *out_key_id);
 esp_err_t device_credentials_delete_private_key();
 
 /**
+ * @brief Reports whether the device currently holds a certificate.
+ *
+ * @param err Pointer to an esp_err_t variable to receive the error code. Must not be NULL. Set to
+ * ESP_OK once the check has completed, regardless of the result, or to the failure reported by
+ * storage otherwise, in which case the return value must not be relied upon.
+ * @return true when a certificate is stored, false when there is none or the check failed.
+ */
+bool device_credentials_has_certificate(esp_err_t *err);
+
+/**
  * @brief Generates a new key pair for the device and a PEM-encoded certificate signing request (CSR)
  * for it, signed by that key pair. The common name is the device's identifier.
  *
- * Requesting a CSR is how the user re-enrolls a device whose private key may be compromised, so the
- * previous key pair is destroyed and replaced. Any certificate already issued for this device no
- * longer matches the key it holds, and the device stays unable to authenticate until the certificate
- * issued for this request is installed with device_credentials_save_certificate().
+ * Requesting a CSR is how the user (re-)enrolls a device whose private key may be compromised, so any
+ * previous key pair is destroyed and replaced, and the device stays unable to authenticate until the
+ * certificate issued for this request is installed with device_credentials_save_certificate().
+ *
+ * Refuses to run while a certificate is already installed, since rotating the key would strand that
+ * certificate without a matching key. The certificate must first be removed, e.g. via revocation,
+ * before a new CSR can be requested.
  *
  * @param err Pointer to an esp_err_t variable to receive the error code. Must not be NULL.
  * @return Pointer to a dynamically allocated, null-terminated string containing the PEM-encoded
  * CSR, whose length the caller can measure with strlen(). The caller is responsible for freeing
- * this memory. Returns NULL on failure, and sets *err to the appropriate error code.
+ * this memory. Returns NULL on failure, including ESP_ERR_INVALID_STATE when a certificate is
+ * already installed, and sets *err to the appropriate error code.
  */
 char *device_credentials_generate_csr(esp_err_t *err);
 

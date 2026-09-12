@@ -208,6 +208,34 @@ esp_err_t device_credentials_delete_private_key() {
     return destroy_private_key();
 }
 
+bool device_credentials_has_certificate(esp_err_t *err) {
+
+    // 1. Validate the output pointer
+    if (err == nullptr) {
+        return false;
+    }
+
+    // 2. Asking for the stored size, rather than loading the certificate, tells us whether one exists
+    // without paying for an allocation the caller does not need.
+    size_t cert_len = 0;
+    const esp_err_t error = get_data_size(CERTIFICATE_NAMESPACE, &cert_len);
+
+    if (error == ESP_OK) {
+        *err = ESP_OK;
+        return cert_len > 0;
+    }
+
+    // 2.1 A missing namespace/key is the expected state of a device with no certificate installed.
+    if (error == ESP_ERR_NVS_NOT_FOUND) {
+        *err = ESP_OK;
+        return false;
+    }
+
+    ESP_LOGE(LOG_TAG, "Failed to check for an installed certificate: %s", esp_err_to_name(error));
+    *err = error;
+    return false;
+}
+
 char *device_credentials_generate_csr(esp_err_t *err) {
 
     // 1. Validate the output pointer
@@ -215,11 +243,28 @@ char *device_credentials_generate_csr(esp_err_t *err) {
         return nullptr;
     }
 
-    // 2. Bind the request to a brand new key pair: a new CSR is how the user recovers from a
+    // 2. Refuse while a certificate is already installed: rotating the key here would strand it, since
+    // only revocation (which deletes the certificate along with the CSR and key) clears the way for a
+    // new enrollment (docs/device/authentication/certificate-lifecycle.md)
+    esp_err_t error = ESP_OK;
+    const bool has_certificate = device_credentials_has_certificate(&error);
+
+    if (error != ESP_OK) {
+        *err = error;
+        return nullptr;
+    }
+
+    if (has_certificate) {
+        ESP_LOGW(LOG_TAG, "Refusing to generate CSR: a certificate is already installed");
+        *err = ESP_ERR_INVALID_STATE;
+        return nullptr;
+    }
+
+    // 3. Bind the request to a brand new key pair: a new CSR is how the user recovers from a
     // compromised private key, so the previous one is discarded here and the certificate issued for
     // it stops being usable (docs/device/authentication/certificate-lifecycle.md)
     psa_key_id_t key_id = PSA_KEY_ID_NULL;
-    esp_err_t error = rotate_private_key(&key_id);
+    error = rotate_private_key(&key_id);
 
     if (error != ESP_OK) {
         ESP_LOGE(LOG_TAG, "Failed to generate device private key: %s", esp_err_to_name(error));
@@ -227,7 +272,7 @@ char *device_credentials_generate_csr(esp_err_t *err) {
         return nullptr;
     }
 
-    // 3. Name the subject after the identifier the device shows as a QR code for registration
+    // 4. Name the subject after the identifier the device shows as a QR code for registration
     uint8_t device_id[DEVICE_IDENTITY_ID_LEN];
     error = device_identity_get(device_id);
 
@@ -243,7 +288,7 @@ char *device_credentials_generate_csr(esp_err_t *err) {
     char subject[sizeof("CN=, O=MyTracker, C=PT") + DEVICE_IDENTITY_STRING_LEN];
     snprintf(subject, sizeof(subject), "CN=%s, O=MyTracker, C=PT", device_id_str);
 
-    // 4. Write the request into a buffer the caller takes ownership of
+    // 5. Write the request into a buffer the caller takes ownership of
     char *pem = malloc(DEVICE_CREDENTIALS_CSR_PEM_LEN);
     if (pem == nullptr) {
         ESP_LOGE(LOG_TAG, "Failed to allocate memory for device credentials pem");
@@ -251,7 +296,7 @@ char *device_credentials_generate_csr(esp_err_t *err) {
         return nullptr;
     }
 
-    // 5. Generate the CSR and write it into the buffer, signing it with the device's private key
+    // 6. Generate the CSR and write it into the buffer, signing it with the device's private key
     error = write_csr_pem(key_id, subject, pem, DEVICE_CREDENTIALS_CSR_PEM_LEN);
     if (error != ESP_OK) {
         ESP_LOGE(LOG_TAG, "Failed to write device credentials csr pem: %s", esp_err_to_name(error));
@@ -260,7 +305,7 @@ char *device_credentials_generate_csr(esp_err_t *err) {
         return nullptr;
     }
 
-    // 6. Hand back the PEM; it is null-terminated, so the caller can measure it with strlen()
+    // 7. Hand back the PEM; it is null-terminated, so the caller can measure it with strlen()
     *err = ESP_OK;
     return pem;
 }

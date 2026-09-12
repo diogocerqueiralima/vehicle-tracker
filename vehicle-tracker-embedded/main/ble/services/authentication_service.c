@@ -15,8 +15,10 @@ static const char* LOG_TAG = "authentication_service";
  *
  * @brief GATT characteristic access callback for the CSR characteristic.
  * This function generates a new key pair and a CSR for it on the first read, persists the CSR, and returns it.
- * Subsequent reads return the stored CSR, so the key pair the user is enrolling is not replaced while the
- * certificate for it is being issued.
+ * Subsequent reads return that stored CSR, so the key pair the user is enrolling is not replaced while the
+ * certificate for it is being issued. A read that would have to build a new request (no CSR is stored yet)
+ * is refused instead when a certificate is already installed, since generating one would rotate the key out
+ * from under it; the device must be revoked first.
  *
  * @param conn_handle the connection handle of the BLE connection
  * @param attr_handle the attribute handle of the characteristic being accessed
@@ -74,6 +76,12 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     char* pem = device_credentials_generate_csr(&err);
     if (pem == nullptr)
     {
+        if (err == ESP_ERR_INVALID_STATE)
+        {
+            ESP_LOGW(LOG_TAG, "Refusing to read CSR: a certificate is already installed");
+            return BLE_ATT_ERR_VALUE_NOT_ALLOWED;
+        }
+
         ESP_LOGE(LOG_TAG, "Failed to generate CSR: %s", esp_err_to_name(err));
         return BLE_ATT_ERR_UNLIKELY;
     }
@@ -152,22 +160,26 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
 
     ESP_LOGI(LOG_TAG, "Revoking credentials");
 
-    // 4. Delete the stored CSR. A missing one means the device was never enrolled, which is nothing
-    // to report: revocation is about the state it leaves behind, not about what was there before.
-    esp_err_t err = erase_data(CSR_NAMESPACE);
-
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
-    {
-        ESP_LOGE(LOG_TAG, "Failed to delete CSR: %s", esp_err_to_name(err));
-        return BLE_ATT_ERR_UNLIKELY;
-    }
-
-    // 5. Delete the certificate issued for that CSR, which the device must no longer present.
-    err = device_credentials_delete_certificate();
+    // 4. Delete the certificate first: the CSR characteristic refuses to generate a new request while
+    // a certificate is installed, so if this write is interrupted here, the device is left with no
+    // certificate but a still-stored CSR. That CSR keeps being served as-is (it is not re-generated
+    // until the CSR entry itself is gone), so completing the revocation requires writing this
+    // characteristic again rather than relying on a later CSR read to finish the job.
+    esp_err_t err = device_credentials_delete_certificate();
 
     if (err != ESP_OK)
     {
         ESP_LOGE(LOG_TAG, "Failed to delete certificate: %s", esp_err_to_name(err));
+        return BLE_ATT_ERR_UNLIKELY;
+    }
+
+    // 5. Delete the stored CSR. A missing one means the device was never enrolled, which is nothing
+    // to report: revocation is about the state it leaves behind, not about what was there before.
+    err = erase_data(CSR_NAMESPACE);
+
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
+    {
+        ESP_LOGE(LOG_TAG, "Failed to delete CSR: %s", esp_err_to_name(err));
         return BLE_ATT_ERR_UNLIKELY;
     }
 
