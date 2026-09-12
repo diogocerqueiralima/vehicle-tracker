@@ -34,3 +34,7 @@ ca:
   issuer: "CN=Vehicle Tracker CA, O=MyTracker, C=PT"
   validity:
     days: 30
+
+server:
+  servlet:
+    context-path: /identity
