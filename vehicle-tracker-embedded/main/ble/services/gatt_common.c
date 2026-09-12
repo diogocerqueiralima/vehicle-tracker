@@ -40,6 +40,10 @@ static void reset_write_state(gatt_file_handler_context_t *ctx) {
     ctx->write.received = 0;
 }
 
+// Forward declaration: gatt_file_write_chunk() needs to drop a stale cached read sequence once it
+// overwrites the same characteristic's stored value, but abandon_read_sequence() is defined below it.
+static void abandon_read_sequence(gatt_file_handler_context_t *ctx);
+
 int gatt_common_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt *ctxt, void *arg) {
     (void) conn_handle;
     (void) attr_handle;
@@ -235,12 +239,12 @@ static int gatt_file_write_chunk(
     os_mbuf_copydata(ctxt->om, GATT_FILE_CHUNK_HEADER_LEN, (int) payload_len, ctx->write.buffer + offset);
     ctx->write.received = offset + payload_len;
 
-    // 9. If this is not the last chunk, return success to indicate that the chunk was accepted and more chunks are expected.
+    // 10. If this is not the last chunk, return success to indicate that the chunk was accepted and more chunks are expected.
     if (ctx->write.received < ctx->write.total_len) {
         return 0;
     }
 
-    // 10. If this is the last chunk, validate the complete value using the provided validation function, if any.
+    // 11. If this is the last chunk, validate the complete value using the provided validation function, if any.
     if (ctx->validate != nullptr && !ctx->validate((const char *) ctx->write.buffer, ctx->write.total_len)) {
         ESP_LOGE(LOG_TAG, "Invalid value for %s", ctx->name);
         reset_write_state(ctx);
@@ -257,6 +261,11 @@ static int gatt_file_write_chunk(
         return BLE_ATT_ERR_UNLIKELY;
     }
 
+    // 14. Drop any read sequence still caching the value this write just replaced, so a read
+    // chunk request that follows on another connection - or this same one, interleaved between
+    // chunks of an in-progress read - serves the new value instead of the stale cached one.
+    abandon_read_sequence(ctx);
+
     ESP_LOGI(LOG_TAG, "Successfully saved %s", ctx->name);
     return 0;
 }
@@ -268,7 +277,6 @@ static int gatt_file_write_chunk(
  * @param ctx Pointer to the gatt_file_handler_context_t structure for the characteristic being read.
  */
 static void abandon_read_sequence(gatt_file_handler_context_t *ctx) {
-    ESP_LOGI(LOG_TAG, "Abandoning read sequence for %s", ctx->name);
 
     // 1. Free the cached copy of the stored value, if any, so the next read sequence starts fresh.
     if (ctx->read.buffer != nullptr) {
@@ -279,6 +287,11 @@ static void abandon_read_sequence(gatt_file_handler_context_t *ctx) {
     // 2. Reset the read sequence state so the next read (from this connection or another) starts from offset 0.
     ctx->read.total_len = 0;
     ctx->read.started = false;
+}
+
+void gatt_common_file_context_invalidate(gatt_file_handler_context_t *ctx) {
+    abandon_read_sequence(ctx);
+    reset_write_state(ctx);
 }
 
 static gatt_file_handler_context_t **file_contexts = nullptr;

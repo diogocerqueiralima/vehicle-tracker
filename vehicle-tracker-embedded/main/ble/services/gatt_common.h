@@ -85,9 +85,13 @@ typedef struct
  * back out of it, using the gatt_file_handler_context_t arg to carry the namespace, validation
  * function, size cap and per-characteristic transfer state. See gatt_file_handler_context_t for
  * the wire format and sequencing rules.
+ *
+ * @param conn_handle The connection handle of the BLE connection accessing the characteristic.
+ * @param attr_handle The attribute handle of the characteristic being accessed.
+ * @param ctxt Pointer to the ble_gatt_access_ctxt structure containing the access operation context
+ * @param arg Pointer to the gatt_file_handler_context_t for the characteristic being accessed.
  */
-int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt,
-                                void* arg);
+int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg);
 
 /**
  * @brief Serves one chunk of a file characteristic's stored value as a read, using the
@@ -96,9 +100,12 @@ int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struc
  * authentication_service's csr, which generates its value on first read instead of expecting it
  * pre-populated) can ensure the value exists and then delegate to the same chunked read logic a
  * plain file characteristic uses.
+ *
+ * @param conn_handle The connection handle of the BLE connection requesting the read.
+ * @param ctx Pointer to the gatt_file_handler_context_t for the characteristic being read.
+ * @param ctxt Pointer to the ble_gatt_access_ctxt structure containing the read operation context
  */
-int gatt_common_file_read_chunk(uint16_t conn_handle, gatt_file_handler_context_t* ctx,
-                                 struct ble_gatt_access_ctxt* ctxt);
+int gatt_common_file_read_chunk(uint16_t conn_handle, gatt_file_handler_context_t* ctx, struct ble_gatt_access_ctxt* ctxt);
 
 /**
  * @brief Registers a file characteristic's context so gatt_common_on_disconnect() can tear down
@@ -111,6 +118,15 @@ int gatt_common_file_read_chunk(uint16_t conn_handle, gatt_file_handler_context_
  * @param ctx Pointer to the context to register; must remain valid for the life of the program.
  */
 void gatt_common_file_context_register(gatt_file_handler_context_t* ctx);
+
+/**
+ *
+ * @brief Invalidates a file characteristic's read/write state, freeing any cached read buffer or in-progress
+ * write buffer and resetting the sequence state.
+ *
+ * @param ctx the gatt_file_handler_context_t whose read/write state should be invalidated.
+ */
+void gatt_common_file_context_invalidate(gatt_file_handler_context_t* ctx);
 
 /**
  * @brief Tears down any read/write sequence a just-dropped connection left in progress on any

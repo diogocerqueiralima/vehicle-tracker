@@ -11,6 +11,52 @@
 
 static const char* LOG_TAG = "authentication_service";
 
+// Validates that the certificate is a PEM-encoded X.509 certificate.
+static bool validate_certificate(const char* data, const size_t len)
+{
+    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
+    const size_t header_len = strlen(PEM_HEADER);
+    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
+}
+
+// Validates that the CA certificate is a PEM-encoded X.509 certificate.
+static bool validate_ca(const char* data, const size_t len)
+{
+    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
+    const size_t header_len = strlen(PEM_HEADER);
+    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
+}
+
+// Sanity cap on a certificate/CA chunked transfer: comfortably covers a leaf certificate plus a couple of intermediates in PEM
+static constexpr size_t CERTIFICATE_MAX_LEN = 4096;
+
+// Sanity cap on a CSR chunked transfer: comfortably covers a 2048-bit key's CSR in PEM
+static constexpr size_t CSR_MAX_LEN = 1024;
+
+// Context for the CSR characteristic, which is read-only and generates a new key pair and CSR on first read
+static gatt_file_handler_context_t csr_context = {
+    .namespace = CSR_NAMESPACE,
+    .name = "CSR",
+    .validate = nullptr,
+    .max_len = CSR_MAX_LEN,
+};
+
+// Context for the certificate characteristic, which is read/write and stores a PEM-encoded X.509 certificate
+static gatt_file_handler_context_t certificate_context = {
+    .namespace = CERTIFICATE_NAMESPACE,
+    .name = "Certificate",
+    .validate = validate_certificate,
+    .max_len = CERTIFICATE_MAX_LEN,
+};
+
+// Context for the CA certificate characteristic, which is read/write and stores a PEM-encoded X.509 certificate
+static gatt_file_handler_context_t ca_context = {
+    .namespace = CA_NAMESPACE,
+    .name = "CA certificate",
+    .validate = validate_ca,
+    .max_len = CERTIFICATE_MAX_LEN,
+};
+
 /**
  *
  * @brief GATT characteristic access callback for the CSR characteristic.
@@ -152,6 +198,11 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
         return BLE_ATT_ERR_UNLIKELY;
     }
 
+    // Drop any read/write sequence still holding the deleted certificate, so a chunked transfer
+    // already in progress on this connection does not keep serving/accepting it as if it were
+    // still current.
+    gatt_common_file_context_invalidate(&certificate_context);
+
     // 5. Delete the stored CSR. A missing one means the device was never enrolled, which is nothing
     // to report: revocation is about the state it leaves behind, not about what was there before.
     err = erase_data(CSR_NAMESPACE);
@@ -161,6 +212,9 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
         ESP_LOGE(LOG_TAG, "Failed to delete CSR: %s", esp_err_to_name(err));
         return BLE_ATT_ERR_UNLIKELY;
     }
+
+    // Same as above: a read sequence mid-transfer for csr must not keep serving the now-deleted request.
+    gatt_common_file_context_invalidate(&csr_context);
 
     // 6. Wipe the private key they were bound to, so the revoked certificate stays unusable even if
     // a copy of it is installed again.
@@ -175,32 +229,6 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
     ESP_LOGI(LOG_TAG, "Successfully revoked credentials");
     return 0;
 }
-
-// Validates that the certificate is a PEM-encoded X.509 certificate.
-static bool validate_certificate(const char* data, const size_t len)
-{
-    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
-    const size_t header_len = strlen(PEM_HEADER);
-    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
-}
-
-// Validates that the CA certificate is a PEM-encoded X.509 certificate.
-static bool validate_ca(const char* data, const size_t len)
-{
-    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
-    const size_t header_len = strlen(PEM_HEADER);
-    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
-}
-
-// Sanity cap on a certificate/CA chunked transfer: comfortably covers a leaf certificate plus a
-// couple of intermediates in PEM, with headroom, while still bounding the scratch buffer
-// gatt_common_file_access_cb allocates for an in-progress write.
-static constexpr size_t CERTIFICATE_MAX_LEN = 4096;
-
-// Only meaningful for gatt_common_file_read_chunk's read side, since csr never accepts a write
-// (the characteristic is declared read-only): a P-256 CSR PEM with a UUID common name runs to
-// roughly 450 bytes, so this leaves ample headroom.
-static constexpr size_t CSR_MAX_LEN = 1024;
 
 // Validates that the expiration is a non-empty numeric string representing a duration in seconds.
 static bool validate_expiration(const char* data, const uint16_t len)
@@ -245,27 +273,6 @@ static const ble_uuid128_t authentication_expiration_uuid =
 
 static const ble_uuid128_t authentication_status_uuid =
     BLE_UUID128_INIT(0x62, 0xbc, 0x2a, 0xa2, 0x4c, 0x8a, 0x4f, 0x26, 0x8d, 0x56, 0x65, 0xb4, 0x4c, 0xf9, 0xb2, 0xae);
-
-static gatt_file_handler_context_t csr_context = {
-    .namespace = CSR_NAMESPACE,
-    .name = "CSR",
-    .validate = nullptr,
-    .max_len = CSR_MAX_LEN,
-};
-
-static gatt_file_handler_context_t certificate_context = {
-    .namespace = CERTIFICATE_NAMESPACE,
-    .name = "Certificate",
-    .validate = validate_certificate,
-    .max_len = CERTIFICATE_MAX_LEN,
-};
-
-static gatt_file_handler_context_t ca_context = {
-    .namespace = CA_NAMESPACE,
-    .name = "CA certificate",
-    .validate = validate_ca,
-    .max_len = CERTIFICATE_MAX_LEN,
-};
 
 static const struct ble_gatt_chr_def characteristics[] = {
     {
