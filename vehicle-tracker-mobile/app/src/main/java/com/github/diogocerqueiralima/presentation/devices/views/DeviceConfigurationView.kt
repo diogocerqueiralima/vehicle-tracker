@@ -37,11 +37,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.devices.catalog.Catalog
+import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicFormat
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.domain.devices.catalog.ServiceSpec
 import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.domain.devices.services.EnrollmentStep
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CharacteristicFailureReason
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CharacteristicValueState
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.EnrollmentFailureReason
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.EnrollmentState
 import com.github.diogocerqueiralima.presentation.ui.indicators.ErrorIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
@@ -92,6 +96,10 @@ fun DeviceConfigurationConnectingView(modifier: Modifier = Modifier) {
  * characteristics can be read.
  * @param onWriteCharacteristic Callback invoked when the user submits a new value for a
  * writable characteristic.
+ * @param enrollment Current state of the enrollment flow, shown on the request row.
+ * @param onEnroll Callback invoked when the user taps the request row to enroll the device.
+ * @param onDownloadCharacteristic Callback invoked when the user taps a file characteristic to
+ * save a copy of it.
  */
 @Composable
 fun DeviceConfigurationConnectedView(
@@ -99,7 +107,10 @@ fun DeviceConfigurationConnectedView(
     device: Device,
     characteristicValues: Map<String, CharacteristicValueState> = emptyMap(),
     onExpandService: (ServiceSpec) -> Unit = {},
-    onWriteCharacteristic: (CharacteristicSpec, String) -> Unit = { _, _ -> }
+    onWriteCharacteristic: (CharacteristicSpec, String) -> Unit = { _, _ -> },
+    enrollment: EnrollmentState = EnrollmentState.Idle,
+    onEnroll: () -> Unit = {},
+    onDownloadCharacteristic: (CharacteristicSpec) -> Unit = {}
 ) {
 
     var editingCharacteristic by remember { mutableStateOf<CharacteristicSpec?>(null) }
@@ -115,7 +126,10 @@ fun DeviceConfigurationConnectedView(
                 service = service,
                 characteristicValues = characteristicValues,
                 onExpand = { onExpandService(service) },
-                onCharacteristicClick = { editingCharacteristic = it }
+                onCharacteristicClick = { editingCharacteristic = it },
+                enrollment = enrollment,
+                onEnroll = onEnroll,
+                onDownloadCharacteristic = onDownloadCharacteristic
             )
         }
 
@@ -144,7 +158,10 @@ private fun ServiceSection(
     service: ServiceSpec,
     characteristicValues: Map<String, CharacteristicValueState>,
     onExpand: () -> Unit,
-    onCharacteristicClick: (CharacteristicSpec) -> Unit
+    onCharacteristicClick: (CharacteristicSpec) -> Unit,
+    enrollment: EnrollmentState,
+    onEnroll: () -> Unit,
+    onDownloadCharacteristic: (CharacteristicSpec) -> Unit
 ) {
 
     var expanded by rememberSaveable(service.uuid) { mutableStateOf(false) }
@@ -191,11 +208,31 @@ private fun ServiceSection(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     service.characteristics.forEach { characteristic ->
-                        CharacteristicRow(
-                            characteristic = characteristic,
-                            state = characteristicValues[characteristic.key],
-                            onClick = { onCharacteristicClick(characteristic) }
-                        )
+
+                        // A clickable characteristic holds nothing to show until the user taps it,
+                        // so its row reports what tapping it does instead of a value.
+                        when {
+
+                            characteristic.key == Catalog.csr.key -> EnrollmentRow(
+                                characteristic = characteristic,
+                                state = enrollment,
+                                onClick = onEnroll
+                            )
+
+                            characteristic.format == CharacteristicFormat.FILE -> FileRow(
+                                characteristic = characteristic,
+                                state = characteristicValues[characteristic.key],
+                                onClick = { onDownloadCharacteristic(characteristic) }
+                            )
+
+                            else -> CharacteristicRow(
+                                characteristic = characteristic,
+                                state = characteristicValues[characteristic.key],
+                                onClick = { onCharacteristicClick(characteristic) }
+                            )
+
+                        }
+
                     }
                 }
             }
@@ -233,10 +270,121 @@ private fun CharacteristicRow(
         null -> null
     }
 
+    CharacteristicRowLayout(
+        name = characteristic.name,
+        description = characteristic.description,
+        valueText = valueText,
+        trailingLabel = accessLabel,
+        onClick = onClick.takeIf { characteristic.writable }
+    )
+
+}
+
+/**
+ * Row for a [CharacteristicFormat.FILE] characteristic, whose value is handed to the user as a
+ * file instead of being displayed. It is only read when tapped, and the row then reports the name
+ * the file was saved under rather than what it holds.
+ */
+@Composable
+private fun FileRow(
+    characteristic: CharacteristicSpec,
+    state: CharacteristicValueState?,
+    onClick: () -> Unit
+) {
+
+    val statusText = when (state) {
+        is CharacteristicValueState.Loaded -> stringResource(R.string.device_configuration_characteristic_downloaded, state.value)
+        CharacteristicValueState.Loading -> stringResource(R.string.device_configuration_characteristic_downloading)
+        is CharacteristicValueState.Failed -> when (state.reason) {
+            CharacteristicFailureReason.NOT_CONFIGURED -> stringResource(R.string.device_configuration_characteristic_not_configured)
+            CharacteristicFailureReason.ACCESS_FAILED -> stringResource(R.string.device_configuration_characteristic_download_failed)
+        }
+        null -> stringResource(R.string.device_configuration_characteristic_download_idle)
+    }
+
+    CharacteristicRowLayout(
+        name = characteristic.name,
+        description = characteristic.description,
+        valueText = statusText,
+        trailingLabel = stringResource(R.string.device_configuration_characteristic_download),
+        // A second tap while the file is being fetched would be ignored anyway, so the row stops responding.
+        onClick = onClick.takeIf { state !is CharacteristicValueState.Loading }
+    )
+
+}
+
+/**
+ * Row for the certificate signing request, which stands in for the whole enrollment flow: tapping
+ * it reads the request, has it signed and installs the certificate, reporting the step it is on.
+ * Neither PEM is ever displayed, so the row shows progress rather than a value.
+ */
+@Composable
+private fun EnrollmentRow(
+    characteristic: CharacteristicSpec,
+    state: EnrollmentState,
+    onClick: () -> Unit
+) {
+
+    val statusText = when (state) {
+
+        EnrollmentState.Idle -> stringResource(R.string.device_configuration_enrollment_idle)
+
+        is EnrollmentState.Running -> when (state.step) {
+            EnrollmentStep.READING_REQUEST -> stringResource(R.string.device_configuration_enrollment_reading)
+            EnrollmentStep.SIGNING -> stringResource(R.string.device_configuration_enrollment_signing)
+            EnrollmentStep.INSTALLING -> stringResource(R.string.device_configuration_enrollment_installing)
+        }
+
+        EnrollmentState.Enrolled -> stringResource(R.string.device_configuration_enrollment_enrolled)
+
+        is EnrollmentState.Failed -> when (state.reason) {
+            EnrollmentFailureReason.ALREADY_ENROLLED -> stringResource(R.string.device_configuration_enrollment_already_enrolled)
+            EnrollmentFailureReason.STEP_FAILED -> when (state.step) {
+                EnrollmentStep.READING_REQUEST -> stringResource(R.string.device_configuration_enrollment_reading_failed)
+                EnrollmentStep.SIGNING -> stringResource(R.string.device_configuration_enrollment_signing_failed)
+                EnrollmentStep.INSTALLING -> stringResource(R.string.device_configuration_enrollment_installing_failed)
+            }
+        }
+
+    }
+
+    val actionLabel = when (state) {
+        is EnrollmentState.Failed -> R.string.device_configuration_enrollment_retry
+        EnrollmentState.Enrolled -> R.string.device_configuration_enrollment_done
+        EnrollmentState.Idle, is EnrollmentState.Running -> R.string.device_configuration_enrollment_action
+    }
+
+    CharacteristicRowLayout(
+        name = characteristic.name,
+        description = characteristic.description,
+        valueText = statusText,
+        trailingLabel = stringResource(actionLabel),
+        // A tap is only worth anything before the flow runs or after it fails: while a step is
+        // running it would be ignored, and once the device is enrolled it would only be refused,
+        // turning a success into an "already enrolled" failure the user cannot get back from.
+        onClick = onClick.takeIf { state is EnrollmentState.Idle || state is EnrollmentState.Failed }
+    )
+
+}
+
+/**
+ * Shared layout for a row in a service section: the characteristic's name and description, a line
+ * reporting its current state, and a trailing label for what tapping it does. The row is only
+ * clickable when [onClick] is given.
+ */
+@Composable
+private fun CharacteristicRowLayout(
+    name: String,
+    description: String,
+    valueText: String?,
+    trailingLabel: String,
+    onClick: (() -> Unit)?
+) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .let { if (characteristic.writable) it.clickable(onClick = onClick) else it },
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
@@ -244,12 +392,12 @@ private fun CharacteristicRow(
         Column(modifier = Modifier.weight(1f)) {
 
             Text(
-                text = characteristic.name,
+                text = name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = characteristic.description,
+                text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -266,7 +414,7 @@ private fun CharacteristicRow(
         }
 
         Text(
-            text = accessLabel,
+            text = trailingLabel,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
             modifier = Modifier.padding(start = 12.dp, top = 2.dp)

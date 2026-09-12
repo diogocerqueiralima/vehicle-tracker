@@ -14,7 +14,10 @@ import androidx.core.content.ContextCompat
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.domain.devices.services.DeviceConfigurationService
+import com.github.diogocerqueiralima.domain.devices.services.DeviceEnrollmentService
+import com.github.diogocerqueiralima.infrastructure.common.repositories.MediaStoreFileRepositoryImpl
 import com.github.diogocerqueiralima.infrastructure.devices.connection.BluetoothDeviceConnection
+import com.github.diogocerqueiralima.infrastructure.devices.repositories.CertificateRepositoryImpl
 import com.github.diogocerqueiralima.presentation.devices.screens.DeviceConfigurationScreen
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModel
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModelFactory
@@ -58,9 +61,18 @@ class DeviceConfigurationActivity : ComponentActivity() {
                 dependenciesContainer.bluetoothManager,
                 dependenciesContainer.dataStore
             )
-            val deviceConfigurationService = DeviceConfigurationService(deviceConnection)
+            val deviceConfigurationService = DeviceConfigurationService(
+                deviceConnection,
+                MediaStoreFileRepositoryImpl(applicationContext.contentResolver)
+            )
 
-            DeviceConfigurationViewModelFactory(deviceConfigurationService)
+            // Enrollment drives the same connection, so both services share the one this screen opened.
+            val deviceEnrollmentService = DeviceEnrollmentService(
+                deviceConnection,
+                CertificateRepositoryImpl(dependenciesContainer.httpClient)
+            )
+
+            DeviceConfigurationViewModelFactory(deviceConfigurationService, deviceEnrollmentService)
         }
     )
 

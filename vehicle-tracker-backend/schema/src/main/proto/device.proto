@@ -9,6 +9,20 @@ option java_multiple_files = true;
 service DeviceService {
 
   rpc GetDeviceById(DeviceId) returns (DeviceResponse);
+  rpc DeviceIsOwnedByUser(DeviceIsOwnedByUserRequest) returns (DeviceIsOwnedByUserResponse);
+
+}
+
+message DeviceIsOwnedByUserRequest {
+
+  string device_id = 1;
+  string user_id = 2;
+
+}
+
+message DeviceIsOwnedByUserResponse {
+
+  bool is_owned = 1;
 
 }
 

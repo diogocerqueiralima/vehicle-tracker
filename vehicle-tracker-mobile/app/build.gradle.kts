@@ -28,6 +28,7 @@ android {
         buildConfigField("String", "ASSET_SERVICE_URI", "\"https://api.tracker.homelab/assets\"")
         buildConfigField("String", "AUTHORIZATION_URI", "\"https://auth.tracker.homelab/realms/vehicle-tracker/protocol/openid-connect/auth\"")
         buildConfigField("String", "CLIENT_ID", "\"tracker\"")
+        buildConfigField("String", "IDENTITY_SERVICE_URI", "\"https://api.tracker.homelab/identity\"")
         buildConfigField("String", "REDIRECT_URI", "\"mytracker://oauth/callback\"")
         buildConfigField("String", "TOKEN_URI", "\"https://auth.tracker.homelab/realms/vehicle-tracker/protocol/openid-connect/token\"")
 

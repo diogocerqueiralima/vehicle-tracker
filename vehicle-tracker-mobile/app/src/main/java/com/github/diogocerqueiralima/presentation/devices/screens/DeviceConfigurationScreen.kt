@@ -91,6 +91,7 @@ fun DeviceConfigurationScreen(viewModel: DeviceConfigurationViewModel, onBack: (
                 is DeviceConfigurationState.Connected -> {
 
                     val characteristicValues = viewModel.characteristicValues.collectAsState().value
+                    val enrollment = viewModel.enrollment.collectAsState().value
 
                     DeviceConfigurationConnectedView(
                         modifier = Modifier
@@ -99,7 +100,10 @@ fun DeviceConfigurationScreen(viewModel: DeviceConfigurationViewModel, onBack: (
                         device = state.device,
                         characteristicValues = characteristicValues,
                         onExpandService = viewModel::readService,
-                        onWriteCharacteristic = viewModel::writeCharacteristic
+                        onWriteCharacteristic = viewModel::writeCharacteristic,
+                        enrollment = enrollment,
+                        onEnroll = viewModel::enroll,
+                        onDownloadCharacteristic = viewModel::downloadCharacteristic
                     )
                 }
 

@@ -17,6 +17,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.github.diogocerqueiralima.domain.common.exceptions.BadRequestException
 import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.connection.DeviceConnection
@@ -53,6 +54,13 @@ private const val MANUFACTURER_ID = 0xFFFF
  * Any other status is a genuine failure.
  */
 private const val ATT_ERROR_NOT_CONFIGURED = 0x90
+
+/**
+ * Standard ATT error the device answers with when the characteristic exists but refuses the access
+ * in its current state — a CSR read on a device that already holds a certificate. Distinct from
+ * `BLE_ATT_ERR_UNLIKELY`, which the device uses for genuine failures.
+ */
+private const val ATT_ERROR_VALUE_NOT_ALLOWED = 0x13
 
 /**
  * Implementation of [DeviceConnection] for Bluetooth devices.
@@ -170,9 +178,6 @@ class BluetoothDeviceConnection(
         dataStore.edit { preferences -> preferences[addressKey(id)] = address }
     }
 
-    /**
-     * @throws NotFoundException if the device has no value configured for the characteristic yet.
-     */
     override suspend fun read(serviceId: Uuid, characteristicId: Uuid): ByteArray {
 
         Log.d(TAG, "Reading characteristic: $characteristicId (service: $serviceId)")
@@ -191,6 +196,12 @@ class BluetoothDeviceConnection(
             if (e.status == ATT_ERROR_NOT_CONFIGURED) {
                 Log.d(TAG, "Characteristic is not configured on the device: $characteristicId")
                 throw NotFoundException(characteristicId.toJavaUuid())
+            }
+
+            // 3. If the device refused the read outright, throw a BadRequestException so the caller can tell it apart from a failure on the device.
+            if (e.status == ATT_ERROR_VALUE_NOT_ALLOWED) {
+                Log.d(TAG, "Device refused the read in its current state: $characteristicId")
+                throw BadRequestException(characteristicId.toJavaUuid())
             }
 
             throw e

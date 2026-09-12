@@ -10,9 +10,15 @@ import java.nio.ByteOrder
  */
 object CharacteristicCodec {
 
+    /**
+     * @throws UnsupportedOperationException for [CharacteristicFormat.FILE], whose value is saved
+     * to a file as the bytes the device sent, and never rendered.
+     */
     fun decode(value: ByteArray, format: CharacteristicFormat): String = when (format) {
 
         CharacteristicFormat.STRING -> String(value, Charsets.UTF_8)
+
+        CharacteristicFormat.FILE -> throw UnsupportedOperationException("A file characteristic is downloaded, not displayed")
 
         CharacteristicFormat.BOOLEAN -> if (value.isNotEmpty() && value[0] != 0.toByte()) "true" else "false"
 
@@ -28,10 +34,14 @@ object CharacteristicCodec {
      * Encodes a human-readable string into a characteristic's raw wire value, inverse of [decode].
      *
      * @throws NumberFormatException if [value] isn't a valid number for a numeric [format].
+     * @throws UnsupportedOperationException for [CharacteristicFormat.FILE], which is written from
+     * the bytes it was issued as, never from text the user typed.
      */
     fun encode(value: String, format: CharacteristicFormat): ByteArray = when (format) {
 
         CharacteristicFormat.STRING -> value.toByteArray(Charsets.UTF_8)
+
+        CharacteristicFormat.FILE -> throw UnsupportedOperationException("A file characteristic is written as raw bytes, not from text")
 
         CharacteristicFormat.BOOLEAN -> byteArrayOf(if (value.trim().toBooleanStrict()) 1 else 0)
 
