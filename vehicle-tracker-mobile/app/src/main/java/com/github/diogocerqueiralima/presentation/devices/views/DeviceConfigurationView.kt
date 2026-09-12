@@ -12,8 +12,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,11 +39,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.devices.catalog.Catalog
+import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicFormat
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.domain.devices.catalog.ServiceSpec
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CharacteristicFailureReason
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CharacteristicValueState
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.FileActionFailureReason
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.FileActionState
+import com.github.diogocerqueiralima.presentation.devices.viewmodel.FileDirection
 import com.github.diogocerqueiralima.presentation.ui.indicators.ErrorIndicator
 import com.github.diogocerqueiralima.presentation.ui.indicators.LoadingIndicator
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
@@ -88,18 +94,27 @@ fun DeviceConfigurationConnectingView(modifier: Modifier = Modifier) {
  * @param modifier Modifier to be applied to the view.
  * @param device The device that was connected to.
  * @param characteristicValues Current read state for each characteristic, keyed by [CharacteristicSpec.key].
+ * @param fileActionStates Current download/upload state for each `FILE` characteristic, keyed by
+ * [CharacteristicSpec.key].
  * @param onExpandService Callback invoked when a service section is expanded, so its
  * characteristics can be read.
  * @param onWriteCharacteristic Callback invoked when the user submits a new value for a
  * writable characteristic.
+ * @param onDownloadCharacteristic Callback invoked when the user taps Download on a `FILE`
+ * characteristic.
+ * @param onUploadCharacteristic Callback invoked when the user taps Upload on a `FILE`
+ * characteristic, so the caller can launch a file picker.
  */
 @Composable
 fun DeviceConfigurationConnectedView(
     modifier: Modifier = Modifier,
     device: Device,
     characteristicValues: Map<String, CharacteristicValueState> = emptyMap(),
+    fileActionStates: Map<String, FileActionState> = emptyMap(),
     onExpandService: (ServiceSpec) -> Unit = {},
-    onWriteCharacteristic: (CharacteristicSpec, String) -> Unit = { _, _ -> }
+    onWriteCharacteristic: (CharacteristicSpec, String) -> Unit = { _, _ -> },
+    onDownloadCharacteristic: (CharacteristicSpec) -> Unit = {},
+    onUploadCharacteristic: (CharacteristicSpec) -> Unit = {}
 ) {
 
     var editingCharacteristic by remember { mutableStateOf<CharacteristicSpec?>(null) }
@@ -114,8 +129,11 @@ fun DeviceConfigurationConnectedView(
             ServiceSection(
                 service = service,
                 characteristicValues = characteristicValues,
+                fileActionStates = fileActionStates,
                 onExpand = { onExpandService(service) },
-                onCharacteristicClick = { editingCharacteristic = it }
+                onCharacteristicClick = { editingCharacteristic = it },
+                onDownloadCharacteristic = onDownloadCharacteristic,
+                onUploadCharacteristic = onUploadCharacteristic
             )
         }
 
@@ -143,8 +161,11 @@ fun DeviceConfigurationConnectedView(
 private fun ServiceSection(
     service: ServiceSpec,
     characteristicValues: Map<String, CharacteristicValueState>,
+    fileActionStates: Map<String, FileActionState>,
     onExpand: () -> Unit,
-    onCharacteristicClick: (CharacteristicSpec) -> Unit
+    onCharacteristicClick: (CharacteristicSpec) -> Unit,
+    onDownloadCharacteristic: (CharacteristicSpec) -> Unit,
+    onUploadCharacteristic: (CharacteristicSpec) -> Unit
 ) {
 
     var expanded by rememberSaveable(service.uuid) { mutableStateOf(false) }
@@ -194,7 +215,10 @@ private fun ServiceSection(
                         CharacteristicRow(
                             characteristic = characteristic,
                             state = characteristicValues[characteristic.key],
-                            onClick = { onCharacteristicClick(characteristic) }
+                            fileActionState = fileActionStates[characteristic.key],
+                            onClick = { onCharacteristicClick(characteristic) },
+                            onDownload = { onDownloadCharacteristic(characteristic) },
+                            onUpload = { onUploadCharacteristic(characteristic) }
                         )
                     }
                 }
@@ -208,13 +232,17 @@ private fun ServiceSection(
 
 /**
  * Row displaying a single characteristic's name, description, current read state, and its
- * access mode. Writable characteristics can be tapped to open an editor for their value.
+ * access mode. Writable value characteristics can be tapped to open an editor for their value.
+ * `FILE` characteristics show Download/Upload actions instead, and are never tappable.
  */
 @Composable
 private fun CharacteristicRow(
     characteristic: CharacteristicSpec,
     state: CharacteristicValueState?,
-    onClick: () -> Unit
+    fileActionState: FileActionState?,
+    onClick: () -> Unit,
+    onDownload: () -> Unit,
+    onUpload: () -> Unit
 ) {
 
     val accessLabel = when {
@@ -223,20 +251,10 @@ private fun CharacteristicRow(
         else -> stringResource(R.string.device_configuration_characteristic_read_only)
     }
 
-    val valueText = when (state) {
-        is CharacteristicValueState.Loaded -> state.value
-        CharacteristicValueState.Loading -> stringResource(R.string.device_configuration_characteristic_loading)
-        is CharacteristicValueState.Failed -> when (state.reason) {
-            CharacteristicFailureReason.NOT_CONFIGURED -> stringResource(R.string.device_configuration_characteristic_not_configured)
-            CharacteristicFailureReason.ACCESS_FAILED -> stringResource(R.string.device_configuration_characteristic_failed)
-        }
-        null -> null
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .let { if (characteristic.writable) it.clickable(onClick = onClick) else it },
+            .let { if (characteristic.format != CharacteristicFormat.FILE && characteristic.writable) it.clickable(onClick = onClick) else it },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
@@ -254,13 +272,32 @@ private fun CharacteristicRow(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
 
-            if (valueText != null) {
-                Text(
-                    text = valueText,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(top = 4.dp)
+            if (characteristic.format == CharacteristicFormat.FILE) {
+                FileCharacteristicActions(
+                    characteristic = characteristic,
+                    fileActionState = fileActionState,
+                    onDownload = onDownload,
+                    onUpload = onUpload
                 )
+            } else {
+                val valueText = when (state) {
+                    is CharacteristicValueState.Loaded -> state.value
+                    CharacteristicValueState.Loading -> stringResource(R.string.device_configuration_characteristic_loading)
+                    is CharacteristicValueState.Failed -> when (state.reason) {
+                        CharacteristicFailureReason.NOT_CONFIGURED -> stringResource(R.string.device_configuration_characteristic_not_configured)
+                        CharacteristicFailureReason.ACCESS_FAILED -> stringResource(R.string.device_configuration_characteristic_failed)
+                    }
+                    null -> null
+                }
+
+                if (valueText != null) {
+                    Text(
+                        text = valueText,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
 
         }
@@ -272,6 +309,67 @@ private fun CharacteristicRow(
             modifier = Modifier.padding(start = 12.dp, top = 2.dp)
         )
 
+    }
+
+}
+
+/**
+ * Download/Upload buttons for a `FILE` characteristic, shown in place of a value, with the
+ * current action's status text below them. Both buttons are disabled while either is running.
+ */
+@Composable
+private fun FileCharacteristicActions(
+    characteristic: CharacteristicSpec,
+    fileActionState: FileActionState?,
+    onDownload: () -> Unit,
+    onUpload: () -> Unit
+) {
+
+    val running = fileActionState is FileActionState.Running
+
+    Row(
+        modifier = Modifier.padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        if (characteristic.readable) {
+            TextButton(onClick = onDownload, enabled = !running, contentPadding = PaddingValues(horizontal = 8.dp)) {
+                Icon(imageVector = Icons.Default.Download, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
+                Text(text = stringResource(R.string.device_configuration_file_download))
+            }
+        }
+
+        if (characteristic.writable) {
+            TextButton(onClick = onUpload, enabled = !running, contentPadding = PaddingValues(horizontal = 8.dp)) {
+                Icon(imageVector = Icons.Default.Upload, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
+                Text(text = stringResource(R.string.device_configuration_file_upload))
+            }
+        }
+
+    }
+
+    val statusText = when (fileActionState) {
+        is FileActionState.Running -> when (fileActionState.direction) {
+            FileDirection.DOWNLOAD -> stringResource(R.string.device_configuration_file_downloading)
+            FileDirection.UPLOAD -> stringResource(R.string.device_configuration_file_uploading)
+        }
+        is FileActionState.Downloaded -> stringResource(R.string.device_configuration_file_saved, fileActionState.savedName)
+        FileActionState.Uploaded -> stringResource(R.string.device_configuration_file_installed)
+        is FileActionState.Failed -> when (fileActionState.reason) {
+            FileActionFailureReason.NOT_CONFIGURED -> stringResource(R.string.device_configuration_characteristic_not_configured)
+            FileActionFailureReason.INVALID_VALUE -> stringResource(R.string.device_configuration_file_invalid)
+            FileActionFailureReason.ACCESS_FAILED -> stringResource(R.string.device_configuration_file_failed)
+        }
+        null -> null
+    }
+
+    if (statusText != null) {
+        Text(
+            text = statusText,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 
 }

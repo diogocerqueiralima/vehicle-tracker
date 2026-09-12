@@ -18,6 +18,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
+import com.github.diogocerqueiralima.domain.common.exceptions.InvalidValueException
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.connection.DeviceConnection
 import com.juul.kable.Filter
@@ -27,13 +28,17 @@ import com.juul.kable.Scanner
 import com.juul.kable.WriteType
 import com.juul.kable.characteristicOf
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.timeout
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.UUID
 import kotlin.coroutines.resume
@@ -53,6 +58,18 @@ private const val MANUFACTURER_ID = 0xFFFF
  * Any other status is a genuine failure.
  */
 private const val ATT_ERROR_NOT_CONFIGURED = 0x90
+
+/**
+ * Standard BLE ATT error code for a write the device refused as invalid for the characteristic
+ * (Bluetooth Core Spec Vol 3 Part F 3.4.1.1), as opposed to a transport/connection failure.
+ */
+private const val ATT_ERROR_VALUE_NOT_ALLOWED = 0x0D
+
+/**
+ * Byte length of the `[total_len][offset]` header framing every chunk of a "file" characteristic's
+ * chunked transfer protocol (see vehicle-tracker-embedded's gatt_common_file_access_cb).
+ */
+private const val FILE_CHUNK_HEADER_LEN = 8
 
 /**
  * Implementation of [DeviceConnection] for Bluetooth devices.
@@ -215,6 +232,98 @@ class BluetoothDeviceConnection(
         )
     }
 
+    override suspend fun readFile(serviceId: Uuid, characteristicId: Uuid, sink: OutputStream) {
+
+        Log.d(TAG, "Reading file characteristic: $characteristicId (service: $serviceId)")
+
+        val peripheral = peripheral ?: run {
+            Log.w(TAG, "Cannot read $characteristicId: not connected to a GATT server")
+            throw InternalErrorException("Not connected to a GATT server")
+        }
+
+        val characteristic = characteristicOf(serviceId, characteristicId)
+        var received = 0L
+
+        while (true) {
+
+            val chunk = try {
+                peripheral.read(characteristic)
+            } catch (e: GattStatusException) {
+                if (e.status == ATT_ERROR_NOT_CONFIGURED) {
+                    Log.d(TAG, "Characteristic is not configured on the device: $characteristicId")
+                    throw NotFoundException(characteristicId.toJavaUuid())
+                }
+                throw e
+            }
+
+            if (chunk.size < FILE_CHUNK_HEADER_LEN) {
+                throw InternalErrorException("Malformed file chunk for $characteristicId: too short")
+            }
+
+            val totalLen = chunk.readUIntLE(0)
+            val payload = chunk.copyOfRange(FILE_CHUNK_HEADER_LEN, chunk.size)
+
+            withContext(Dispatchers.IO) {
+                sink.write(payload)
+            }
+
+            received += payload.size
+
+            if (received >= totalLen.toLong()) {
+                break
+            }
+        }
+    }
+
+    override suspend fun writeFile(serviceId: Uuid, characteristicId: Uuid, source: InputStream, length: Long) {
+
+        Log.d(TAG, "Writing file characteristic: $characteristicId (service: $serviceId), $length bytes")
+
+        val peripheral = peripheral ?: run {
+            Log.w(TAG, "Cannot write $characteristicId: not connected to a GATT server")
+            throw InternalErrorException("Not connected to a GATT server")
+        }
+
+        val characteristic = characteristicOf(serviceId, characteristicId)
+
+        // Each chunk (header + payload) must fit in a single ATT PDU for the negotiated MTU:
+        // Android's writeCharacteristic silently truncates a value bigger than that instead of
+        // fragmenting it, which would corrupt the transfer rather than failing loudly. This mirrors
+        // the fix on the read side, where an oversized chunk triggered NimBLE's own long-read
+        // mechanism and broke our stateful, cursor-advancing read callback (ATT error 0x07).
+        val maxChunkPayload = peripheral.maximumWriteValueLengthForType(WriteType.WithResponse) - FILE_CHUNK_HEADER_LEN
+        val buffer = ByteArray(maxChunkPayload)
+        var offset = 0L
+
+        while (offset < length) {
+
+            val toRead = minOf(maxChunkPayload.toLong(), length - offset).toInt()
+            val read = withContext(Dispatchers.IO) {
+                source.read(buffer, 0, toRead)
+            }
+
+            if (read <= 0) {
+                throw InternalErrorException("Unexpected end of stream while uploading $characteristicId")
+            }
+
+            val frame = ByteArray(FILE_CHUNK_HEADER_LEN + read)
+            frame.writeUIntLE(0, length.toUInt())
+            frame.writeUIntLE(4, offset.toUInt())
+            buffer.copyInto(frame, FILE_CHUNK_HEADER_LEN, 0, read)
+
+            try {
+                peripheral.write(characteristic, frame, WriteType.WithResponse)
+            } catch (e: GattStatusException) {
+                if (e.status == ATT_ERROR_VALUE_NOT_ALLOWED) {
+                    throw InvalidValueException()
+                }
+                throw e
+            }
+
+            offset += read
+        }
+    }
+
     override fun close() {
 
         Log.d(TAG, "Closing device connection")
@@ -330,6 +439,27 @@ class BluetoothDeviceConnection(
         val peripheral = Peripheral(address)
         peripheral.connect()
         this.peripheral = peripheral
+    }
+
+    /**
+     * Reads a little-endian u32 at [offset], matching the firmware's put_u32_le/get_u32_le in
+     * gatt_common.c.
+     */
+    private fun ByteArray.readUIntLE(offset: Int): UInt =
+        (this[offset].toUInt() and 0xFFu) or
+            ((this[offset + 1].toUInt() and 0xFFu) shl 8) or
+            ((this[offset + 2].toUInt() and 0xFFu) shl 16) or
+            ((this[offset + 3].toUInt() and 0xFFu) shl 24)
+
+    /**
+     * Writes [value] as a little-endian u32 at [offset], matching the firmware's put_u32_le in
+     * gatt_common.c.
+     */
+    private fun ByteArray.writeUIntLE(offset: Int, value: UInt) {
+        this[offset] = (value and 0xFFu).toByte()
+        this[offset + 1] = ((value shr 8) and 0xFFu).toByte()
+        this[offset + 2] = ((value shr 16) and 0xFFu).toByte()
+        this[offset + 3] = ((value shr 24) and 0xFFu).toByte()
     }
 
     private fun UUID.toByteArray(): ByteArray {

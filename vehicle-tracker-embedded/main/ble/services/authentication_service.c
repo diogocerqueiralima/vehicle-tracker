@@ -11,6 +11,52 @@
 
 static const char* LOG_TAG = "authentication_service";
 
+// Validates that the certificate is a PEM-encoded X.509 certificate.
+static bool validate_certificate(const char* data, const size_t len)
+{
+    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
+    const size_t header_len = strlen(PEM_HEADER);
+    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
+}
+
+// Validates that the CA certificate is a PEM-encoded X.509 certificate.
+static bool validate_ca(const char* data, const size_t len)
+{
+    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
+    const size_t header_len = strlen(PEM_HEADER);
+    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
+}
+
+// Sanity cap on a certificate/CA chunked transfer: comfortably covers a leaf certificate plus a couple of intermediates in PEM
+static constexpr size_t CERTIFICATE_MAX_LEN = 4096;
+
+// Sanity cap on a CSR chunked transfer: comfortably covers a 2048-bit key's CSR in PEM
+static constexpr size_t CSR_MAX_LEN = 1024;
+
+// Context for the CSR characteristic, which is read-only and generates a new key pair and CSR on first read
+static gatt_file_handler_context_t csr_context = {
+    .namespace = CSR_NAMESPACE,
+    .name = "CSR",
+    .validate = nullptr,
+    .max_len = CSR_MAX_LEN,
+};
+
+// Context for the certificate characteristic, which is read/write and stores a PEM-encoded X.509 certificate
+static gatt_file_handler_context_t certificate_context = {
+    .namespace = CERTIFICATE_NAMESPACE,
+    .name = "Certificate",
+    .validate = validate_certificate,
+    .max_len = CERTIFICATE_MAX_LEN,
+};
+
+// Context for the CA certificate characteristic, which is read/write and stores a PEM-encoded X.509 certificate
+static gatt_file_handler_context_t ca_context = {
+    .namespace = CA_NAMESPACE,
+    .name = "CA certificate",
+    .validate = validate_ca,
+    .max_len = CERTIFICATE_MAX_LEN,
+};
+
 /**
  *
  * @brief GATT characteristic access callback for the CSR characteristic.
@@ -19,18 +65,18 @@ static const char* LOG_TAG = "authentication_service";
  * certificate for it is being issued. A read that would have to build a new request (no CSR is stored yet)
  * is refused instead when a certificate is already installed, since generating one would rotate the key out
  * from under it; the device must be revoked first.
+ * Once a request exists (already stored, or freshly generated here), it is served through the same chunked
+ * [total_len][offset] read protocol every other file characteristic uses, via gatt_common_file_read_chunk.
  *
  * @param conn_handle the connection handle of the BLE connection
  * @param attr_handle the attribute handle of the characteristic being accessed
  * @param ctxt the GATT access context containing the operation type and response buffer
- * @param arg the argument passed to the callback, not used in this function
+ * @param arg the gatt_file_handler_context_t for the CSR characteristic
  * @return the ATT error code, 0 on success, or a specific error code on failure
  */
 static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg)
 {
-    (void)conn_handle;
     (void)attr_handle;
-    (void)arg;
 
     // 1. The characteristic is declared read-only, so any other operation is a host-level mismatch.
     if (ctxt->op != BLE_GATT_ACCESS_OP_READ_CHR)
@@ -51,25 +97,10 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 3. Return the CSR of a previous read, treating an empty entry as if nothing was stored.
+    // 3. A CSR exists (from a previous read): serve it through the shared chunked reader as-is.
     if (err == ESP_OK && len > 0)
     {
-        char buf[len];
-        err = load_data(CSR_NAMESPACE, buf, len);
-
-        if (err != ESP_OK)
-        {
-            ESP_LOGE(LOG_TAG, "Failed to load CSR: %s", esp_err_to_name(err));
-            return BLE_ATT_ERR_UNLIKELY;
-        }
-
-        if (os_mbuf_append(ctxt->om, buf, len) != 0)
-        {
-            return BLE_ATT_ERR_INSUFFICIENT_RES;
-        }
-
-        ESP_LOGI(LOG_TAG, "Successfully read CSR");
-        return 0;
+        return gatt_common_file_read_chunk(conn_handle, arg, ctxt);
     }
 
     // 4. First read: generate the device's key pair, replacing any previous one, and the request bound to it.
@@ -90,25 +121,18 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     // 5. Persist it before handing it out, so later reads return the request the backend is signing.
     const size_t pem_len = strlen(pem);
     err = save_data(CSR_NAMESPACE, pem, pem_len);
+    free(pem);
 
     if (err != ESP_OK)
     {
         ESP_LOGE(LOG_TAG, "Failed to save CSR: %s", esp_err_to_name(err));
-        free(pem);
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 6. Append the generated request to the response buffer and release the buffer it was built in.
-    const int rc = os_mbuf_append(ctxt->om, pem, pem_len);
-    free(pem);
-
-    if (rc != 0)
-    {
-        return BLE_ATT_ERR_INSUFFICIENT_RES;
-    }
-
     ESP_LOGI(LOG_TAG, "Successfully generated CSR");
-    return 0;
+
+    // 6. Serve the freshly generated (and now stored) request through the shared chunked reader.
+    return gatt_common_file_read_chunk(conn_handle, arg, ctxt);
 }
 
 /**
@@ -174,6 +198,11 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
         return BLE_ATT_ERR_UNLIKELY;
     }
 
+    // Drop any read/write sequence still holding the deleted certificate, so a chunked transfer
+    // already in progress on this connection does not keep serving/accepting it as if it were
+    // still current.
+    gatt_common_file_context_invalidate(&certificate_context);
+
     // 5. Delete the stored CSR. A missing one means the device was never enrolled, which is nothing
     // to report: revocation is about the state it leaves behind, not about what was there before.
     err = erase_data(CSR_NAMESPACE);
@@ -183,6 +212,9 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
         ESP_LOGE(LOG_TAG, "Failed to delete CSR: %s", esp_err_to_name(err));
         return BLE_ATT_ERR_UNLIKELY;
     }
+
+    // Same as above: a read sequence mid-transfer for csr must not keep serving the now-deleted request.
+    gatt_common_file_context_invalidate(&csr_context);
 
     // 6. Wipe the private key they were bound to, so the revoked certificate stays unusable even if
     // a copy of it is installed again.
@@ -196,22 +228,6 @@ static int revoke_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct b
 
     ESP_LOGI(LOG_TAG, "Successfully revoked credentials");
     return 0;
-}
-
-// Validates that the certificate is a PEM-encoded X.509 certificate.
-static bool validate_certificate(const char* data, const uint16_t len)
-{
-    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
-    const size_t header_len = strlen(PEM_HEADER);
-    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
-}
-
-// Validates that the CA certificate is a PEM-encoded X.509 certificate.
-static bool validate_ca(const char* data, const uint16_t len)
-{
-    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
-    const size_t header_len = strlen(PEM_HEADER);
-    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
 }
 
 // Validates that the expiration is a non-empty numeric string representing a duration in seconds.
@@ -264,31 +280,23 @@ static const struct ble_gatt_chr_def characteristics[] = {
         .access_cb = csr_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN,
         .val_handle = nullptr,
-        .arg = nullptr,
+        .arg = &csr_context,
     },
     {
         .uuid = &authentication_certificate_uuid.u,
-        .access_cb = gatt_common_access_cb,
+        .access_cb = gatt_common_file_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
                  BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
-        .arg = &(gatt_handler_context_t){
-            .namespace = CERTIFICATE_NAMESPACE,
-            .name = "Certificate",
-            .validate = validate_certificate,
-        }
+        .arg = &certificate_context,
     },
     {
         .uuid = &authentication_ca_uuid.u,
-        .access_cb = gatt_common_access_cb,
+        .access_cb = gatt_common_file_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
                  BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,
-        .arg = &(gatt_handler_context_t){
-            .namespace = CA_NAMESPACE,
-            .name = "CA certificate",
-            .validate = validate_ca,
-        }
+        .arg = &ca_context,
     },
     {
         .uuid = &authentication_revoke_uuid.u,
@@ -330,3 +338,10 @@ const struct ble_gatt_svc_def authentication_service_def = {
     .uuid = &authentication_service_uuid.u,
     .characteristics = characteristics,
 };
+
+void authentication_service_init()
+{
+    gatt_common_file_context_register(&csr_context);
+    gatt_common_file_context_register(&certificate_context);
+    gatt_common_file_context_register(&ca_context);
+}
