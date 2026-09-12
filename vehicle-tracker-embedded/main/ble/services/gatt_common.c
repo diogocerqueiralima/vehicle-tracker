@@ -401,13 +401,13 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
     put_u32_le(header, total_len);
     put_u32_le(header + 4, ctx->read.cursor);
 
-    // 5. Append the chunk header, then the payload, checking each append explicitly instead of
-    // relying on || to short-circuit past the second call when the first one fails.
+    // 5. Append the chunk header
     if (os_mbuf_append(ctxt->om, header, GATT_FILE_CHUNK_HEADER_LEN) != 0) {
         abandon_read_sequence(ctx);
         return BLE_ATT_ERR_INSUFFICIENT_RES;
     }
 
+    // 6. Append the chunk payload
     if (os_mbuf_append(ctxt->om, ctx->read.buffer + ctx->read.cursor, chunk_len) != 0) {
         abandon_read_sequence(ctx);
         return BLE_ATT_ERR_INSUFFICIENT_RES;
@@ -418,7 +418,7 @@ int gatt_common_file_read_chunk(const uint16_t conn_handle, gatt_file_handler_co
 
     ESP_LOGI(LOG_TAG, "Successfully read %s chunk (%zu/%zu bytes)", ctx->name, ctx->read.cursor, total_len);
 
-    // 6. Once the sequence is fully served, drop the cached copy and reset the cursor so the next
+    // 7. Once the sequence is fully served, drop the cached copy and reset the cursor so the next
     // read (from this connection or another) starts a fresh pass from the beginning.
     if (done) {
         abandon_read_sequence(ctx);
