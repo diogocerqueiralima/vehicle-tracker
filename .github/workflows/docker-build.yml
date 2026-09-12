@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ingestion-service, asset-service, api-gateway]
+        service: [ingestion-service, asset-service, api-gateway, identity-service]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx

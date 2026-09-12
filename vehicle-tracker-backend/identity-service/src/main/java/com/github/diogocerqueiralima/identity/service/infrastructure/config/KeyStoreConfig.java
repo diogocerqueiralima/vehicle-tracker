@@ -41,7 +41,6 @@ public class KeyStoreConfig {
         );
 
         Security.addProvider(new BouncyCastleProvider());
-
     }
 
     @Bean

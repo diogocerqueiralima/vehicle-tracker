@@ -9,11 +9,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
   grpc:
     client:
       channels:
@@ -34,3 +29,7 @@ ca:
   issuer: "CN=Vehicle Tracker CA, O=MyTracker, C=PT"
   validity:
     days: 30
+
+server:
+  servlet:
+    context-path: /identity
