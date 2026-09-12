@@ -194,6 +194,7 @@ static int gatt_file_write_chunk(
     const size_t payload_len = len - GATT_FILE_CHUNK_HEADER_LEN;
 
     if (offset == 0) {
+        
         // 3. If this is the first chunk, initialize the write state.
         reset_write_state(ctx);
 
