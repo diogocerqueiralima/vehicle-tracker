@@ -17,17 +17,21 @@ This document provides the parameters and configuration details for the Authenti
 
 ## CSR generation
 
-The device does not generate a request on every read. Reading `csr` returns the stored request when there is one, and only builds a new one when the device holds none — on first boot, or after the credentials have been revoked:
+The device does not generate a request on every read. Reading `csr` returns the stored request when there is one, and only builds a new one when the device holds none — on first boot, or after the credentials have been revoked. If no request is stored but a certificate is already installed, the read is refused instead of generating one, since that would rotate the key out from under the installed certificate:
 
 ```mermaid
 flowchart TD
     A[Read csr] --> B{CSR stored?}
     B -- yes --> C[Return the stored CSR]
-    B -- no --> D[Generate a new key pair]
+    B -- no --> G{Certificate installed?}
+    G -- yes --> H[Refuse: ATT error 0x13]
+    G -- no --> D[Generate a new key pair]
     D --> E[Build the CSR and sign it with that key]
     E --> F[Persist the CSR]
     F --> C
 ```
+
+A refused read fails with ATT error `0x13` (`Value Not Allowed`). To generate a new CSR from that state, the client must first write `1` to `revoke`.
 
 Generating a request creates a **new** NIST P-256 key pair in the device's key store, replacing whatever was there, and the request is signed with it. The common name is the device identifier, the same one the device shows as a QR code for registration. The private key is created without export permission and never leaves the key store, so only the request itself is ever read over BLE. Generation takes a few seconds on first read; later reads are served from storage.
 
@@ -35,6 +39,6 @@ Keeping the request is what makes the read coherent: a PEM-encoded P-256 CSR is 
 
 ## Installing and revoking
 
-Writing `certificate` stores the issued certificate and leaves the stored CSR untouched.
+Writing `certificate` stores the issued certificate and leaves the stored CSR untouched, so the request the certificate was issued for is preserved for as long as that certificate is valid. `csr` stays readable afterwards — it keeps returning that same stored request, per the "CSR stored?" branch above — but a request that would have to be freshly generated is refused while a certificate is installed, which can only happen if the CSR entry is missing without the certificate having been removed first (see below).
 
-Writing `1` to `revoke` deletes the stored CSR, the installed certificate and the private key they were bound to, which is what makes the issued certificate unusable: the device can no longer prove it holds the matching key. The next read of `csr` then starts a fresh enrollment with a new key pair. Writing `0` does nothing, and the flag itself is not stored — it is a command rather than a configuration value.
+Writing `1` to `revoke` deletes the installed certificate, then the stored CSR, then the private key they were bound to, which is what makes the issued certificate unusable: the device can no longer prove it holds the matching key. Deleting the certificate first means an interruption partway through never leaves the refusal above as a dead end: at worst, the device is left with no certificate and a stale CSR still on file, which is read back unchanged rather than regenerated. Completing the revocation in that case requires writing `1` to `revoke` again — a later `csr` read on its own does not finish the job. Writing `0` does nothing, and the flag itself is not stored — it is a command rather than a configuration value.
