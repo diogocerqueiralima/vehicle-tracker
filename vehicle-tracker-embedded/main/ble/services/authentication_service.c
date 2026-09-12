@@ -73,6 +73,7 @@ static int csr_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_
     }
 
     // 4. First read: generate the device's key pair, replacing any previous one, and the request bound to it.
+    // If a certificate is already installed, refuse to generate a new request rather than rotating the key out and leaving the certificate stranded.
     char* pem = device_credentials_generate_csr(&err);
     if (pem == nullptr)
     {
