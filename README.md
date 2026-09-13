@@ -11,17 +11,13 @@ and modern system architecture design.
 
 ## System Overview
 
-The Vehicle Tracker system consists of a reverse proxy, multiple backend services, Kafka for messaging, a web application, and a mobile application.
+The Vehicle Tracker system consists of a reverse proxy, multiple backend services, Kafka for messaging and a mobile application.
 
-The backend services are responsible for data ingestion, processing, and storage, and expose APIs consumed by both the web and mobile applications. More details about each service can be found in `docs/`.
+The backend services are responsible for data ingestion, processing, and storage, and expose APIs consumed by the mobile application. More details about each service can be found in `docs/`.
 
-All requests from the web and mobile applications pass through the reverse proxy, which acts as a single entry point and routes traffic to the appropriate backend service.
+All requests from the mobile application pass through the reverse proxy, which acts as a single entry point and routes traffic to the appropriate backend service.
 
-The web application is a Next.js web application built with React. It is served by a dedicated frontend server running behind the reverse proxy. When a user accesses the application through a browser, the request is first handled by the reverse proxy, which forwards it to the frontend server. The server responds with the web application, which is then loaded in the browser.
-
-Once loaded, the web application communicates directly with the backend APIs via HTTP requests, which again go through the reverse proxy. The reverse proxy routes these API requests to the appropriate backend services. Authentication and authorization are handled via the identity provider (Keycloak), also accessed through the reverse proxy.
-
-Vehicle devices installed in vehicles send their data to the reverse proxy. This data is forwarded to Kafka and then processed asynchronously by the backend services.
+Vehicle devices installed in vehicles send their data to the reverse proxy. This data is forwarded to Mosquitto and is ingested into Kafka and then processed asynchronously by the backend services.
 
 The following diagram illustrates the high-level architecture of the Vehicle Tracker system:
 
@@ -33,13 +29,14 @@ flowchart LR
         DN[Device N]
     end
 
-    APP[Browser / Mobile Client]
+    APP[Mobile Client]
     RP[Reverse Proxy]
 
     subgraph Vehicle Tracker System
-        FE[Frontend Server]
-        API[Backend Services]
+        D[Domain Services]
+        I[Ingestion Service]
         IDP[Keycloak]
+        M[Mosquitto]
         K[Kafka]
         DB[(PostgreSQL<br/>TimescaleDB + PostGIS)]
     end
@@ -50,25 +47,24 @@ flowchart LR
 
     APP -->|HTTP requests | RP
 
-    RP -->|Frontend requests | FE
-    FE -->|Frontend response | RP
-    RP -->|Frontend response | APP
+    RP -->|HTTP response | APP
 
-    RP -->|API requests | API
+    RP -->|API requests | D
     RP -->|Auth requests | IDP
-    RP -->|data | K
+    RP -->|data | M
+    M -->|data | I
+    I -->|data | K
 
-    K -->|data | API
-    API --> DB
-    API <--> IDP
+    K -->|events | D
+    D --> DB
+    D <--> IDP
 ```
 
 In folder `docs` you can find more detailed documentation about the architecture, deployment, and other aspects of the system.
 ## Stack
 
 - **Backend**: Java with Spring Boot
-- **Web Frontend**: Next.js with React and TypeScript
-- **Mobile Frontend**: Kotlin with Jetpack Compose for Android
+- **Mobile**: Kotlin with Jetpack Compose for Android
 - **Database**: PostgreSQL with TimescaleDB and PostGIS extensions
 - **Messaging**: Kafka
 - **Containerization**: Docker (local and cloud deployment)
