@@ -5,19 +5,17 @@ Repo hold full codebase for **Vehicle Tracker system**.
 Components:
 
 - Backend services (Asset Service, Identity Service, etc.)
-- Web frontend
 - Mobile application
 - Embedded software for devices
 - Database schemas
 
-Purpose: collect vehicle telemetry from hardware devices, expose to users via web + mobile. Users track vehicles real-time, view history, manage assets.
+Purpose: collect vehicle telemetry from hardware devices, expose to users via mobile. Users track vehicles real-time, view history, manage assets.
 
 # Repository Structure
 
 Independent directories:
 
 - '/vehicle-tracker-backend': all backend services (Asset Service, Identity Service, others). Java + Spring Boot.
-- '/vehicle-tracker-frontend': web frontend. Typescript + React.
 - '/vehicle-tracker-mobile': mobile app. Kotlin + Jetpack Compose.
 - '/vehicle-tracker-embedded': embedded software for hardware devices. C + esp-idf.
 
@@ -38,6 +36,7 @@ Build Command objects from client DTOs, pass to Application Layer, get Result ob
 **No business logic here.**
 
 Examples:
+
 - REST controllers
 - gRPC service implementations
 - WebSocket handlers
@@ -57,25 +56,10 @@ Hold business logic: domain entities, value objects, domain services, other busi
 
 Implement outbound ports defined in Domain Layer. Hold persistence code (database repositories) and external service calls (HTTP clients, gRPC clients, Kafka producers). **No business logic.**
 
-# Frontend Architecture
-
-Web frontend use component-based architecture with React. Layers:
-
-### UI Layer
-
-Render user interface, handle user interaction. Hold React components, styles, presentation code. **No business logic.**
-
-### Service Layer
-
-Talk to backend services. Hold HTTP request code, response handling, other backend communication. **No business logic.**
-
-### Domain Layer
-
-Hold business logic: business rules and logic code. **No backend communication code, no UI rendering.**
-
 # Mobile Architecture
 
-Mobile app follow architecture like web frontend, Jetpack Compose for UI. Layers:
+Mobile app uses MVVM (Model-View-ViewModel) architecture. Each module independent + modular for easy maintenance and scaling.
+Mobile app talks to backend services via REST.
 
 ### Presentation Layer
 
