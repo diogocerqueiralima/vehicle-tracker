@@ -8,9 +8,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationReason
@@ -50,7 +50,7 @@ fun DeviceConfigurationScreen(
     onUploadCharacteristic: (CharacteristicSpec) -> Unit = {}
 ) {
 
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.state.collectAsStateWithLifecycle().value
 
     val device = when (state) {
         is DeviceConfigurationState.Connecting -> state.device
@@ -94,8 +94,8 @@ fun DeviceConfigurationScreen(
 
                 is DeviceConfigurationState.Connected -> {
 
-                    val characteristicValues = viewModel.characteristicValues.collectAsState().value
-                    val fileActionStates = viewModel.fileActionStates.collectAsState().value
+                    val characteristicValues = viewModel.characteristicValues.collectAsStateWithLifecycle().value
+                    val fileActionStates = viewModel.fileActionStates.collectAsStateWithLifecycle().value
 
                     DeviceConfigurationConnectedView(
                         modifier = Modifier

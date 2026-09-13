@@ -8,9 +8,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.CreateDeviceReason
@@ -24,9 +24,9 @@ import com.github.diogocerqueiralima.presentation.devices.views.IdleView
 import com.github.diogocerqueiralima.presentation.devices.views.ScanDeviceQrView
 import com.github.diogocerqueiralima.presentation.errors.CommonReason
 import com.github.diogocerqueiralima.presentation.errors.Reason
-import com.github.diogocerqueiralima.presentation.errors.message as commonErrorMessage
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+import com.github.diogocerqueiralima.presentation.errors.message as commonErrorMessage
 
 /**
  * Resolves the message to display for a device creation error reason.
@@ -55,7 +55,7 @@ fun CreateDeviceScreen(
     onBack: () -> Unit = {}
 ) {
 
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.state.collectAsStateWithLifecycle().value
 
     VehicleTrackerMobileTheme {
         Scaffold(

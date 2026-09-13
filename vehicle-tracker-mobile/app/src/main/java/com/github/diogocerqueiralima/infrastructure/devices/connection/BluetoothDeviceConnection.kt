@@ -299,12 +299,12 @@ class BluetoothDeviceConnection(
 
         Log.d(TAG, "Writing file characteristic: $characteristicId (service: $serviceId), $length bytes")
 
-        // An empty source would leave the `while (offset < length)` loop below un-entered,
-        // returning as if the upload succeeded without ever writing a chunk to the device.
+        // 1. Validate that the length is positive, since writing an empty file is not allowed.
         if (length <= 0) {
             throw InternalErrorException("Cannot upload an empty file for $characteristicId")
         }
 
+        // 2. If we're not connected to a GATT server, throw an exception.
         val peripheral = peripheral ?: run {
             Log.w(TAG, "Cannot write $characteristicId: not connected to a GATT server")
             throw InternalErrorException("Not connected to a GATT server")
@@ -312,31 +312,39 @@ class BluetoothDeviceConnection(
 
         val characteristic = characteristicOf(serviceId, characteristicId)
 
-        // Each chunk (header + payload) must fit in a single ATT PDU for the negotiated MTU:
-        // Android's writeCharacteristic silently truncates a value bigger than that instead of
-        // fragmenting it, which would corrupt the transfer rather than failing loudly. This mirrors
-        // the fix on the read side, where an oversized chunk triggered NimBLE's own long-read
-        // mechanism and broke our stateful, cursor-advancing read callback (ATT error 0x07).
+        // 3. Calculate the maximum payload size for each chunk, based on the negotiated MTU and the chunk header length.
+        // The maximum payload size is the maximum write value length for WriteType.WithResponse, minus the chunk header length.
         val maxChunkPayload = peripheral.maximumWriteValueLengthForType(WriteType.WithResponse) - FILE_CHUNK_HEADER_LEN
+
+        // 4. If the maximum payload size is not positive, throw an exception to indicate that the negotiated MTU is too small to write the file characteristic.
+        if (maxChunkPayload <= 0) {
+            throw InternalErrorException("Negotiated MTU is too small to write file characteristic $characteristicId")
+        }
+
         val buffer = ByteArray(maxChunkPayload)
         var offset = 0L
 
+        // 5. Read chunks from the source and write them to the characteristic until we've written the total length indicated by [length].
         while (offset < length) {
 
+            // 5.1 Determine how many bytes to read from the source for this chunk, which is the minimum of the maximum chunk payload size and the remaining bytes to write.
             val toRead = minOf(maxChunkPayload.toLong(), length - offset).toInt()
             val read = withContext(Dispatchers.IO) {
                 source.read(buffer, 0, toRead)
             }
 
+            // 5.2 If we couldn't read any bytes, it means the end of the stream has been reached.
             if (read <= 0) {
                 throw InternalErrorException("Unexpected end of stream while uploading $characteristicId")
             }
 
+            // 7. Construct a chunk with the `[total_len][offset]` header and the payload, then write it to the characteristic using WriteType.WithResponse to ensure the write is acknowledged by the device.
             val frame = ByteArray(FILE_CHUNK_HEADER_LEN + read)
             frame.writeUIntLE(0, length.toUInt())
             frame.writeUIntLE(4, offset.toUInt())
             buffer.copyInto(frame, FILE_CHUNK_HEADER_LEN, 0, read)
 
+            // 8. Write the chunk to the characteristic, catching any GattStatusException that indicates the device refused the value as invalid, and throwing an InvalidValueException in that case.
             try {
                 peripheral.write(characteristic, frame, WriteType.WithResponse)
             } catch (e: GattStatusException) {

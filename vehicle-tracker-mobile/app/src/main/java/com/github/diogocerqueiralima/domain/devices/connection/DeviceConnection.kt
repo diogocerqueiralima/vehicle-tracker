@@ -62,7 +62,8 @@ interface DeviceConnection {
      * into memory as a whole.
      *
      * @throws InvalidValueException if the device refuses the written value.
-     * @throws InternalErrorException if [length] is not positive.
+     * @throws InternalErrorException if [length] is not positive, or the negotiated MTU is too
+     * small to fit even the chunk header.
      */
     suspend fun writeFile(serviceId: Uuid, characteristicId: Uuid, source: InputStream, length: Long)
 

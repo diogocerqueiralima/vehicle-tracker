@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationState
 import com.github.diogocerqueiralima.presentation.authentication.viewmodel.AuthenticationViewModel
 import com.github.diogocerqueiralima.presentation.authentication.views.AuthenticationCancelledView
@@ -21,7 +21,7 @@ fun AuthenticationScreen(viewModel: AuthenticationViewModel) {
     VehicleTrackerMobileTheme() {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-            val state = viewModel.state.collectAsState().value
+            val state = viewModel.state.collectAsStateWithLifecycle().value
 
             when (state) {
 
