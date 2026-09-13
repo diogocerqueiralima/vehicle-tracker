@@ -110,8 +110,9 @@ class DeviceConfigurationActivity : ComponentActivity() {
                 viewModel = viewModel,
                 onBack = { finish() },
                 onUploadCharacteristic = { characteristic ->
-                    viewModel.requestUpload(characteristic)
-                    openDocumentLauncher.launch(arrayOf("*/*"))
+                    if (viewModel.requestUpload(characteristic)) {
+                        openDocumentLauncher.launch(arrayOf("*/*"))
+                    }
                 }
             )
         }

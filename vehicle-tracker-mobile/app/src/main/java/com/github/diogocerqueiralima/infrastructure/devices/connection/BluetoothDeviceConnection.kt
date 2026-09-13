@@ -338,13 +338,14 @@ class BluetoothDeviceConnection(
                 throw InternalErrorException("Unexpected end of stream while uploading $characteristicId")
             }
 
-            // 7. Construct a chunk with the `[total_len][offset]` header and the payload, then write it to the characteristic using WriteType.WithResponse to ensure the write is acknowledged by the device.
+            // 5.3 Construct a chunk with the `[total_len][offset]` header and the payload, then write it to the characteristic using WriteType.WithResponse to ensure the write is acknowledged by the device.
+            // Files with 4GB or more of data are not supported, since the total length is a u32 in the chunk header.
             val frame = ByteArray(FILE_CHUNK_HEADER_LEN + read)
             frame.writeUIntLE(0, length.toUInt())
             frame.writeUIntLE(4, offset.toUInt())
             buffer.copyInto(frame, FILE_CHUNK_HEADER_LEN, 0, read)
 
-            // 8. Write the chunk to the characteristic, catching any GattStatusException that indicates the device refused the value as invalid, and throwing an InvalidValueException in that case.
+            // 5.4 Write the chunk to the characteristic, catching any GattStatusException that indicates the device refused the value as invalid, and throwing an InvalidValueException in that case.
             try {
                 peripheral.write(characteristic, frame, WriteType.WithResponse)
             } catch (e: GattStatusException) {

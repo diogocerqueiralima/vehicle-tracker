@@ -277,23 +277,27 @@ class DeviceConfigurationViewModel(
     /**
      * Marks [characteristic] as awaiting a picked file, so [onFilePicked] knows which
      * characteristic to upload the result to once the file picker returns. The caller is expected
-     * to launch the picker right after calling this. Does nothing if another upload is already
-     * pending, or a download or upload for [characteristic] is already running.
+     * to launch the picker right after calling this, and only if it returns `true`. Does nothing
+     * if another upload is already pending, or a download or upload for [characteristic] is
+     * already running.
      *
      * @param characteristic The `FILE` characteristic to write the picked file to.
+     * @return `true` if the upload was accepted and the caller should launch the file picker,
+     * `false` otherwise.
      */
-    fun requestUpload(characteristic: CharacteristicSpec) {
+    fun requestUpload(characteristic: CharacteristicSpec): Boolean {
 
         if (characteristic.format != CharacteristicFormat.FILE || !characteristic.writable) {
-            return
+            return false
         }
 
         if (_pendingUpload.value != null || _fileActionStates.value[characteristic.key] is FileActionState.Running) {
-            return
+            return false
         }
 
         _pendingUpload.value = characteristic
         _fileActionStates.value += characteristic.key to FileActionState.Running(characteristic, FileDirection.UPLOAD)
+        return true
     }
 
     /**
