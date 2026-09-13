@@ -11,16 +11,8 @@
 
 static const char* LOG_TAG = "authentication_service";
 
-// Validates that the certificate is a PEM-encoded X.509 certificate.
+// Validates that a certificate (leaf or CA) is a PEM-encoded X.509 certificate.
 static bool validate_certificate(const char* data, const size_t len)
-{
-    static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
-    const size_t header_len = strlen(PEM_HEADER);
-    return len >= header_len && strncmp(data, PEM_HEADER, header_len) == 0;
-}
-
-// Validates that the CA certificate is a PEM-encoded X.509 certificate.
-static bool validate_ca(const char* data, const size_t len)
 {
     static const char* PEM_HEADER = "-----BEGIN CERTIFICATE-----";
     const size_t header_len = strlen(PEM_HEADER);
@@ -53,7 +45,7 @@ static gatt_file_handler_context_t certificate_context = {
 static gatt_file_handler_context_t ca_context = {
     .namespace = CA_NAMESPACE,
     .name = "CA certificate",
-    .validate = validate_ca,
+    .validate = validate_certificate,
     .max_len = CERTIFICATE_MAX_LEN,
 };
 

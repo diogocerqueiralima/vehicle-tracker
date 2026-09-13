@@ -90,6 +90,7 @@ typedef struct
  * @param attr_handle The attribute handle of the characteristic being accessed.
  * @param ctxt Pointer to the ble_gatt_access_ctxt structure containing the access operation context
  * @param arg Pointer to the gatt_file_handler_context_t for the characteristic being accessed.
+ * @return The ATT error code, 0 on success, or a specific error code on failure
  */
 int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg);
 

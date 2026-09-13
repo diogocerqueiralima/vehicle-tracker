@@ -198,29 +198,36 @@ static int gatt_file_write_chunk(
     const size_t payload_len = len - GATT_FILE_CHUNK_HEADER_LEN;
 
     if (offset == 0) {
-        
-        // 3. If this is the first chunk, initialize the write state.
+
+        // 3. If a different, still-active connection already owns an in-progress write, reject this
+        // one instead of silently discarding the other connection's upload.
+        if (ctx->write.buffer != nullptr && ctx->write.conn_handle != conn_handle) {
+            ESP_LOGE(LOG_TAG, "Rejected %s write: another connection has an in-progress upload", ctx->name);
+            return BLE_ATT_ERR_INSUFFICIENT_RES;
+        }
+
+        // 4. If this is the first chunk, initialize the write state.
         reset_write_state(ctx);
 
-        // 4. Validate the total length against the maximum allowed length for this characteristic.
+        // 5. Validate the total length against the maximum allowed length for this characteristic.
         if (total_len == 0 || total_len > ctx->max_len) {
             ESP_LOGE(LOG_TAG, "Rejected %s write: total_len %" PRIu32 " is invalid or exceeds the %zu byte cap",
                      ctx->name, total_len, ctx->max_len);
             return BLE_ATT_ERR_VALUE_NOT_ALLOWED;
         }
 
-        // 5. Allocate a buffer to hold the complete value being written.
+        // 6. Allocate a buffer to hold the complete value being written.
         ctx->write.buffer = malloc(total_len);
         if (ctx->write.buffer == nullptr) {
             return BLE_ATT_ERR_INSUFFICIENT_RES;
         }
 
-        // 6. Initialize the write state with the total length, received length, and connection handle.
+        // 7. Initialize the write state with the total length, received length, and connection handle.
         ctx->write.total_len = total_len;
         ctx->write.received = 0;
         ctx->write.conn_handle = conn_handle;
     }
-    // 7. If this is not the first chunk, validate that it is part of the same write sequence and that the offset matches the expected received length.
+    // 8. If this is not the first chunk, validate that it is part of the same write sequence and that the offset matches the expected received length.
     else if (ctx->write.buffer == nullptr || conn_handle != ctx->write.conn_handle ||
              total_len != ctx->write.total_len || offset != ctx->write.received) {
         ESP_LOGE(LOG_TAG, "Rejected out-of-sequence %s write chunk at offset %" PRIu32, ctx->name, offset);
@@ -228,40 +235,40 @@ static int gatt_file_write_chunk(
         return BLE_ATT_ERR_VALUE_NOT_ALLOWED;
     }
 
-    // 8. Validate that the chunk does not overrun the declared total length.
+    // 9. Validate that the chunk does not overrun the declared total length.
     if ((size_t) offset + payload_len > ctx->write.total_len) {
         ESP_LOGE(LOG_TAG, "Rejected %s write chunk: payload overruns the declared total_len", ctx->name);
         reset_write_state(ctx);
         return BLE_ATT_ERR_VALUE_NOT_ALLOWED;
     }
 
-    // 9. Copy the chunk payload into the allocated buffer at the specified offset and update the received length.
+    // 10. Copy the chunk payload into the allocated buffer at the specified offset and update the received length.
     os_mbuf_copydata(ctxt->om, GATT_FILE_CHUNK_HEADER_LEN, (int) payload_len, ctx->write.buffer + offset);
     ctx->write.received = offset + payload_len;
 
-    // 10. If this is not the last chunk, return success to indicate that the chunk was accepted and more chunks are expected.
+    // 11. If this is not the last chunk, return success to indicate that the chunk was accepted and more chunks are expected.
     if (ctx->write.received < ctx->write.total_len) {
         return 0;
     }
 
-    // 11. If this is the last chunk, validate the complete value using the provided validation function, if any.
+    // 12. If this is the last chunk, validate the complete value using the provided validation function, if any.
     if (ctx->validate != nullptr && !ctx->validate((const char *) ctx->write.buffer, ctx->write.total_len)) {
         ESP_LOGE(LOG_TAG, "Invalid value for %s", ctx->name);
         reset_write_state(ctx);
         return BLE_ATT_ERR_VALUE_NOT_ALLOWED;
     }
 
-    // 12. Persist the complete value to NVS for storage, and reset the write state.
+    // 13. Persist the complete value to NVS for storage, and reset the write state.
     const esp_err_t err = save_data(ctx->namespace, (const char *) ctx->write.buffer, ctx->write.total_len);
     reset_write_state(ctx);
 
-    // 13. If the save operation failed, log the error and return an ATT error code indicating an unlikely failure.
+    // 14. If the save operation failed, log the error and return an ATT error code indicating an unlikely failure.
     if (err != ESP_OK) {
         ESP_LOGE(LOG_TAG, "Failed to save %s: %s", ctx->name, esp_err_to_name(err));
         return BLE_ATT_ERR_UNLIKELY;
     }
 
-    // 14. Drop any read sequence still caching the value this write just replaced, so a read
+    // 15. Drop any read sequence still caching the value this write just replaced, so a read
     // chunk request that follows on another connection - or this same one, interleaved between
     // chunks of an in-progress read - serves the new value instead of the stale cached one.
     abandon_read_sequence(ctx);
