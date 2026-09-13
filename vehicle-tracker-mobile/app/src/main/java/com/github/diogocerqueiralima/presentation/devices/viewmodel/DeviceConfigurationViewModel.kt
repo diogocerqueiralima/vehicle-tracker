@@ -119,6 +119,9 @@ class DeviceConfigurationViewModel(
     private val _fileActionStates = MutableStateFlow<Map<String, FileActionState>>(emptyMap())
     val fileActionStates: StateFlow<Map<String, FileActionState>> = _fileActionStates.asStateFlow()
 
+    /** The `FILE` characteristic [requestUpload] armed, awaiting [onFilePicked]'s result. */
+    private val _pendingUpload = MutableStateFlow<CharacteristicSpec?>(null)
+
     /**
      * Called when the Bluetooth permissions required to connect to the device are granted or denied.
      * From [DeviceConfigurationState.Idle], this either starts the connection or moves the flow
@@ -302,8 +305,8 @@ class DeviceConfigurationViewModel(
     /**
      * Marks [characteristic] as awaiting a picked file, so [onFilePicked] knows which
      * characteristic to upload the result to once the file picker returns. The caller is expected
-     * to launch the picker right after calling this. Does nothing if a download or upload for
-     * [characteristic] is already running.
+     * to launch the picker right after calling this. Does nothing if another upload is already
+     * pending, or a download or upload for [characteristic] is already running.
      *
      * @param characteristic The `FILE` characteristic to write the picked file to.
      */
@@ -313,10 +316,11 @@ class DeviceConfigurationViewModel(
             return
         }
 
-        if (_fileActionStates.value[characteristic.key] is FileActionState.Running) {
+        if (_pendingUpload.value != null || _fileActionStates.value[characteristic.key] is FileActionState.Running) {
             return
         }
 
+        _pendingUpload.value = characteristic
         _fileActionStates.value += characteristic.key to FileActionState.Running(characteristic, FileDirection.UPLOAD)
     }
 
@@ -330,11 +334,8 @@ class DeviceConfigurationViewModel(
      */
     fun onFilePicked(uri: Uri?) {
 
-        val characteristic = _fileActionStates.value.values
-            .filterIsInstance<FileActionState.Running>()
-            .firstOrNull { it.direction == FileDirection.UPLOAD }
-            ?.characteristic
-            ?: return
+        val characteristic = _pendingUpload.value ?: return
+        _pendingUpload.value = null
 
         if (uri == null) {
             _fileActionStates.value -= characteristic.key
