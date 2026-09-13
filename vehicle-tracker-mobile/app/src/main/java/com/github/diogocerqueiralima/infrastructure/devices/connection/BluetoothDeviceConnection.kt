@@ -299,6 +299,12 @@ class BluetoothDeviceConnection(
 
         Log.d(TAG, "Writing file characteristic: $characteristicId (service: $serviceId), $length bytes")
 
+        // An empty source would leave the `while (offset < length)` loop below un-entered,
+        // returning as if the upload succeeded without ever writing a chunk to the device.
+        if (length <= 0) {
+            throw InternalErrorException("Cannot upload an empty file for $characteristicId")
+        }
+
         val peripheral = peripheral ?: run {
             Log.w(TAG, "Cannot write $characteristicId: not connected to a GATT server")
             throw InternalErrorException("Not connected to a GATT server")
