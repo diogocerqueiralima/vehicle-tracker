@@ -22,6 +22,10 @@ object CharacteristicCodec {
 
         CharacteristicFormat.UINT32 -> value.toLittleEndianLong(4).toString()
 
+        CharacteristicFormat.FILE -> throw UnsupportedOperationException(
+            "FILE characteristics are downloaded/uploaded, not decoded to or from a string"
+        )
+
     }
 
     /**
@@ -40,6 +44,10 @@ object CharacteristicCodec {
         CharacteristicFormat.UINT16 -> value.trim().toLong().toLittleEndianByteArray(2)
 
         CharacteristicFormat.UINT32 -> value.trim().toLong().toLittleEndianByteArray(4)
+
+        CharacteristicFormat.FILE -> throw UnsupportedOperationException(
+            "FILE characteristics are downloaded/uploaded, not decoded to or from a string"
+        )
 
     }
 

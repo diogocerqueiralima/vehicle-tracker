@@ -11,7 +11,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
@@ -19,19 +18,20 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.domain.devices.repositories.DeviceRepository
 import com.github.diogocerqueiralima.domain.devices.services.DeviceService
-import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationBar
-import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
-import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
-import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DevicesState
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DevicesViewModel
 import com.github.diogocerqueiralima.presentation.devices.views.DevicesErrorView
 import com.github.diogocerqueiralima.presentation.devices.views.DevicesLoadingView
 import com.github.diogocerqueiralima.presentation.devices.views.DevicesView
+import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationBar
+import com.github.diogocerqueiralima.presentation.ui.components.BottomNavigationDestination
+import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
+import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
 import kotlin.time.Instant
 
 /**
@@ -51,7 +51,7 @@ fun DevicesScreen(
     onNavigate: (BottomNavigationDestination) -> Unit = {}
 ) {
 
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.state.collectAsStateWithLifecycle().value
     val devices = (state as? DevicesState.Loaded)?.devices ?: emptyList()
 
     VehicleTrackerMobileTheme {

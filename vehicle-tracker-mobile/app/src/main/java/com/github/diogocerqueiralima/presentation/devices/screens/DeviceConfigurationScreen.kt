@@ -8,11 +8,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diogocerqueiralima.R
-import com.github.diogocerqueiralima.domain.devices.model.Device
+import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationReason
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationState
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModel
@@ -22,9 +22,9 @@ import com.github.diogocerqueiralima.presentation.devices.views.DeviceConfigurat
 import com.github.diogocerqueiralima.presentation.devices.views.DeviceConfigurationIdleView
 import com.github.diogocerqueiralima.presentation.errors.CommonReason
 import com.github.diogocerqueiralima.presentation.errors.Reason
-import com.github.diogocerqueiralima.presentation.errors.message as commonErrorMessage
 import com.github.diogocerqueiralima.presentation.ui.components.HeaderComponent
 import com.github.diogocerqueiralima.presentation.ui.theme.VehicleTrackerMobileTheme
+import com.github.diogocerqueiralima.presentation.errors.message as commonErrorMessage
 
 /**
  * Resolves the message to display for a device configuration error reason.
@@ -44,9 +44,13 @@ private fun Reason.message(): String = when (this) {
  * @param onBack Callback invoked when the user requests to leave the screen.
  */
 @Composable
-fun DeviceConfigurationScreen(viewModel: DeviceConfigurationViewModel, onBack: () -> Unit = {}) {
+fun DeviceConfigurationScreen(
+    viewModel: DeviceConfigurationViewModel,
+    onBack: () -> Unit = {},
+    onUploadCharacteristic: (CharacteristicSpec) -> Unit = {}
+) {
 
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.state.collectAsStateWithLifecycle().value
 
     val device = when (state) {
         is DeviceConfigurationState.Connecting -> state.device
@@ -90,7 +94,8 @@ fun DeviceConfigurationScreen(viewModel: DeviceConfigurationViewModel, onBack: (
 
                 is DeviceConfigurationState.Connected -> {
 
-                    val characteristicValues = viewModel.characteristicValues.collectAsState().value
+                    val characteristicValues = viewModel.characteristicValues.collectAsStateWithLifecycle().value
+                    val fileActionStates = viewModel.fileActionStates.collectAsStateWithLifecycle().value
 
                     DeviceConfigurationConnectedView(
                         modifier = Modifier
@@ -98,8 +103,11 @@ fun DeviceConfigurationScreen(viewModel: DeviceConfigurationViewModel, onBack: (
                             .padding(innerPadding),
                         device = state.device,
                         characteristicValues = characteristicValues,
+                        fileActionStates = fileActionStates,
                         onExpandService = viewModel::readService,
-                        onWriteCharacteristic = viewModel::writeCharacteristic
+                        onWriteCharacteristic = viewModel::writeCharacteristic,
+                        onDownloadCharacteristic = viewModel::downloadFile,
+                        onUploadCharacteristic = onUploadCharacteristic
                     )
                 }
 

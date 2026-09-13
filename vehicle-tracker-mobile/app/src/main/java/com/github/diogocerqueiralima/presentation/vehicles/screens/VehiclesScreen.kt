@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
@@ -15,6 +14,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diogocerqueiralima.R
 import com.github.diogocerqueiralima.domain.vehicles.model.Vehicle
 import com.github.diogocerqueiralima.domain.vehicles.repositories.VehicleRepository
@@ -45,7 +45,7 @@ fun VehiclesScreen(
     onNavigate: (BottomNavigationDestination) -> Unit = {}
 ) {
 
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.state.collectAsStateWithLifecycle().value
     val vehicles = (state as? VehiclesState.Loaded)?.vehicles ?: emptyList()
 
     VehicleTrackerMobileTheme {

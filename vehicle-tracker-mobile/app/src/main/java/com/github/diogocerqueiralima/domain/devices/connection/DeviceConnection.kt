@@ -2,6 +2,12 @@
 
 package com.github.diogocerqueiralima.domain.devices.connection
 
+import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
+import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
+import com.github.diogocerqueiralima.domain.common.exceptions.InvalidValueException
+
+import java.io.InputStream
+import java.io.OutputStream
 import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -25,8 +31,7 @@ interface DeviceConnection {
      * @param serviceId The id of the service that contains the characteristic.
      * @param characteristicId The id of the characteristic to read.
      * @return The value currently held by the characteristic.
-     * @throws com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException if the
-     * characteristic has no value configured on the device yet.
+     * @throws NotFoundException if the characteristic has no value configured on the device yet.
      */
     suspend fun read(serviceId: Uuid, characteristicId: Uuid): ByteArray
 
@@ -39,6 +44,28 @@ interface DeviceConnection {
      * @param value The value to write.
      */
     suspend fun write(serviceId: Uuid, characteristicId: Uuid, value: ByteArray)
+
+    /**
+     * Reads a "file" characteristic identified by [characteristicId], within the service
+     * identified by [serviceId], using the chunked `[total_len][offset]` transfer protocol (see
+     * vehicle-tracker-embedded's gatt_common_file_access_cb). Each chunk's payload is written to
+     * [sink] as it arrives rather than assembled in memory first.
+     *
+     * @throws NotFoundException if the characteristic has no value configured on the device yet.
+     */
+    suspend fun readFile(serviceId: Uuid, characteristicId: Uuid, sink: OutputStream)
+
+    /**
+     * Writes [length] bytes read from [source] to the "file" characteristic identified by
+     * [characteristicId], within the service identified by [serviceId], using the chunked
+     * `[total_len][offset]` transfer protocol. [source] is streamed in pieces rather than loaded
+     * into memory as a whole.
+     *
+     * @throws InvalidValueException if the device refuses the written value.
+     * @throws InternalErrorException if [length] is not positive, or the negotiated MTU is too
+     * small to fit even the chunk header.
+     */
+    suspend fun writeFile(serviceId: Uuid, characteristicId: Uuid, source: InputStream, length: Long)
 
     /**
      * Releases any resources held by this connection.

@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.domain.devices.services.DeviceConfigurationService
+import com.github.diogocerqueiralima.infrastructure.common.storage.MediaStoreFileStorage
 import com.github.diogocerqueiralima.infrastructure.devices.connection.BluetoothDeviceConnection
 import com.github.diogocerqueiralima.presentation.devices.screens.DeviceConfigurationScreen
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModel
@@ -58,7 +59,8 @@ class DeviceConfigurationActivity : ComponentActivity() {
                 dependenciesContainer.bluetoothManager,
                 dependenciesContainer.dataStore
             )
-            val deviceConfigurationService = DeviceConfigurationService(deviceConnection)
+            val fileStorage = MediaStoreFileStorage(applicationContext.contentResolver)
+            val deviceConfigurationService = DeviceConfigurationService(deviceConnection, fileStorage)
 
             DeviceConfigurationViewModelFactory(deviceConfigurationService)
         }
@@ -87,6 +89,12 @@ class DeviceConfigurationActivity : ComponentActivity() {
         viewModel.onBluetoothPermissionResult(results.values.all { it }, device)
     }
 
+    private val openDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        viewModel.onFilePicked(uri)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -98,7 +106,15 @@ class DeviceConfigurationActivity : ComponentActivity() {
         }
 
         setContent {
-            DeviceConfigurationScreen(viewModel = viewModel, onBack = { finish() })
+            DeviceConfigurationScreen(
+                viewModel = viewModel,
+                onBack = { finish() },
+                onUploadCharacteristic = { characteristic ->
+                    if (viewModel.requestUpload(characteristic)) {
+                        openDocumentLauncher.launch(arrayOf("*/*"))
+                    }
+                }
+            )
         }
 
     }

@@ -2,11 +2,14 @@
 
 package com.github.diogocerqueiralima.presentation.devices.viewmodel
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.github.diogocerqueiralima.domain.common.exceptions.InvalidValueException
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
+import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicFormat
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.domain.devices.catalog.ServiceSpec
 import com.github.diogocerqueiralima.domain.devices.model.Device
@@ -62,6 +65,40 @@ sealed interface CharacteristicValueState {
 
 }
 
+/** Which way a `FILE` characteristic's in-progress action is moving bytes. */
+enum class FileDirection { DOWNLOAD, UPLOAD }
+
+/**
+ * Why a `FILE` characteristic's download or upload could not complete, carried by
+ * [FileActionState.Failed].
+ */
+enum class FileActionFailureReason {
+
+    /** Downloading a characteristic the device has no value configured for yet. */
+    NOT_CONFIGURED,
+
+    /** The device refused an uploaded value as invalid for the characteristic. */
+    INVALID_VALUE,
+
+    /** The transfer itself failed (connection, storage, or picked file access). */
+    ACCESS_FAILED
+
+}
+
+/**
+ * State of a single `FILE` characteristic's download/upload action. Keyed by
+ * [CharacteristicSpec.key] in [DeviceConfigurationViewModel.fileActionStates]. Absent from the map
+ * means no action has been run yet for that characteristic.
+ */
+sealed interface FileActionState {
+
+    data class Running(val characteristic: CharacteristicSpec, val direction: FileDirection) : FileActionState
+    data class Downloaded(val savedName: String) : FileActionState
+    data object Uploaded : FileActionState
+    data class Failed(val reason: FileActionFailureReason) : FileActionState
+
+}
+
 class DeviceConfigurationViewModel(
     private val deviceConfigurationService: DeviceConfigurationService
 ) : ViewModel() {
@@ -71,6 +108,12 @@ class DeviceConfigurationViewModel(
 
     private val _characteristicValues = MutableStateFlow<Map<String, CharacteristicValueState>>(emptyMap())
     val characteristicValues: StateFlow<Map<String, CharacteristicValueState>> = _characteristicValues.asStateFlow()
+
+    private val _fileActionStates = MutableStateFlow<Map<String, FileActionState>>(emptyMap())
+    val fileActionStates: StateFlow<Map<String, FileActionState>> = _fileActionStates.asStateFlow()
+
+    /** The `FILE` characteristic [requestUpload] armed, awaiting [onFilePicked]'s result. */
+    private val _pendingUpload = MutableStateFlow<CharacteristicSpec?>(null)
 
     /**
      * Called when the Bluetooth permissions required to connect to the device are granted or denied.
@@ -132,7 +175,7 @@ class DeviceConfigurationViewModel(
      */
     fun readService(service: ServiceSpec) {
         service.characteristics
-            .filter { it.readable }
+            .filter { it.readable && it.format != CharacteristicFormat.FILE }
             .forEach { readCharacteristic(it) }
     }
 
@@ -191,6 +234,104 @@ class DeviceConfigurationViewModel(
             }
 
             _characteristicValues.value += characteristic.key to result
+        }
+
+    }
+
+    /**
+     * Downloads [characteristic]'s current value to a new entry in the user's Downloads
+     * collection, named `<characteristic.name>.pem`, updating [fileActionStates] to reflect the
+     * outcome. Does nothing if a download or upload for [characteristic] is already running.
+     *
+     * @param characteristic The `FILE` characteristic to download.
+     */
+    fun downloadFile(characteristic: CharacteristicSpec) {
+
+        if (characteristic.format != CharacteristicFormat.FILE) {
+            return
+        }
+
+        if (_fileActionStates.value[characteristic.key] is FileActionState.Running) {
+            return
+        }
+
+        _fileActionStates.value += characteristic.key to FileActionState.Running(characteristic, FileDirection.DOWNLOAD)
+
+        viewModelScope.launch {
+
+            val result = try {
+                FileActionState.Downloaded(deviceConfigurationService.downloadFileToDownloads(characteristic))
+            } catch (exception: NotFoundException) {
+                Log.d(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Characteristic is not configured yet: ${characteristic.key}", exception)
+                FileActionState.Failed(FileActionFailureReason.NOT_CONFIGURED)
+            } catch (exception: Exception) {
+                Log.e(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Failed to download characteristic: ${characteristic.key}", exception)
+                FileActionState.Failed(FileActionFailureReason.ACCESS_FAILED)
+            }
+
+            _fileActionStates.value += characteristic.key to result
+        }
+
+    }
+
+    /**
+     * Marks [characteristic] as awaiting a picked file, so [onFilePicked] knows which
+     * characteristic to upload the result to once the file picker returns. The caller is expected
+     * to launch the picker right after calling this, and only if it returns `true`. Does nothing
+     * if another upload is already pending, or a download or upload for [characteristic] is
+     * already running.
+     *
+     * @param characteristic The `FILE` characteristic to write the picked file to.
+     * @return `true` if the upload was accepted and the caller should launch the file picker,
+     * `false` otherwise.
+     */
+    fun requestUpload(characteristic: CharacteristicSpec): Boolean {
+
+        if (characteristic.format != CharacteristicFormat.FILE || !characteristic.writable) {
+            return false
+        }
+
+        if (_pendingUpload.value != null || _fileActionStates.value[characteristic.key] is FileActionState.Running) {
+            return false
+        }
+
+        _pendingUpload.value = characteristic
+        _fileActionStates.value += characteristic.key to FileActionState.Running(characteristic, FileDirection.UPLOAD)
+        return true
+    }
+
+    /**
+     * Called with the file picker's result, uploading it to whichever characteristic
+     * [requestUpload] last marked as awaiting one, updating [fileActionStates] to reflect the
+     * outcome. A `null` [uri] (the picker was dismissed without a selection) clears that marker
+     * instead of uploading anything. Does nothing if no characteristic is currently awaiting one.
+     *
+     * @param uri The picked file, as returned by the Storage Access Framework, or `null` if none was picked.
+     */
+    fun onFilePicked(uri: Uri?) {
+
+        val characteristic = _pendingUpload.value ?: return
+        _pendingUpload.value = null
+
+        if (uri == null) {
+            _fileActionStates.value -= characteristic.key
+            return
+        }
+
+        viewModelScope.launch {
+
+            val result = try {
+                deviceConfigurationService.uploadFile(characteristic, uri)
+                FileActionState.Uploaded
+            } catch (exception: InvalidValueException) {
+                Log.w(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Device rejected uploaded value for: ${characteristic.key}", exception)
+                FileActionState.Failed(FileActionFailureReason.INVALID_VALUE)
+            } catch (exception: Exception) {
+                Log.e(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Failed to upload characteristic: ${characteristic.key}", exception)
+                FileActionState.Failed(FileActionFailureReason.ACCESS_FAILED)
+            }
+
+            _fileActionStates.value += characteristic.key to result
         }
 
     }

@@ -50,6 +50,8 @@ static int register_ble_services()
         return err;
     }
 
+    authentication_service_init();
+
     return 0;
 }
 
