@@ -105,6 +105,7 @@ int gatt_common_file_access_cb(uint16_t conn_handle, uint16_t attr_handle, struc
  * @param conn_handle The connection handle of the BLE connection requesting the read.
  * @param ctx Pointer to the gatt_file_handler_context_t for the characteristic being read.
  * @param ctxt Pointer to the ble_gatt_access_ctxt structure containing the read operation context
+ * @return The ATT error code, 0 on success, or a specific error code on failure
  */
 int gatt_common_file_read_chunk(uint16_t conn_handle, gatt_file_handler_context_t* ctx, struct ble_gatt_access_ctxt* ctxt);
 
