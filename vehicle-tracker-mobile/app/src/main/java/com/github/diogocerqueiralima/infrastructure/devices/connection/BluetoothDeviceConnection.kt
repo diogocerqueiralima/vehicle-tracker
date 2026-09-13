@@ -275,7 +275,7 @@ class BluetoothDeviceConnection(
                 )
             }
 
-            // 4. If the payload is empty but we haven't received the total length yet, throw an exception to indicate that the transfer is incomplete.
+            // 4. If the payload is empty, but we haven't received the total length yet, throw an exception to indicate that the transfer is incomplete.
             if (payload.isEmpty() && received < totalLen.toLong()) {
                 throw InternalErrorException("Empty file chunk for $characteristicId before transfer completed")
             }

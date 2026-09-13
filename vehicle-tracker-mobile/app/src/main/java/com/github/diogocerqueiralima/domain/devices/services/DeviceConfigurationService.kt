@@ -69,7 +69,7 @@ class DeviceConfigurationService(
      * @return The display name the download was actually saved under.
      */
     suspend fun downloadFileToDownloads(characteristic: CharacteristicSpec): String =
-        fileStorage.saveToDownloads("${characteristic.name}.pem", "application/x-pem-file") { sink ->
+        fileStorage.saveTo("${characteristic.name}.pem", "application/x-pem-file") { sink ->
             downloadFile(characteristic, sink)
         }
 
@@ -82,7 +82,12 @@ class DeviceConfigurationService(
      * @param length The total length of the file data to be uploaded.
      */
     suspend fun uploadFile(characteristic: CharacteristicSpec, source: InputStream, length: Long) {
-        deviceConnection.writeFile(characteristic.serviceId, characteristic.characteristicId, source, length)
+        deviceConnection.writeFile(
+            characteristic.serviceId,
+            characteristic.characteristicId,
+            source,
+            length
+        )
     }
 
     /**
@@ -94,12 +99,9 @@ class DeviceConfigurationService(
      * for reading.
      */
     suspend fun uploadFile(characteristic: CharacteristicSpec, uri: Uri) {
-
-        val length = fileStorage.size(uri) ?: throw InternalErrorException("Could not determine the file's size")
-        val source = fileStorage.openInputStream(uri)
-            ?: throw InternalErrorException("Could not open the picked file for reading")
-
-        source.use { uploadFile(characteristic, it, length) }
+        fileStorage.readFrom(uri) { source, length ->
+            uploadFile(characteristic, source, length)
+        }
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.github.diogocerqueiralima.domain.common.storage
 
 import android.net.Uri
+import android.os.Environment
 import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
 
 import java.io.InputStream
@@ -20,16 +21,20 @@ interface FileStorage {
      *
      * @throws InternalErrorException if the entry can't be created or opened for writing.
      */
-    suspend fun saveToDownloads(displayName: String, mimeType: String, write: suspend (OutputStream) -> Unit): String
+    suspend fun saveTo(
+        displayName: String,
+        mimeType: String,
+        path: String = Environment.DIRECTORY_DOWNLOADS,
+        write: suspend (OutputStream) -> Unit
+    ): String
 
     /**
-     * The size, in bytes, of the file at [uri], or `null` if it can't be determined.
+     * Opens the file at [uri] for reading, passing its size and an input stream to [read]. The
+     * stream is closed once [read] returns or throws.
+     *
+     * @throws InternalErrorException if [uri]'s size can't be determined or it can't be opened
+     * for reading.
      */
-    suspend fun size(uri: Uri): Long?
-
-    /**
-     * Opens the file at [uri] for reading, or `null` if it can't be opened.
-     */
-    suspend fun openInputStream(uri: Uri): InputStream?
+    suspend fun readFrom(uri: Uri, read: suspend (source: InputStream, length: Long) -> Unit)
 
 }
