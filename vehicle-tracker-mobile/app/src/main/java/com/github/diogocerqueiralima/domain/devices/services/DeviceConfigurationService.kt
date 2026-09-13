@@ -2,7 +2,10 @@
 
 package com.github.diogocerqueiralima.domain.devices.services
 
+import android.net.Uri
 import android.util.Log
+import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
+import com.github.diogocerqueiralima.domain.common.storage.FileStorage
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicSpec
 import com.github.diogocerqueiralima.domain.devices.connection.DeviceConnection
 import java.io.InputStream
@@ -17,7 +20,8 @@ private const val TAG = "DEVICE_CONFIGURATION_SERVICE"
  * Service responsible for connecting to and configuring devices.
  */
 class DeviceConfigurationService(
-    private val deviceConnection: DeviceConnection
+    private val deviceConnection: DeviceConnection,
+    private val fileStorage: FileStorage
 ) {
 
     /**
@@ -58,6 +62,18 @@ class DeviceConfigurationService(
     }
 
     /**
+     * Downloads the current value of [characteristic] (a `FILE`-format characteristic) to a new
+     * entry in the user's Downloads collection, named `<characteristic.name>.pem`.
+     *
+     * @param characteristic The characteristic to be downloaded.
+     * @return The display name the download was actually saved under.
+     */
+    suspend fun downloadFileToDownloads(characteristic: CharacteristicSpec): String =
+        fileStorage.saveToDownloads("${characteristic.name}.pem", "application/x-pem-file") { sink ->
+            downloadFile(characteristic, sink)
+        }
+
+    /**
      * Uploads [length] bytes read from [source] to [characteristic] (a `FILE`-format
      * characteristic), using the chunked transfer protocol.
      *
@@ -67,6 +83,23 @@ class DeviceConfigurationService(
      */
     suspend fun uploadFile(characteristic: CharacteristicSpec, source: InputStream, length: Long) {
         deviceConnection.writeFile(characteristic.serviceId, characteristic.characteristicId, source, length)
+    }
+
+    /**
+     * Uploads the file at [uri] to [characteristic] (a `FILE`-format characteristic).
+     *
+     * @param characteristic The characteristic to which the file will be uploaded.
+     * @param uri The picked file to upload, as returned by the Storage Access Framework.
+     * @throws InternalErrorException if [uri]'s size can't be determined or it can't be opened
+     * for reading.
+     */
+    suspend fun uploadFile(characteristic: CharacteristicSpec, uri: Uri) {
+
+        val length = fileStorage.size(uri) ?: throw InternalErrorException("Could not determine the file's size")
+        val source = fileStorage.openInputStream(uri)
+            ?: throw InternalErrorException("Could not open the picked file for reading")
+
+        source.use { uploadFile(characteristic, it, length) }
     }
 
     /**

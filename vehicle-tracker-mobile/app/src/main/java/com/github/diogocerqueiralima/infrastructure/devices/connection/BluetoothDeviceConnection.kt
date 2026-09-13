@@ -236,6 +236,7 @@ class BluetoothDeviceConnection(
 
         Log.d(TAG, "Reading file characteristic: $characteristicId (service: $serviceId)")
 
+        // 1. If we're not connected to a GATT server, throw an exception.
         val peripheral = peripheral ?: run {
             Log.w(TAG, "Cannot read $characteristicId: not connected to a GATT server")
             throw InternalErrorException("Not connected to a GATT server")
@@ -244,15 +245,18 @@ class BluetoothDeviceConnection(
         val characteristic = characteristicOf(serviceId, characteristicId)
         var received = 0L
 
+        // 2. Read chunks of the characteristic until we've received the total length indicated by the first chunk's header.
         while (true) {
 
             val chunk = try {
                 peripheral.read(characteristic)
             } catch (e: GattStatusException) {
+
                 if (e.status == ATT_ERROR_NOT_CONFIGURED) {
                     Log.d(TAG, "Characteristic is not configured on the device: $characteristicId")
                     throw NotFoundException(characteristicId.toJavaUuid())
                 }
+
                 throw e
             }
 
@@ -261,8 +265,22 @@ class BluetoothDeviceConnection(
             }
 
             val totalLen = chunk.readUIntLE(0)
+            val chunkOffset = chunk.readUIntLE(4)
             val payload = chunk.copyOfRange(FILE_CHUNK_HEADER_LEN, chunk.size)
 
+            // 3. Validate that the chunk's offset matches the number of bytes we've received so far, to ensure we're receiving chunks in order and not missing any data.
+            if (chunkOffset.toLong() != received) {
+                throw InternalErrorException(
+                    "Unexpected chunk offset for $characteristicId: expected $received, got $chunkOffset"
+                )
+            }
+
+            // 4. If the payload is empty but we haven't received the total length yet, throw an exception to indicate that the transfer is incomplete.
+            if (payload.isEmpty() && received < totalLen.toLong()) {
+                throw InternalErrorException("Empty file chunk for $characteristicId before transfer completed")
+            }
+
+            // 5. Write the payload to the sink, using Dispatchers.IO to avoid blocking the main thread.
             withContext(Dispatchers.IO) {
                 sink.write(payload)
             }
@@ -272,6 +290,8 @@ class BluetoothDeviceConnection(
             if (received >= totalLen.toLong()) {
                 break
             }
+
+            Log.d(TAG, "Received $received of $totalLen bytes for $characteristicId")
         }
     }
 

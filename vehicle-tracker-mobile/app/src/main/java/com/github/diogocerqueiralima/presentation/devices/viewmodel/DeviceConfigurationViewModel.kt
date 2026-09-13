@@ -2,17 +2,11 @@
 
 package com.github.diogocerqueiralima.presentation.devices.viewmodel
 
-import android.content.ContentResolver
-import android.content.ContentValues
 import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.github.diogocerqueiralima.domain.common.exceptions.InternalErrorException
 import com.github.diogocerqueiralima.domain.common.exceptions.InvalidValueException
 import com.github.diogocerqueiralima.domain.common.exceptions.NotFoundException
 import com.github.diogocerqueiralima.domain.devices.catalog.CharacteristicFormat
@@ -106,8 +100,7 @@ sealed interface FileActionState {
 }
 
 class DeviceConfigurationViewModel(
-    private val deviceConfigurationService: DeviceConfigurationService,
-    private val contentResolver: ContentResolver
+    private val deviceConfigurationService: DeviceConfigurationService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<DeviceConfigurationState>(DeviceConfigurationState.Idle)
@@ -266,29 +259,8 @@ class DeviceConfigurationViewModel(
 
         viewModelScope.launch {
 
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, "${characteristic.name}.pem")
-                put(MediaStore.MediaColumns.MIME_TYPE, "application/x-pem-file")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-            }
-
             val result = try {
-
-                val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-                    ?: throw InternalErrorException("Could not create a Downloads entry")
-
-                try {
-                    val sink = contentResolver.openOutputStream(uri)
-                        ?: throw InternalErrorException("Could not open the Downloads entry for writing")
-
-                    sink.use { deviceConfigurationService.downloadFile(characteristic, it) }
-
-                    FileActionState.Downloaded(savedName(uri) ?: "${characteristic.name}.pem")
-                } catch (exception: Exception) {
-                    contentResolver.delete(uri, null, null)
-                    throw exception
-                }
-
+                FileActionState.Downloaded(deviceConfigurationService.downloadFileToDownloads(characteristic))
             } catch (exception: NotFoundException) {
                 Log.d(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Characteristic is not configured yet: ${characteristic.key}", exception)
                 FileActionState.Failed(FileActionFailureReason.NOT_CONFIGURED)
@@ -345,13 +317,7 @@ class DeviceConfigurationViewModel(
         viewModelScope.launch {
 
             val result = try {
-
-                val length = fileSize(uri) ?: throw InternalErrorException("Could not determine the file's size")
-                val source = contentResolver.openInputStream(uri)
-                    ?: throw InternalErrorException("Could not open the picked file for reading")
-
-                source.use { deviceConfigurationService.uploadFile(characteristic, it, length) }
-
+                deviceConfigurationService.uploadFile(characteristic, uri)
                 FileActionState.Uploaded
             } catch (exception: InvalidValueException) {
                 Log.w(DEVICE_CONFIGURATION_VIEW_MODEL_TAG, "Device rejected uploaded value for: ${characteristic.key}", exception)
@@ -366,23 +332,6 @@ class DeviceConfigurationViewModel(
 
     }
 
-    /**
-     * The display name [uri] was actually saved under, which MediaStore may have changed from the
-     * one requested on a name collision, or `null` if it can't be determined.
-     */
-    private fun savedName(uri: Uri): String? =
-        contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) cursor.getString(0) else null
-        }
-
-    /**
-     * The size, in bytes, of the file at [uri], or `null` if it can't be determined.
-     */
-    private fun fileSize(uri: Uri): Long? =
-        contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) cursor.getLong(0) else null
-        }
-
     override fun onCleared() {
         super.onCleared()
         deviceConfigurationService.disconnect()
@@ -395,12 +344,11 @@ class DeviceConfigurationViewModel(
  */
 @Suppress("UNCHECKED_CAST")
 class DeviceConfigurationViewModelFactory(
-    private val deviceConfigurationService: DeviceConfigurationService,
-    private val contentResolver: ContentResolver
+    private val deviceConfigurationService: DeviceConfigurationService
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return DeviceConfigurationViewModel(deviceConfigurationService, contentResolver) as T
+        return DeviceConfigurationViewModel(deviceConfigurationService) as T
     }
 
 }

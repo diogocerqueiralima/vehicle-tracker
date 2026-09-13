@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.github.diogocerqueiralima.DependenciesContainer
 import com.github.diogocerqueiralima.domain.devices.model.Device
 import com.github.diogocerqueiralima.domain.devices.services.DeviceConfigurationService
+import com.github.diogocerqueiralima.infrastructure.common.storage.MediaStoreFileStorage
 import com.github.diogocerqueiralima.infrastructure.devices.connection.BluetoothDeviceConnection
 import com.github.diogocerqueiralima.presentation.devices.screens.DeviceConfigurationScreen
 import com.github.diogocerqueiralima.presentation.devices.viewmodel.DeviceConfigurationViewModel
@@ -58,9 +59,10 @@ class DeviceConfigurationActivity : ComponentActivity() {
                 dependenciesContainer.bluetoothManager,
                 dependenciesContainer.dataStore
             )
-            val deviceConfigurationService = DeviceConfigurationService(deviceConnection)
+            val fileStorage = MediaStoreFileStorage(applicationContext.contentResolver)
+            val deviceConfigurationService = DeviceConfigurationService(deviceConnection, fileStorage)
 
-            DeviceConfigurationViewModelFactory(deviceConfigurationService, applicationContext.contentResolver)
+            DeviceConfigurationViewModelFactory(deviceConfigurationService)
         }
     )
 
