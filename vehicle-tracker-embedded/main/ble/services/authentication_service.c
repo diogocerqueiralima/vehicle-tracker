@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "esp_log.h"
+#include "esp_tls.h"
 #include "gatt_common.h"
 #include "host/ble_gatt.h"
 #include "identity/device_credentials.h"
@@ -48,6 +49,78 @@ static gatt_file_handler_context_t ca_context = {
     .validate = validate_certificate,
     .max_len = CERTIFICATE_MAX_LEN,
 };
+
+esp_err_t authentication_service_load_ca_into_global_store()
+{
+    // 1. Ask how much is stored. A missing CA just means the device has not been provisioned
+    // yet, which is expected and not an error.
+    size_t ca_len = 0;
+    esp_err_t error = get_data_size(CA_NAMESPACE, &ca_len);
+    if (error == ESP_ERR_NVS_NOT_FOUND)
+    {
+        return ESP_OK;
+    }
+    if (error != ESP_OK)
+    {
+        return error;
+    }
+
+    // 2. Load the CA into a buffer so it can be passed to esp_tls_set_global_ca_store().
+    char* ca_pem = malloc(ca_len + 1);
+    if (ca_pem == nullptr)
+    {
+        return ESP_ERR_NO_MEM;
+    }
+
+    error = load_data(CA_NAMESPACE, ca_pem, ca_len);
+    if (error != ESP_OK)
+    {
+        free(ca_pem);
+        return error;
+    }
+    ca_pem[ca_len] = '\0';
+
+    // 3. Reset the global CA store first, in case it was already populated with a different CA.
+    esp_tls_free_global_ca_store();
+
+    // 4. Load the CA into esp-tls's global CA store, so any TLS transport that opts in via
+    error = esp_tls_set_global_ca_store((const unsigned char*) ca_pem, ca_len + 1);
+    free(ca_pem);
+
+    ESP_LOGI(LOG_TAG, "Loaded CA into global store: %s", error == ESP_OK ? "success" : esp_err_to_name(error));
+    return error;
+}
+
+/**
+ *
+ * @brief GATT characteristic access callback for the CA certificate characteristic.
+ * This function delegates to the shared file characteristic handler for the actual chunked read/write.
+ * If a write completes successfully, it refreshes the global CA store from the newly persisted CA.
+ *
+ * @param conn_handle the connection handle of the BLE connection
+ * @param attr_handle the attribute handle of the characteristic being accessed
+ * @param ctxt the GATT access context containing the operation type and response/written buffer
+ * @param arg the gatt_file_handler_context_t for the CA characteristic
+ * @return the ATT error code, 0 on success, or a specific error code on failure
+ */
+static int ca_access_cb(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg)
+{
+
+    // 1. Delegate to the shared file characteristic handler for the actual chunked read/write.
+    const int rc = gatt_common_file_access_cb(conn_handle, attr_handle, ctxt, arg);
+
+    // 2. If this was a write that completed successfully, refresh the global CA store from the newly persisted CA.
+    if (rc == 0 && ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR && ca_context.write.buffer == nullptr)
+    {
+        const esp_err_t error = authentication_service_load_ca_into_global_store();
+        if (error != ESP_OK)
+        {
+            ESP_LOGW(LOG_TAG, "Failed to refresh the global CA store: %s", esp_err_to_name(error));
+        }
+    }
+
+    return rc;
+}
 
 /**
  *
@@ -284,7 +357,7 @@ static const struct ble_gatt_chr_def characteristics[] = {
     },
     {
         .uuid = &authentication_ca_uuid.u,
-        .access_cb = gatt_common_file_access_cb,
+        .access_cb = ca_access_cb,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_AUTHEN |
                  BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_AUTHEN,
         .val_handle = nullptr,

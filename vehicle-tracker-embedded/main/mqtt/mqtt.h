@@ -6,6 +6,8 @@
 #include "mqtt_client.h"
 #include <stdint.h>
 
+#include "psa/crypto_types.h"
+
 extern esp_mqtt_client_handle_t mqtt_client;
 
 static void set_default_mqtt_client(esp_mqtt_client_handle_t client)
@@ -20,11 +22,10 @@ static void set_default_mqtt_client(esp_mqtt_client_handle_t client)
 * @param port The port of the MQTT broker.
 * @param certificate The client certificate for authentication.
 * @param certificate_len The length of the client certificate.
-* @param key The client private key for authentication.
-* @param key_len The length of the client private key.
+* @param key_id The PSA key identifier for the private key used for authentication.
 * @return ESP_OK on success, or an error code on failure.
 */
-esp_err_t mqtt_init(char *hostname, uint32_t port, char *certificate, size_t certificate_len, char *key, size_t key_len);
+esp_err_t mqtt_init(const char *hostname, uint32_t port, unsigned char *certificate, size_t certificate_len, psa_key_id_t key_id);
 
 /**
 *

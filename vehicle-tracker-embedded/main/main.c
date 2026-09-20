@@ -148,6 +148,14 @@ void app_main()
         return;
     }
 
+    // 1.1 Seed esp-tls's global CA store from the CA certificate provisioned over BLE, if any.
+    // Not fatal: a device that has not been enrolled yet has no CA stored yet either.
+    error = authentication_service_load_ca_into_global_store();
+    if (error != ESP_OK)
+    {
+        ESP_LOGW(LOG_TAG, "Continuing without a global CA store: %s", esp_err_to_name(error));
+    }
+
     // 2.1 Initialize the I2C registry
     error = init_i2c();
     if (error != ESP_OK)

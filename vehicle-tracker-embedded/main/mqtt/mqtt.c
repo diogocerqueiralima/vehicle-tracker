@@ -3,45 +3,66 @@
 #include "mqtt_client.h"
 #include <string.h>
 
-esp_mqtt_client_handle_t mqtt_client = NULL;
+#include "esp_key_config.h"
+#include "esp_transport_ssl.h"
 
-esp_err_t mqtt_init(char *hostname, uint32_t port, char *certificate, size_t certificate_len, char *key, size_t key_len)
+esp_mqtt_client_handle_t mqtt_client = nullptr;
+
+esp_err_t mqtt_init(
+	const char *hostname, const uint32_t port, unsigned char *certificate, const size_t certificate_len,
+	const psa_key_id_t key_id
+)
 {
 
-	// 1. Create an MQTT client configuration structure
-	esp_mqtt_client_config_t config = {
+	// 1. Build the SSL transport ourselves: esp-mqtt has no field for a PSA key
+	// identifier, only esp_transport_ssl_set_client_key_config() does.
+	esp_transport_handle_t ssl = esp_transport_ssl_init();
+	if (ssl == NULL)
+	{
+		return ESP_FAIL;
+	}
+
+	esp_transport_ssl_enable_global_ca_store(ssl);
+	esp_transport_ssl_set_client_cert_data(ssl, (char *) certificate, (int) certificate_len);
+
+	// esp_transport_ssl_set_client_key_config() stores this pointer, not a copy.
+	static esp_key_config_t key_config;
+	key_config = (esp_key_config_t) {
+		.source = ESP_KEY_SOURCE_PSA,
+		.psa = {
+			.key_id = key_id
+		}
+	};
+	esp_transport_ssl_set_client_key_config(ssl, &key_config);
+
+	// 2. Create an MQTT client configuration structure, handing it the transport
+	// built above. esp-mqtt uses it as-is and destroys it on esp_mqtt_client_destroy().
+	const esp_mqtt_client_config_t config = {
 		.broker = {
 			.address = {
 				.hostname = hostname,
 				.port = port,
 				.transport = MQTT_TRANSPORT_OVER_SSL
-			},
-			.verification = {
-				.use_global_ca_store = true
 			}
 		},
-		.credentials = {
-			.authentication = {
-				.certificate = certificate,
-				.certificate_len = certificate_len,
-				.key = key,
-				.key_len = key_len
-			}
+		.network = {
+			.transport = ssl
 		}
 	};
 
-	// 2. Initialize the MQTT client with the configuration
+	// 3. Initialize the MQTT client with the configuration
 	esp_mqtt_client_handle_t client = esp_mqtt_client_init(&config);
 	if (client == NULL)
 	{
+		esp_transport_destroy(ssl);
 		return ESP_FAIL;
 	}
 
-	// 3. Set the default MQTT client handle
+	// 4. Set the default MQTT client handle
 	set_default_mqtt_client(client);
 
-	// 4. Start the MQTT client
-	esp_err_t error = esp_mqtt_client_start(client);
+	// 5. Start the MQTT client
+	const esp_err_t error = esp_mqtt_client_start(client);
 	if (error != ESP_OK)
 	{
 		return error;

@@ -18,10 +18,12 @@
 // in NVS and hands out only this reference, so the private key never reaches an application buffer.
 #define DEVICE_CREDENTIALS_PRIVATE_KEY_ID ((psa_key_id_t) 1)
 
-// Hash the CSR is signed over. Both defines must name the same hash: the key policy fixes what PSA
-// is allowed to sign, and PSA refuses the signature when the request asks for a different hash.
+// Hash the CSR is signed over.
 #define DEVICE_CREDENTIALS_CSR_MD MBEDTLS_MD_SHA512
-#define DEVICE_CREDENTIALS_KEY_ALG MBEDTLS_PK_ALG_ECDSA(PSA_ALG_SHA_512)
+
+// The same key also signs the TLS CertificateVerify, whose hash is fixed by the cipher suite the
+// handshake negotiates, not by DEVICE_CREDENTIALS_CSR_MD.
+#define DEVICE_CREDENTIALS_KEY_ALG MBEDTLS_PK_ALG_ECDSA(PSA_ALG_ANY_HASH)
 
 // The key is a NIST P-256 (secp256r1) signing key, which is 256 bits long.
 #define DEVICE_CREDENTIALS_KEY_SIZE_BITS 256
