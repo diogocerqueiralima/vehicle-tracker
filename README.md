@@ -66,7 +66,7 @@ In folder `docs` you can find more detailed documentation about the architecture
 - **Backend**: Java with Spring Boot
 - **Mobile**: Kotlin with Jetpack Compose for Android
 - **Database**: PostgreSQL with TimescaleDB and PostGIS extensions
-- **Messaging**: Kafka
+- **Messaging**: Kafka, Mosquitto (MQTT broker)
 - **Containerization**: Docker (local and cloud deployment)
 
 ## Features
