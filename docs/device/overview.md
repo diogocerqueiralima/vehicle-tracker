@@ -4,6 +4,10 @@ This document provides a high-level overview of the devices used in the vehicle-
 
 > **Note**: This system is still under development. More information may be added in the future.
 
+## Storage
+
+Devices use the NVS (Non-Volatile Storage) system with encryption to manage and store data efficiently. For more information on the storage system, refer to the [Storage Overview](storage/overview.md).
+
 ## Authentication
 
 Devices authenticate with the MQTT broker using certificates issued by the Identity Service. The authentication process ensures that only authorized devices can send data to the system. For more information on the authentication process, refer to the [Device Authentication Overview](authentication/overview.md).
