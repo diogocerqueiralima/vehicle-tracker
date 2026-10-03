@@ -48,9 +48,9 @@ The device answers failed requests with the following error codes. Most are defi
 
 | Code | Name | Source | Meaning |
 |---|---|---|---|
-| `0x0D` | Invalid Attribute Value Length | Bluetooth specification | A [file characteristic](#file-characteristics) write chunk is malformed: shorter than the 8-byte `[total_len][offset]` header. |
+| `0x0D` | Invalid Attribute Value Length | Bluetooth specification | A write is malformed, including a [file characteristic](#file-characteristics) chunk shorter than the 8-byte header or an empty scalar characteristic write. |
 | `0x0E` | Unlikely Error | Bluetooth specification | A read failed for a reason other than the setting being unconfigured, such as a storage failure. Because this code differs from `0x90`, a client can tell an unconfigured setting apart from a misbehaving device. |
-| `0x13` | Value Not Allowed | Bluetooth specification | A [file characteristic](#file-characteristics) chunk sequence, its declared size, or the complete value itself is invalid. |
+| `0x13` | Value Not Allowed | Bluetooth specification | A submitted value is invalid, including a [file characteristic](#file-characteristics) chunk sequence, declared size, or complete value, or a scalar setting that fails validation. |
 | `0x90` | Not Configured | Application | The characteristic holds no value on the device yet, and has no [default](../config/overview.md#default-values) to fall back to. This is normal on an unconfigured device, and the client should offer to write a value instead of reporting a failure. |
 
 > **Note**: `0x90` sits in the upper half of the reserved range because Android's Bluetooth stack reuses `0x80`-`0x8F` for errors of its own, which a client could not tell apart from an error sent by the device.
