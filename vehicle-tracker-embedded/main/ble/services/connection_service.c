@@ -49,7 +49,7 @@ static bool validate_mqtt_reconnection_interval(const char* data, const uint16_t
     return value > 0;
 }
 
-// Documented default values (docs/device/ble/connection/overview.md), stored in the same wire format
+// Documented default values (docs/device/config/connection.md), stored in the same wire format
 // the mobile app writes: fixed-width little-endian integers, which is the ESP32's native byte order.
 static constexpr uint16_t DEFAULT_MQTT_KEEP_ALIVE = 60;
 static constexpr uint8_t DEFAULT_MQTT_QOS = 0;
