@@ -1,6 +1,6 @@
 # Connection Service
 
-The Connection Service exposes the device's connection configuration over BLE. This document lists its UUIDs, types and allowed actions. For what each characteristic means and its default value, refer to the [Connection Configuration](../config/connection.md).
+The Connection Service exposes the device's connection configuration over BLE. This document lists its UUIDs, types and allowed actions. For what each characteristic means and its default value, refer to the [Connection Configuration](../../config/connection.md).
 
 ## Structure
 

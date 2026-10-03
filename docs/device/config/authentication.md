@@ -25,7 +25,7 @@ The device produces these values itself. Clients can read them but not write the
 |---|---|---|
 | revoke | boolean | Writing `1` revokes the current credentials, and writing `0` does nothing. The flag is a command, so the device does not store it. |
 
-The [Authentication Service](../ble/authentication.md) exposes these values over BLE.
+The [Authentication Service](../ble/config/authentication.md) exposes these values over BLE.
 
 ## CSR generation
 

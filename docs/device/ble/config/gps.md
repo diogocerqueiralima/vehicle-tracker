@@ -1,6 +1,6 @@
 # GPS Service
 
-The GPS Service exposes the device's GPS configuration over BLE. This document lists its UUIDs, types and allowed actions. For what each characteristic means and its default value, refer to the [GPS Configuration](../config/gps.md).
+The GPS Service exposes the device's GPS configuration over BLE. This document lists its UUIDs, types and allowed actions. For what each characteristic means and its default value, refer to the [GPS Configuration](../../config/gps.md).
 
 ## Structure
 
