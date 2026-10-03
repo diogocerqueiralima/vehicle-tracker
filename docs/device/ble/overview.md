@@ -89,6 +89,10 @@ Each service groups characteristics, and each characteristic holds one value. Fo
 
 Each service exposes one section of the device's configuration. The BLE documents list each value's UUID, type and allowed actions. The [Configuration](../config/overview.md) documents describe what each value means, its default, and how the device handles it.
 
+## Lifecycle
+
+For the states a BLE connection goes through, from advertising to disconnection, refer to the [BLE Lifecycle](lifecycle.md).
+
 ## Error Handling
 
 The device answers failed requests with error codes, which are the same for every service. For the codes and their meaning, refer to [Error Handling](error-handling.md).
