@@ -16,9 +16,9 @@ The device exposes a **GATT Server** that allows authorized clients to read and 
 
 | Service | Description | Document |
 |---|---|---|
-| **Connection Service** | Allows reading and writing device connection parameters. | [Connection Service](connection/overview.md) |
-| **GPS Service** | Allows reading and writing GPS configuration parameters. | [GPS Service](gps/overview.md) |
-| **Authentication Service** | Allows reading and writing authentication parameters. | [Authentication Service](authentication/overview.md) |
+| **Connection Service** | Allows reading and writing device connection parameters. | [Connection Service](connection.md) |
+| **GPS Service** | Allows reading and writing GPS configuration parameters. | [GPS Service](gps.md) |
+| **Authentication Service** | Allows reading and writing authentication parameters. | [Authentication Service](authentication.md) |
 
 ## File Characteristics
 
@@ -38,27 +38,19 @@ Some characteristics hold a **file**-typed value: one that can be larger than a 
 
 Each file characteristic's document lists its own size cap. A write declaring a `total_len` above that cap is rejected outright.
 
-## Default Values
+## Configuration
 
-Each service document lists a default value for the characteristics that have one. On every boot, the device writes those defaults to its own storage for the characteristics that hold no value yet, so a freshly flashed device answers a read with the documented default instead of an error. A characteristic that already holds a value is never overwritten, so a default is only ever applied once.
-
-Characteristics documented with a `-` default (such as `broker_url` or the certificates) have no sensible value to fall back to, and stay unconfigured until a client writes one.
+Each service exposes one section of the device's configuration. The BLE documents list each value's UUID, type and allowed actions. The [Configuration](../config/overview.md) documents describe what each value means, its default, and how the device handles it.
 
 ## Error Codes
 
-Beyond the error codes defined by the Bluetooth specification, the device answers a read with the following application-specific code, taken from the `0x80`-`0x9F` range the specification reserves for the higher-layer profile.
+The device answers failed requests with the following error codes. Most are defined by the Bluetooth specification; the application-specific ones are taken from the `0x80`-`0x9F` range the specification reserves for the higher-layer profile.
 
-| Code | Name | Meaning |
-|---|---|---|
-| `0x90` | Not Configured | The characteristic holds no value on the device yet, and has no default to fall back to. Expected on an unconfigured device: the client should offer to write a value instead of reporting a failure. |
+| Code | Name | Source | Meaning |
+|---|---|---|---|
+| `0x0D` | Invalid Attribute Value Length | Bluetooth specification | A write is malformed, including a [file characteristic](#file-characteristics) chunk shorter than the 8-byte header or an empty scalar characteristic write. |
+| `0x0E` | Unlikely Error | Bluetooth specification | A read failed for a reason other than the setting being unconfigured, such as a storage failure. Because this code differs from `0x90`, a client can tell an unconfigured setting apart from a misbehaving device. |
+| `0x13` | Value Not Allowed | Bluetooth specification | A submitted value is invalid, including a [file characteristic](#file-characteristics) chunk sequence, declared size, or complete value, or a scalar setting that fails validation. |
+| `0x90` | Not Configured | Application | The characteristic holds no value on the device yet, and has no [default](../config/overview.md#default-values) to fall back to. This is normal on an unconfigured device, and the client should offer to write a value instead of reporting a failure. |
 
-A read that fails for any other reason (a storage failure, for instance) keeps answering with the specification's `0x0E` (Unlikely Error), so a client can tell an unconfigured setting apart from a device that is misbehaving.
-
-> **Note**: the code sits in the upper half of the reserved range because Android's Bluetooth stack reuses `0x80`-`0x8F` for errors of its own, which a client could not tell apart from an error sent by the device.
-
-A [file characteristic](#file-characteristics) read or write chunk can also fail with the following codes, defined by the Bluetooth specification rather than being application-specific:
-
-| Code | Name | Meaning |
-|---|---|---|
-| `0x0D` | Invalid Attribute Value Length | A write chunk is malformed: shorter than the 8-byte `[total_len][offset]` header. |
-| `0x13` | Value Not Allowed | The chunk sequence, the declared size, or the complete value itself is invalid. |
+> **Note**: `0x90` sits in the upper half of the reserved range because Android's Bluetooth stack reuses `0x80`-`0x8F` for errors of its own, which a client could not tell apart from an error sent by the device.

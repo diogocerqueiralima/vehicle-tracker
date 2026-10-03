@@ -241,7 +241,7 @@ static bool validate_expiration(const char* data, const uint16_t len)
     return true;
 }
 
-// Documented default value (docs/device/ble/authentication/overview.md): one year expressed in
+// Documented default value (docs/device/config/authentication.md): one year expressed in
 // seconds, stored as the raw ASCII numeric string the mobile app writes, without a terminator.
 static constexpr char DEFAULT_EXPIRATION[] = "31536000";
 

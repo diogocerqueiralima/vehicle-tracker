@@ -8,6 +8,10 @@ This document provides a high-level overview of the devices used in the vehicle-
 
 Devices use the NVS (Non-Volatile Storage) system with encryption to manage and store data efficiently. For more information on the storage system, refer to the [Storage Overview](storage/overview.md).
 
+## Configuration
+
+Devices receive their configuration, such as MQTT connection, GPS and authentication settings, from the mobile application over BLE and keep it in storage. For more information on the configuration system, refer to the [Configuration Overview](config/overview.md).
+
 ## Authentication
 
 Devices authenticate with the MQTT broker using certificates issued by the Identity Service. The authentication process ensures that only authorized devices can send data to the system. For more information on the authentication process, refer to the [Device Authentication Overview](authentication/overview.md).

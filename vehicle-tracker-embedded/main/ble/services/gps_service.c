@@ -41,7 +41,7 @@ static bool validate_gps_mode(const char* data, const uint16_t len)
            (len == strlen(UE_ASSISTED) && strncmp(data, UE_ASSISTED, len) == 0);
 }
 
-// Documented default values (docs/device/ble/gps/overview.md), stored in the same wire format the
+// Documented default values (docs/device/config/gps.md), stored in the same wire format the
 // mobile app writes: fixed-width little-endian integers and raw UTF-8 strings without a terminator.
 static constexpr uint32_t DEFAULT_GPS_UPDATE_INTERVAL = 60;
 static constexpr uint32_t DEFAULT_GPS_TIMEOUT = 60;

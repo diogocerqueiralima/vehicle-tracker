@@ -49,7 +49,8 @@ data class ServiceSpec(
 
 /**
  * Static catalog of every GATT service/characteristic the device exposes, mirroring
- * docs/device/ble/{connection,gps,authentication}/overview.md.
+ * docs/device/ble/{connection,gps,authentication}.md (UUIDs, formats and actions) and
+ * docs/device/config/{connection,gps,authentication}.md (descriptions).
  */
 object Catalog {
 
