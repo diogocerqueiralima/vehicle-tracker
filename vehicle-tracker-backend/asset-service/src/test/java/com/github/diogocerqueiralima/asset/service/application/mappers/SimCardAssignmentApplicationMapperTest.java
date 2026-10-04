@@ -51,7 +51,7 @@ class SimCardAssignmentApplicationMapperTest {
         );
 
         Instant assignedAt = Instant.parse("2026-03-20T12:00:00Z");
-        SimCardAssignment assignment = SimCardAssignmentApplicationMapper.toDomain(
+        SimCardAssignment assignment = SimCardAssignmentApplicationMapper.INSTANCE.toDomain(
                 command,
                 device,
                 simCard,
@@ -102,15 +102,15 @@ class SimCardAssignmentApplicationMapperTest {
                 null
         );
 
-        SimCardAssignmentResult result = SimCardAssignmentApplicationMapper.toResult(assignment);
+        SimCardAssignmentResult result = SimCardAssignmentApplicationMapper.INSTANCE.toResult(assignment);
 
-        assertThat(result.deviceId()).isEqualTo(deviceId);
-        assertThat(result.simCardId()).isEqualTo(simCardId);
-        assertThat(result.assignedBy()).isEqualTo(assignedBy);
-        assertThat(result.unassignedAt()).isNull();
-        assertThat(result.unassignedBy()).isNull();
-        assertThat(result.removalReason()).isNull();
-        assertThat(result.active()).isTrue();
+        assertThat(result.getDeviceId()).isEqualTo(deviceId);
+        assertThat(result.getSimCardId()).isEqualTo(simCardId);
+        assertThat(result.getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(result.getUnassignedAt()).isNull();
+        assertThat(result.getUnassignedBy()).isNull();
+        assertThat(result.getRemovalReason()).isNull();
+        assertThat(result.getActive()).isTrue();
     }
 
     @Test
@@ -159,7 +159,7 @@ class SimCardAssignmentApplicationMapperTest {
         );
 
         Instant unassignedAt = Instant.parse("2026-04-01T08:00:00Z");
-        SimCardAssignment assignment = SimCardAssignmentApplicationMapper.toDomain(
+        SimCardAssignment assignment = SimCardAssignmentApplicationMapper.INSTANCE.toDomain(
                 command,
                 activeAssignment,
                 unassignedAt

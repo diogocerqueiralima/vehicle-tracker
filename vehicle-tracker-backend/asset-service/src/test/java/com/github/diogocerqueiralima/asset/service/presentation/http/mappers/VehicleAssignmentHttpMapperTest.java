@@ -36,15 +36,15 @@ class VehicleAssignmentHttpMapperTest {
                 "Installed in workshop A"
         );
 
-        AssignDeviceToVehicleCommand command = VehicleAssignmentHttpMapper.toAssignDeviceToVehicleCommand(
+        AssignDeviceToVehicleCommand command = VehicleAssignmentHttpMapper.INSTANCE.toAssignDeviceToVehicleCommand(
                 request, vehicleId, assignedBy
         );
 
-        assertThat(command.deviceId()).isEqualTo(deviceId);
-        assertThat(command.vehicleId()).isEqualTo(vehicleId);
-        assertThat(command.assignedBy()).isEqualTo(assignedBy);
-        assertThat(command.installedBy()).isEqualTo(installedBy);
-        assertThat(command.notes()).isEqualTo("Installed in workshop A");
+        assertThat(command.getDeviceId()).isEqualTo(deviceId);
+        assertThat(command.getVehicleId()).isEqualTo(vehicleId);
+        assertThat(command.getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(command.getInstalledBy()).isEqualTo(installedBy);
+        assertThat(command.getNotes()).isEqualTo("Installed in workshop A");
     }
 
     @Test
@@ -70,18 +70,18 @@ class VehicleAssignmentHttpMapperTest {
                 true
         );
 
-        VehicleAssignmentDTO dto = VehicleAssignmentHttpMapper.toDTO(result);
+        VehicleAssignmentDTO dto = VehicleAssignmentHttpMapper.INSTANCE.toDTO(result);
 
-        assertThat(dto.deviceId()).isEqualTo(deviceId);
-        assertThat(dto.vehicleId()).isEqualTo(vehicleId);
-        assertThat(dto.assignedAt()).isEqualTo(assignedAt);
-        assertThat(dto.assignedBy()).isEqualTo(assignedBy);
-        assertThat(dto.unassignedAt()).isNull();
-        assertThat(dto.unassignedBy()).isNull();
-        assertThat(dto.removalReason()).isNull();
-        assertThat(dto.installedBy()).isEqualTo(installedBy);
-        assertThat(dto.notes()).isEqualTo("Installed in workshop A");
-        assertThat(dto.active()).isTrue();
+        assertThat(dto.getDeviceId()).isEqualTo(deviceId);
+        assertThat(dto.getVehicleId()).isEqualTo(vehicleId);
+        assertThat(dto.getAssignedAt()).isEqualTo(assignedAt);
+        assertThat(dto.getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(dto.getUnassignedAt()).isNull();
+        assertThat(dto.getUnassignedBy()).isNull();
+        assertThat(dto.getRemovalReason()).isNull();
+        assertThat(dto.getInstalledBy()).isEqualTo(installedBy);
+        assertThat(dto.getNotes()).isEqualTo("Installed in workshop A");
+        assertThat(dto.getActive()).isTrue();
     }
 
     @Test
@@ -97,16 +97,16 @@ class VehicleAssignmentHttpMapperTest {
                 VehicleRemovalReason.LOSS
         );
 
-        UnassignDeviceFromVehicleCommand command = VehicleAssignmentHttpMapper.toUnassignDeviceFromVehicleCommand(
+        UnassignDeviceFromVehicleCommand command = VehicleAssignmentHttpMapper.INSTANCE.toUnassignDeviceFromVehicleCommand(
                 request,
                 vehicleId,
                 unassignedBy
         );
 
-        assertThat(command.deviceId()).isEqualTo(deviceId);
-        assertThat(command.vehicleId()).isEqualTo(vehicleId);
-        assertThat(command.unassignedBy()).isEqualTo(unassignedBy);
-        assertThat(command.removalReason()).isEqualTo(VehicleRemovalReason.LOSS);
+        assertThat(command.getDeviceId()).isEqualTo(deviceId);
+        assertThat(command.getVehicleId()).isEqualTo(vehicleId);
+        assertThat(command.getUnassignedBy()).isEqualTo(unassignedBy);
+        assertThat(command.getRemovalReason()).isEqualTo(VehicleRemovalReason.LOSS);
     }
 
     @Test
@@ -116,14 +116,14 @@ class VehicleAssignmentHttpMapperTest {
         UUID vehicleId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        GetVehicleAssignmentHistoryCommand command = VehicleAssignmentHttpMapper.toGetVehicleAssignmentHistoryCommand(
+        GetVehicleAssignmentHistoryCommand command = VehicleAssignmentHttpMapper.INSTANCE.toGetVehicleAssignmentHistoryCommand(
                 vehicleId, userId, 2, 20
         );
 
-        assertThat(command.vehicleId()).isEqualTo(vehicleId);
-        assertThat(command.userId()).isEqualTo(userId);
-        assertThat(command.pageNumber()).isEqualTo(2);
-        assertThat(command.pageSize()).isEqualTo(20);
+        assertThat(command.getVehicleId()).isEqualTo(vehicleId);
+        assertThat(command.getUserId()).isEqualTo(userId);
+        assertThat(command.getPageNumber()).isEqualTo(2);
+        assertThat(command.getPageSize()).isEqualTo(20);
     }
 
     @Test
@@ -150,18 +150,18 @@ class VehicleAssignmentHttpMapperTest {
 
         PageResult<VehicleAssignmentResult> pageResult = new PageResult<>(1, 10, 3, 25L, List.of(result));
 
-        PageDTO<VehicleAssignmentDTO> dto = VehicleAssignmentHttpMapper.toPageDTO(pageResult);
+        PageDTO<VehicleAssignmentDTO> dto = VehicleAssignmentHttpMapper.INSTANCE.toPageDTO(pageResult);
 
         assertThat(dto.pageNumber()).isEqualTo(1);
         assertThat(dto.pageSize()).isEqualTo(10);
         assertThat(dto.totalPages()).isEqualTo(3);
         assertThat(dto.totalElements()).isEqualTo(25L);
         assertThat(dto.data()).hasSize(1);
-        assertThat(dto.data().getFirst().deviceId()).isEqualTo(deviceId);
-        assertThat(dto.data().getFirst().vehicleId()).isEqualTo(vehicleId);
-        assertThat(dto.data().getFirst().assignedAt()).isEqualTo(assignedAt);
-        assertThat(dto.data().getFirst().assignedBy()).isEqualTo(assignedBy);
-        assertThat(dto.data().getFirst().active()).isTrue();
+        assertThat(dto.data().getFirst().getDeviceId()).isEqualTo(deviceId);
+        assertThat(dto.data().getFirst().getVehicleId()).isEqualTo(vehicleId);
+        assertThat(dto.data().getFirst().getAssignedAt()).isEqualTo(assignedAt);
+        assertThat(dto.data().getFirst().getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(dto.data().getFirst().getActive()).isTrue();
     }
 
 }

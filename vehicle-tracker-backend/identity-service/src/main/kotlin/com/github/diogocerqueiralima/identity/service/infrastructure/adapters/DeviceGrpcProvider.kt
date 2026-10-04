@@ -3,7 +3,7 @@ package com.github.diogocerqueiralima.identity.service.infrastructure.adapters
 import com.github.diogocerqueiralima.identity.service.domain.model.device.Device
 import com.github.diogocerqueiralima.identity.service.domain.ports.outbound.DeviceProvider
 import com.github.diogocerqueiralima.identity.service.infrastructure.mappers.DeviceMapper
-import com.github.diogocerqueiralima.schema.proto.DeviceId
+import com.github.diogocerqueiralima.schema.proto.deviceId
 import com.github.diogocerqueiralima.schema.proto.DeviceServiceGrpc
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -27,9 +27,7 @@ class DeviceGrpcProvider(
         try {
 
             val response = blockingStub.getDeviceById(
-                DeviceId.newBuilder()
-                    .setId(id.toString())
-                    .build()
+                deviceId { this.id = id.toString() }
             )
 
             return DeviceMapper.toDomain(response)

@@ -1,14 +1,14 @@
 package com.github.diogocerqueiralima.asset.service.application.usecases;
 
+import com.github.diogocerqueiralima.error.common.exceptions.ConflictException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateVehicleCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehicleByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetVehiclePageCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UpdateVehicleCommand;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
 import com.github.diogocerqueiralima.asset.service.application.results.VehicleResult;
 import com.github.diogocerqueiralima.asset.service.domain.assets.Vehicle;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.VehicleAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.VehiclePersistence;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,20 +60,20 @@ class VehicleUseCaseImplTest {
                 UUID.randomUUID(),
                 now,
                 now,
-                command.vin(),
-                command.plate(),
-                command.model(),
-                command.manufacturer(),
-                command.manufacturingDate()
+                command.getVin(),
+                command.getPlate(),
+                command.getModel(),
+                command.getManufacturer(),
+                command.getManufacturingDate()
         );
 
         when(vehiclePersistence.save(any(Vehicle.class))).thenReturn(savedVehicle);
 
         VehicleResult result = vehicleUseCase.create(command);
 
-        assertThat(result.id()).isEqualTo(savedVehicle.getId());
-        assertThat(result.vin()).isEqualTo(command.vin());
-        assertThat(result.plate()).isEqualTo(command.plate());
+        assertThat(result.getId()).isEqualTo(savedVehicle.getId());
+        assertThat(result.getVin()).isEqualTo(command.getVin());
+        assertThat(result.getPlate()).isEqualTo(command.getPlate());
         verify(vehiclePersistence).save(any(Vehicle.class));
     }
 
@@ -92,10 +91,10 @@ class VehicleUseCaseImplTest {
                 userId
         );
 
-        when(vehiclePersistence.save(any(Vehicle.class))).thenThrow(new VehicleAlreadyExistsException());
+        when(vehiclePersistence.save(any(Vehicle.class))).thenThrow(new ConflictException("A vehicle with the provided VIN or plate already exists."));
 
         assertThatThrownBy(() -> vehicleUseCase.create(command))
-                .isInstanceOf(VehicleAlreadyExistsException.class);
+                .isInstanceOf(ConflictException.class);
 
         verify(vehiclePersistence).save(any(Vehicle.class));
     }
@@ -133,22 +132,22 @@ class VehicleUseCaseImplTest {
                 id,
                 createdAt,
                 Instant.parse("2026-03-16T12:00:00Z"),
-                command.vin(),
-                command.plate(),
-                command.model(),
-                command.manufacturer(),
-                command.manufacturingDate()
+                command.getVin(),
+                command.getPlate(),
+                command.getModel(),
+                command.getManufacturer(),
+                command.getManufacturingDate()
         );
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(existingVehicle));
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(existingVehicle);
         when(vehiclePersistence.save(any(Vehicle.class))).thenReturn(updatedVehicle);
 
         VehicleResult result = vehicleUseCase.update(command);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.createdAt()).isEqualTo(createdAt);
-        assertThat(result.plate()).isEqualTo("BB-11-BB");
-        assertThat(result.model()).isEqualTo("Model Y");
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getCreatedAt()).isEqualTo(createdAt);
+        assertThat(result.getPlate()).isEqualTo("BB-11-BB");
+        assertThat(result.getModel()).isEqualTo("Model Y");
         verify(vehiclePersistence).save(any(Vehicle.class));
     }
 
@@ -168,10 +167,10 @@ class VehicleUseCaseImplTest {
                 userId
         );
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(null);
 
         assertThatThrownBy(() -> vehicleUseCase.update(command))
-                .isInstanceOf(VehicleNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Vehicle not found for id: " + id);
 
         verify(vehiclePersistence, never()).save(any(Vehicle.class));
@@ -205,11 +204,11 @@ class VehicleUseCaseImplTest {
                 userId
         );
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(existingVehicle));
-        when(vehiclePersistence.save(any(Vehicle.class))).thenThrow(new VehicleAlreadyExistsException());
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(existingVehicle);
+        when(vehiclePersistence.save(any(Vehicle.class))).thenThrow(new ConflictException("A vehicle with the provided VIN or plate already exists."));
 
         assertThatThrownBy(() -> vehicleUseCase.update(command))
-                .isInstanceOf(VehicleAlreadyExistsException.class);
+                .isInstanceOf(ConflictException.class);
     }
 
     @Test
@@ -233,13 +232,13 @@ class VehicleUseCaseImplTest {
 
         GetVehicleByIdCommand command = new GetVehicleByIdCommand(id, userId);
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(vehicle));
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(vehicle);
 
         VehicleResult result = vehicleUseCase.getById(command);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.vin()).isEqualTo(vehicle.getVin());
-        assertThat(result.plate()).isEqualTo(vehicle.getPlate());
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getVin()).isEqualTo(vehicle.getVin());
+        assertThat(result.getPlate()).isEqualTo(vehicle.getPlate());
     }
 
     @Test
@@ -250,10 +249,10 @@ class VehicleUseCaseImplTest {
         UUID userId = UUID.randomUUID();
         GetVehicleByIdCommand command = new GetVehicleByIdCommand(id, userId);
 
-        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
+        when(vehiclePersistence.findByIdAndOwnerId(id, userId)).thenReturn(null);
 
         assertThatThrownBy(() -> vehicleUseCase.getById(command))
-                .isInstanceOf(VehicleNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Vehicle not found for id: " + id);
     }
 
@@ -288,12 +287,12 @@ class VehicleUseCaseImplTest {
 
         PageResult<VehicleResult> result = vehicleUseCase.getPage(command);
 
-        assertThat(result.pageNumber()).isEqualTo(pageNumber);
-        assertThat(result.pageSize()).isEqualTo(pageSize);
-        assertThat(result.totalElements()).isEqualTo(1);
-        assertThat(result.totalPages()).isEqualTo(1);
-        assertThat(result.data()).hasSize(1);
-        assertThat(result.data().getFirst().id()).isEqualTo(vehicle.getId());
+        assertThat(result.getPageNumber()).isEqualTo(pageNumber);
+        assertThat(result.getPageSize()).isEqualTo(pageSize);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().getFirst().getId()).isEqualTo(vehicle.getId());
 
         verify(vehiclePersistence).getPageByOwnerId(pageNumber - 1, pageSize, userId);
     }

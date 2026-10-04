@@ -1,10 +1,10 @@
 package com.github.diogocerqueiralima.asset.service.application.usecases;
 
+import com.github.diogocerqueiralima.error.common.exceptions.ConflictException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateOrUpdateDeviceCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDeviceByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetDevicePageCommand;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.DeviceAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.asset.service.application.results.DeviceResult;
 import com.github.diogocerqueiralima.asset.service.application.results.PageResult;
@@ -21,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,21 +59,21 @@ class DeviceUseCaseImplTest {
                 id,
                 now,
                 now,
-                command.serialNumber(),
-                command.model(),
-                command.manufacturer(),
-                command.imei()
+                command.getSerialNumber(),
+                command.getModel(),
+                command.getManufacturer(),
+                command.getImei()
         );
 
-        when(devicePersistence.findById(id)).thenReturn(Optional.empty());
-        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(false);
+        when(devicePersistence.findById(id)).thenReturn(null);
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.getSerialNumber(), command.getImei(), id)).thenReturn(false);
         when(devicePersistence.save(any(Device.class))).thenReturn(savedDevice);
 
         DeviceResult result = deviceUseCase.createOrUpdate(command);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.serialNumber()).isEqualTo(command.serialNumber());
-        assertThat(result.imei()).isEqualTo(command.imei());
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getSerialNumber()).isEqualTo(command.getSerialNumber());
+        assertThat(result.getImei()).isEqualTo(command.getImei());
         verify(devicePersistence).save(any(Device.class));
     }
 
@@ -93,11 +92,11 @@ class DeviceUseCaseImplTest {
                 ownerId
         );
 
-        when(devicePersistence.findById(id)).thenReturn(Optional.empty());
-        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(true);
+        when(devicePersistence.findById(id)).thenReturn(null);
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.getSerialNumber(), command.getImei(), id)).thenReturn(true);
 
         assertThatThrownBy(() -> deviceUseCase.createOrUpdate(command))
-                .isInstanceOf(DeviceAlreadyExistsException.class);
+                .isInstanceOf(ConflictException.class);
 
         verify(devicePersistence, never()).save(any(Device.class));
     }
@@ -133,22 +132,22 @@ class DeviceUseCaseImplTest {
                 id,
                 createdAt,
                 Instant.parse("2026-03-16T12:00:00Z"),
-                command.serialNumber(),
-                command.model(),
-                command.manufacturer(),
-                command.imei()
+                command.getSerialNumber(),
+                command.getModel(),
+                command.getManufacturer(),
+                command.getImei()
         );
 
-        when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
-        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(false);
+        when(devicePersistence.findById(id)).thenReturn(existingDevice);
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.getSerialNumber(), command.getImei(), id)).thenReturn(false);
         when(devicePersistence.save(any(Device.class))).thenReturn(updatedDevice);
 
         DeviceResult result = deviceUseCase.createOrUpdate(command);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.createdAt()).isEqualTo(createdAt);
-        assertThat(result.serialNumber()).isEqualTo("SN-002");
-        assertThat(result.model()).isEqualTo("TK-1100");
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getCreatedAt()).isEqualTo(createdAt);
+        assertThat(result.getSerialNumber()).isEqualTo("SN-002");
+        assertThat(result.getModel()).isEqualTo("TK-1100");
         verify(devicePersistence).save(any(Device.class));
     }
 
@@ -179,11 +178,11 @@ class DeviceUseCaseImplTest {
                 ownerId
         );
 
-        when(devicePersistence.findById(id)).thenReturn(Optional.of(existingDevice));
-        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.serialNumber(), command.imei(), id)).thenReturn(true);
+        when(devicePersistence.findById(id)).thenReturn(existingDevice);
+        when(devicePersistence.isSerialNumberOrImeiTakenByAnotherDevice(command.getSerialNumber(), command.getImei(), id)).thenReturn(true);
 
         assertThatThrownBy(() -> deviceUseCase.createOrUpdate(command))
-                .isInstanceOf(DeviceAlreadyExistsException.class);
+                .isInstanceOf(ConflictException.class);
 
         verify(devicePersistence, never()).save(any(Device.class));
     }
@@ -208,13 +207,13 @@ class DeviceUseCaseImplTest {
 
         GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId, false);
 
-        when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.of(device));
+        when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(device);
 
         DeviceResult result = deviceUseCase.getById(command);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.serialNumber()).isEqualTo(device.getSerialNumber());
-        assertThat(result.imei()).isEqualTo(device.getImei());
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getSerialNumber()).isEqualTo(device.getSerialNumber());
+        assertThat(result.getImei()).isEqualTo(device.getImei());
         verify(devicePersistence).findByIdAndOwnerId(id, userId);
         verify(devicePersistence, never()).findById(id);
     }
@@ -239,13 +238,13 @@ class DeviceUseCaseImplTest {
 
         GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, adminUserId, true);
 
-        when(devicePersistence.findById(id)).thenReturn(Optional.of(device));
+        when(devicePersistence.findById(id)).thenReturn(device);
 
         DeviceResult result = deviceUseCase.getById(command);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.serialNumber()).isEqualTo(device.getSerialNumber());
-        assertThat(result.imei()).isEqualTo(device.getImei());
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getSerialNumber()).isEqualTo(device.getSerialNumber());
+        assertThat(result.getImei()).isEqualTo(device.getImei());
         verify(devicePersistence).findById(id);
         verify(devicePersistence, never()).findByIdAndOwnerId(id, adminUserId);
     }
@@ -258,10 +257,10 @@ class DeviceUseCaseImplTest {
         UUID userId = UUID.randomUUID();
         GetDeviceByIdCommand command = new GetDeviceByIdCommand(id, userId, false);
 
-        when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(id, userId)).thenReturn(null);
 
         assertThatThrownBy(() -> deviceUseCase.getById(command))
-                .isInstanceOf(DeviceNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Device not found for id: " + id);
     }
 
@@ -295,12 +294,12 @@ class DeviceUseCaseImplTest {
 
         PageResult<DeviceResult> result = deviceUseCase.getPage(command);
 
-        assertThat(result.pageNumber()).isEqualTo(pageNumber);
-        assertThat(result.pageSize()).isEqualTo(pageSize);
-        assertThat(result.totalElements()).isEqualTo(1);
-        assertThat(result.totalPages()).isEqualTo(1);
-        assertThat(result.data()).hasSize(1);
-        assertThat(result.data().getFirst().id()).isEqualTo(device.getId());
+        assertThat(result.getPageNumber()).isEqualTo(pageNumber);
+        assertThat(result.getPageSize()).isEqualTo(pageSize);
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().getFirst().getId()).isEqualTo(device.getId());
 
         verify(devicePersistence).getPageByOwnerId(pageNumber - 1, pageSize, userId);
     }

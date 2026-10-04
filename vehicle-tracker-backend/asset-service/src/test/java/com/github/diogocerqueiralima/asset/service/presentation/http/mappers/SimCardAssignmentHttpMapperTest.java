@@ -29,15 +29,15 @@ class SimCardAssignmentHttpMapperTest {
                 deviceId
         );
 
-        AssignDeviceToSimCardCommand command = SimCardAssignmentHttpMapper.toAssignDeviceToSimCardCommand(
+        AssignDeviceToSimCardCommand command = SimCardAssignmentHttpMapper.INSTANCE.toAssignDeviceToSimCardCommand(
                 request,
                 simCardId,
                 assignedBy
         );
 
-        assertThat(command.deviceId()).isEqualTo(deviceId);
-        assertThat(command.simCardId()).isEqualTo(simCardId);
-        assertThat(command.assignedBy()).isEqualTo(assignedBy);
+        assertThat(command.getDeviceId()).isEqualTo(deviceId);
+        assertThat(command.getSimCardId()).isEqualTo(simCardId);
+        assertThat(command.getAssignedBy()).isEqualTo(assignedBy);
     }
 
     @Test
@@ -60,16 +60,16 @@ class SimCardAssignmentHttpMapperTest {
                 true
         );
 
-        SimCardAssignmentDTO dto = SimCardAssignmentHttpMapper.toDTO(result);
+        SimCardAssignmentDTO dto = SimCardAssignmentHttpMapper.INSTANCE.toDTO(result);
 
-        assertThat(dto.deviceId()).isEqualTo(deviceId);
-        assertThat(dto.simCardId()).isEqualTo(simCardId);
-        assertThat(dto.assignedAt()).isEqualTo(assignedAt);
-        assertThat(dto.assignedBy()).isEqualTo(assignedBy);
-        assertThat(dto.unassignedAt()).isNull();
-        assertThat(dto.unassignedBy()).isNull();
-        assertThat(dto.removalReason()).isNull();
-        assertThat(dto.active()).isTrue();
+        assertThat(dto.getDeviceId()).isEqualTo(deviceId);
+        assertThat(dto.getSimCardId()).isEqualTo(simCardId);
+        assertThat(dto.getAssignedAt()).isEqualTo(assignedAt);
+        assertThat(dto.getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(dto.getUnassignedAt()).isNull();
+        assertThat(dto.getUnassignedBy()).isNull();
+        assertThat(dto.getRemovalReason()).isNull();
+        assertThat(dto.getActive()).isTrue();
     }
 
     @Test
@@ -85,16 +85,16 @@ class SimCardAssignmentHttpMapperTest {
                 SimCardRemovalReason.UPGRADE
         );
 
-        UnassignDeviceFromSimCardCommand command = SimCardAssignmentHttpMapper.toUnassignDeviceFromSimCardCommand(
+        UnassignDeviceFromSimCardCommand command = SimCardAssignmentHttpMapper.INSTANCE.toUnassignDeviceFromSimCardCommand(
                 request,
                 simCardId,
                 unassignedBy
         );
 
-        assertThat(command.deviceId()).isEqualTo(deviceId);
-        assertThat(command.simCardId()).isEqualTo(simCardId);
-        assertThat(command.unassignedBy()).isEqualTo(unassignedBy);
-        assertThat(command.removalReason()).isEqualTo(SimCardRemovalReason.UPGRADE);
+        assertThat(command.getDeviceId()).isEqualTo(deviceId);
+        assertThat(command.getSimCardId()).isEqualTo(simCardId);
+        assertThat(command.getUnassignedBy()).isEqualTo(unassignedBy);
+        assertThat(command.getRemovalReason()).isEqualTo(SimCardRemovalReason.UPGRADE);
     }
 
 }

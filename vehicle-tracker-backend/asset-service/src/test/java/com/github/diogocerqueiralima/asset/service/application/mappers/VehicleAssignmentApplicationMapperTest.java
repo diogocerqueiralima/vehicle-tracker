@@ -57,7 +57,7 @@ class VehicleAssignmentApplicationMapperTest {
         );
 
         Instant assignedAt = Instant.parse("2026-03-20T12:00:00Z");
-        VehicleAssignment assignment = VehicleAssignmentApplicationMapper.toDomain(command, device, vehicle, assignedAt);
+        VehicleAssignment assignment = VehicleAssignmentApplicationMapper.INSTANCE.toDomain(command, device, vehicle, assignedAt);
 
         assertThat(assignment.getDevice().getId()).isEqualTo(deviceId);
         assertThat(assignment.getVehicle().getId()).isEqualTo(vehicleId);
@@ -109,16 +109,16 @@ class VehicleAssignmentApplicationMapperTest {
                 "Installed in workshop A"
         );
 
-        VehicleAssignmentResult result = VehicleAssignmentApplicationMapper.toResult(assignment);
+        VehicleAssignmentResult result = VehicleAssignmentApplicationMapper.INSTANCE.toResult(assignment);
 
-        assertThat(result.deviceId()).isEqualTo(deviceId);
-        assertThat(result.vehicleId()).isEqualTo(vehicleId);
-        assertThat(result.assignedBy()).isEqualTo(assignedBy);
-        assertThat(result.unassignedAt()).isNull();
-        assertThat(result.unassignedBy()).isNull();
-        assertThat(result.removalReason()).isNull();
-        assertThat(result.notes()).isEqualTo("Installed in workshop A");
-        assertThat(result.active()).isTrue();
+        assertThat(result.getDeviceId()).isEqualTo(deviceId);
+        assertThat(result.getVehicleId()).isEqualTo(vehicleId);
+        assertThat(result.getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(result.getUnassignedAt()).isNull();
+        assertThat(result.getUnassignedBy()).isNull();
+        assertThat(result.getRemovalReason()).isNull();
+        assertThat(result.getNotes()).isEqualTo("Installed in workshop A");
+        assertThat(result.getActive()).isTrue();
     }
 
     @Test
@@ -171,7 +171,7 @@ class VehicleAssignmentApplicationMapperTest {
         );
 
         Instant unassignedAt = Instant.parse("2026-04-01T08:00:00Z");
-        VehicleAssignment assignment = VehicleAssignmentApplicationMapper.toDomain(command, activeAssignment, unassignedAt);
+        VehicleAssignment assignment = VehicleAssignmentApplicationMapper.INSTANCE.toDomain(command, activeAssignment, unassignedAt);
 
         assertThat(assignment.getDevice().getId()).isEqualTo(deviceId);
         assertThat(assignment.getVehicle().getId()).isEqualTo(vehicleId);

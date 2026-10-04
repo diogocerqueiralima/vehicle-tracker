@@ -1,11 +1,11 @@
 package com.github.diogocerqueiralima.asset.service.application.usecases;
 
+import com.github.diogocerqueiralima.error.common.exceptions.ConflictException;
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.commands.CreateSimCardCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.DeleteSimCardByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.GetSimCardByIdCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UpdateSimCardCommand;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.SimCardNotFoundException;
-import com.github.diogocerqueiralima.asset.service.domain.exceptions.SimCardAlreadyExistsException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.SimCardPersistence;
 import com.github.diogocerqueiralima.asset.service.application.results.SimCardResult;
 import com.github.diogocerqueiralima.asset.service.domain.assets.SimCard;
@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,15 +44,15 @@ class SimCardUseCaseImplTest {
         Instant createdAt = Instant.now();
         Instant updatedAt = Instant.now();
         CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", ownerId);
-        SimCard saved = new SimCard(id, ownerId, createdAt, updatedAt, command.iccid(), command.msisdn(), command.imsi());
+        SimCard saved = new SimCard(id, ownerId, createdAt, updatedAt, command.getIccid(), command.getMsisdn(), command.getImsi());
 
         when(simCardPersistence.save(any(SimCard.class))).thenReturn(saved);
 
         SimCardResult result = simCardUseCase.create(command);
 
-        assertThat(result.iccid()).isEqualTo(command.iccid());
-        assertThat(result.msisdn()).isEqualTo(command.msisdn());
-        assertThat(result.imsi()).isEqualTo(command.imsi());
+        assertThat(result.getIccid()).isEqualTo(command.getIccid());
+        assertThat(result.getMsisdn()).isEqualTo(command.getMsisdn());
+        assertThat(result.getImsi()).isEqualTo(command.getImsi());
         verify(simCardPersistence).save(any(SimCard.class));
     }
 
@@ -61,11 +60,11 @@ class SimCardUseCaseImplTest {
     @DisplayName("Should fail creating when ICCID, MSISDN or IMSI already exists")
     void should_fail_creating_when_unique_field_already_exists() {
 
-        CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", null);
-        when(simCardPersistence.save(any(SimCard.class))).thenThrow(new SimCardAlreadyExistsException());
+        CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", UUID.randomUUID());
+        when(simCardPersistence.save(any(SimCard.class))).thenThrow(new ConflictException("A SIM card with the provided ICCID, MSISDN or IMSI already exists."));
 
         assertThatThrownBy(() -> simCardUseCase.create(command))
-                .isInstanceOf(SimCardAlreadyExistsException.class);
+                .isInstanceOf(ConflictException.class);
     }
 
     @Test
@@ -78,16 +77,16 @@ class SimCardUseCaseImplTest {
         UUID ownerId = UUID.randomUUID();
         SimCard existing = new SimCard(id, ownerId, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
         UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000002", "268010000000002", ownerId);
-        SimCard updated = new SimCard(id, ownerId, createdAt, updatedAt, command.iccid(), command.msisdn(), command.imsi());
+        SimCard updated = new SimCard(id, ownerId, createdAt, updatedAt, command.getIccid(), command.getMsisdn(), command.getImsi());
 
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.of(existing));
+        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(existing);
         when(simCardPersistence.save(any(SimCard.class))).thenReturn(updated);
 
         SimCardResult result = simCardUseCase.update(command);
 
-        assertThat(result.iccid()).isEqualTo("8901000000000000001");
-        assertThat(result.msisdn()).isEqualTo("351910000002");
-        assertThat(result.imsi()).isEqualTo("268010000000002");
+        assertThat(result.getIccid()).isEqualTo("8901000000000000001");
+        assertThat(result.getMsisdn()).isEqualTo("351910000002");
+        assertThat(result.getImsi()).isEqualTo("268010000000002");
     }
 
     @Test
@@ -98,10 +97,10 @@ class SimCardUseCaseImplTest {
         UUID ownerId = UUID.randomUUID();
         UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000002", "268010000000002", ownerId);
 
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.empty());
+        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(null);
 
         assertThatThrownBy(() -> simCardUseCase.update(command))
-                .isInstanceOf(SimCardNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("SIM card not found for id: " + id);
     }
 
@@ -116,11 +115,11 @@ class SimCardUseCaseImplTest {
         SimCard existing = new SimCard(id, ownerId, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
         UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000002", "268010000000002", ownerId);
 
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.of(existing));
-        when(simCardPersistence.save(any(SimCard.class))).thenThrow(new SimCardAlreadyExistsException());
+        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(existing);
+        when(simCardPersistence.save(any(SimCard.class))).thenThrow(new ConflictException("A SIM card with the provided ICCID, MSISDN or IMSI already exists."));
 
         assertThatThrownBy(() -> simCardUseCase.update(command))
-                .isInstanceOf(SimCardAlreadyExistsException.class);
+                .isInstanceOf(ConflictException.class);
 
         verify(simCardPersistence).save(any(SimCard.class));
     }
@@ -135,13 +134,13 @@ class SimCardUseCaseImplTest {
         UUID ownerId = UUID.randomUUID();
         SimCard simCard = new SimCard(id, ownerId, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
 
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.of(simCard));
+        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(simCard);
 
         SimCardResult result = simCardUseCase.getById(new GetSimCardByIdCommand(id, ownerId));
 
-        assertThat(result.iccid()).isEqualTo(simCard.getIccid());
-        assertThat(result.msisdn()).isEqualTo(simCard.getMsisdn());
-        assertThat(result.imsi()).isEqualTo(simCard.getImsi());
+        assertThat(result.getIccid()).isEqualTo(simCard.getIccid());
+        assertThat(result.getMsisdn()).isEqualTo(simCard.getMsisdn());
+        assertThat(result.getImsi()).isEqualTo(simCard.getImsi());
     }
 
     @Test
@@ -150,10 +149,10 @@ class SimCardUseCaseImplTest {
 
         UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.empty());
+        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(null);
 
         assertThatThrownBy(() -> simCardUseCase.getById(new GetSimCardByIdCommand(id, ownerId)))
-                .isInstanceOf(SimCardNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("SIM card not found for id: " + id);
     }
 
@@ -165,7 +164,7 @@ class SimCardUseCaseImplTest {
         UUID ownerId = UUID.randomUUID();
         SimCard existing = new SimCard(id, ownerId, Instant.now(), Instant.now(), "8901000000000000001", "351910000001", "268010000000001");
 
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.of(existing));
+        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(existing);
 
         simCardUseCase.deleteById(new DeleteSimCardByIdCommand(id, ownerId));
 
@@ -178,10 +177,10 @@ class SimCardUseCaseImplTest {
 
         UUID id = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
-        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(Optional.empty());
+        when(simCardPersistence.findByIdAndOwnerId(id, ownerId)).thenReturn(null);
 
         assertThatThrownBy(() -> simCardUseCase.deleteById(new DeleteSimCardByIdCommand(id, ownerId)))
-                .isInstanceOf(SimCardNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("SIM card not found for id: " + id);
 
         verify(simCardPersistence, never()).deleteByIdAndOwnerId(id, ownerId);

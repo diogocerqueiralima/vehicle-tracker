@@ -70,9 +70,9 @@ class VehicleControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("Vehicle created successfully.");
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(id);
-        assertThat(response.getBody().data().vin()).isEqualTo("1HGCM82633A123456");
-        assertThat(response.getBody().data().plate()).isEqualTo("AA-00-AA");
+        assertThat(response.getBody().data().getId()).isEqualTo(id);
+        assertThat(response.getBody().data().getVin()).isEqualTo("1HGCM82633A123456");
+        assertThat(response.getBody().data().getPlate()).isEqualTo("AA-00-AA");
     }
 
     @Test
@@ -108,9 +108,9 @@ class VehicleControllerTest {
 
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().model()).isEqualTo("Model 3");
-        assertThat(response.getBody().data().manufacturer()).isEqualTo("Tesla");
-        assertThat(response.getBody().data().manufacturingDate()).isEqualTo(LocalDate.of(2024, 1, 15));
+        assertThat(response.getBody().data().getModel()).isEqualTo("Model 3");
+        assertThat(response.getBody().data().getManufacturer()).isEqualTo("Tesla");
+        assertThat(response.getBody().data().getManufacturingDate()).isEqualTo(LocalDate.of(2024, 1, 15));
     }
 
     @Test
@@ -149,9 +149,9 @@ class VehicleControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("Vehicle updated successfully.");
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(id);
-        assertThat(response.getBody().data().plate()).isEqualTo("BB-11-BB");
-        assertThat(response.getBody().data().model()).isEqualTo("Model Y");
+        assertThat(response.getBody().data().getId()).isEqualTo(id);
+        assertThat(response.getBody().data().getPlate()).isEqualTo("BB-11-BB");
+        assertThat(response.getBody().data().getModel()).isEqualTo("Model Y");
     }
 
     @Test
@@ -181,8 +181,8 @@ class VehicleControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("Vehicle fetched successfully.");
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(id);
-        assertThat(response.getBody().data().vin()).isEqualTo("1HGCM82633A123456");
+        assertThat(response.getBody().data().getId()).isEqualTo(id);
+        assertThat(response.getBody().data().getVin()).isEqualTo("1HGCM82633A123456");
     }
 
     @Test
@@ -214,7 +214,7 @@ class VehicleControllerTest {
         assertThat(response.getBody().data().pageNumber()).isEqualTo(1);
         assertThat(response.getBody().data().pageSize()).isEqualTo(10);
         assertThat(response.getBody().data().data()).hasSize(1);
-        assertThat(response.getBody().data().data().getFirst().id()).isEqualTo(id);
+        assertThat(response.getBody().data().data().getFirst().getId()).isEqualTo(id);
     }
 
 }

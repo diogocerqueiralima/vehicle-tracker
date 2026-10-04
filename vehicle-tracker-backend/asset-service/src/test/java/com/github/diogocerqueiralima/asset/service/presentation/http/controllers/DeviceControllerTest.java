@@ -71,9 +71,9 @@ class DeviceControllerTest {
         assertNotNull(response.getBody());
         assertEquals("Device saved successfully.", response.getBody().message());
         assertNotNull(response.getBody().data());
-        assertEquals(id, response.getBody().data().id());
-        assertEquals("SN-001", response.getBody().data().serialNumber());
-        assertEquals("123456789012345", response.getBody().data().imei());
+        assertEquals(id, response.getBody().data().getId());
+        assertEquals("SN-001", response.getBody().data().getSerialNumber());
+        assertEquals("123456789012345", response.getBody().data().getImei());
     }
 
     @Test
@@ -109,8 +109,8 @@ class DeviceControllerTest {
 
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().data());
-        assertEquals("TK-1000", response.getBody().data().model());
-        assertEquals("Teltonika", response.getBody().data().manufacturer());
+        assertEquals("TK-1000", response.getBody().data().getModel());
+        assertEquals("Teltonika", response.getBody().data().getManufacturer());
     }
 
     @Test
@@ -144,10 +144,10 @@ class DeviceControllerTest {
         assertNotNull(response.getBody());
         assertEquals("Device fetched successfully.", response.getBody().message());
         assertNotNull(response.getBody().data());
-        assertEquals(id, response.getBody().data().id());
-        assertEquals("SN-001", response.getBody().data().serialNumber());
-        assertEquals(id, capturedCommand.id());
-        assertEquals(userId, capturedCommand.userId());
+        assertEquals(id, response.getBody().data().getId());
+        assertEquals("SN-001", response.getBody().data().getSerialNumber());
+        assertEquals(id, capturedCommand.getId());
+        assertEquals(userId, capturedCommand.getUserId());
         assertFalse(capturedCommand.isAdmin());
     }
 
@@ -180,7 +180,7 @@ class DeviceControllerTest {
         assertEquals(1, response.getBody().data().pageNumber());
         assertEquals(10, response.getBody().data().pageSize());
         assertEquals(1, response.getBody().data().data().size());
-        assertEquals(id, response.getBody().data().data().getFirst().id());
+        assertEquals(id, response.getBody().data().data().getFirst().getId());
     }
 
 }
