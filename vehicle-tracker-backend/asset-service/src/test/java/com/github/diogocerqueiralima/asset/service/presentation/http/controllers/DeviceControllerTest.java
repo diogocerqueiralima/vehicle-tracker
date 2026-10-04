@@ -69,11 +69,11 @@ class DeviceControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Device saved successfully.", response.getBody().message());
-        assertNotNull(response.getBody().data());
-        assertEquals(id, response.getBody().data().getId());
-        assertEquals("SN-001", response.getBody().data().getSerialNumber());
-        assertEquals("123456789012345", response.getBody().data().getImei());
+        assertEquals("Device saved successfully.", response.getBody().getMessage());
+        assertNotNull(response.getBody().getData());
+        assertEquals(id, response.getBody().getData().getId());
+        assertEquals("SN-001", response.getBody().getData().getSerialNumber());
+        assertEquals("123456789012345", response.getBody().getData().getImei());
     }
 
     @Test
@@ -108,9 +108,9 @@ class DeviceControllerTest {
         ResponseEntity<ApiResponseDTO<DeviceDTO>> response = deviceController.createOrUpdate(id, request);
 
         assertNotNull(response.getBody());
-        assertNotNull(response.getBody().data());
-        assertEquals("TK-1000", response.getBody().data().getModel());
-        assertEquals("Teltonika", response.getBody().data().getManufacturer());
+        assertNotNull(response.getBody().getData());
+        assertEquals("TK-1000", response.getBody().getData().getModel());
+        assertEquals("Teltonika", response.getBody().getData().getManufacturer());
     }
 
     @Test
@@ -142,10 +142,10 @@ class DeviceControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Device fetched successfully.", response.getBody().message());
-        assertNotNull(response.getBody().data());
-        assertEquals(id, response.getBody().data().getId());
-        assertEquals("SN-001", response.getBody().data().getSerialNumber());
+        assertEquals("Device fetched successfully.", response.getBody().getMessage());
+        assertNotNull(response.getBody().getData());
+        assertEquals(id, response.getBody().getData().getId());
+        assertEquals("SN-001", response.getBody().getData().getSerialNumber());
         assertEquals(id, capturedCommand.getId());
         assertEquals(userId, capturedCommand.getUserId());
         assertFalse(capturedCommand.isAdmin());
@@ -175,12 +175,12 @@ class DeviceControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Devices fetched successfully.", response.getBody().message());
-        assertNotNull(response.getBody().data());
-        assertEquals(1, response.getBody().data().pageNumber());
-        assertEquals(10, response.getBody().data().pageSize());
-        assertEquals(1, response.getBody().data().data().size());
-        assertEquals(id, response.getBody().data().data().getFirst().getId());
+        assertEquals("Devices fetched successfully.", response.getBody().getMessage());
+        assertNotNull(response.getBody().getData());
+        assertEquals(1, response.getBody().getData().getPageNumber());
+        assertEquals(10, response.getBody().getData().getPageSize());
+        assertEquals(1, response.getBody().getData().getData().size());
+        assertEquals(id, response.getBody().getData().getData().getFirst().getId());
     }
 
 }

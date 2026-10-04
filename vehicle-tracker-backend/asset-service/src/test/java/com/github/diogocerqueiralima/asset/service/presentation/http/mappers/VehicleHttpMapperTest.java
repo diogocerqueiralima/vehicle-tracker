@@ -129,10 +129,10 @@ class VehicleHttpMapperTest {
         PageResult<VehicleResult> result = new PageResult<>(1, 10, 1, 1, List.of(vehicleResult));
         PageDTO<VehicleDTO> dto = VehicleHttpMapper.INSTANCE.toPageDTO(result);
 
-        assertThat(dto.pageNumber()).isEqualTo(1);
-        assertThat(dto.pageSize()).isEqualTo(10);
-        assertThat(dto.totalElements()).isEqualTo(1);
-        assertThat(dto.data()).hasSize(1);
-        assertThat(dto.data().getFirst().getId()).isEqualTo(id);
+        assertThat(dto.getPageNumber()).isEqualTo(1);
+        assertThat(dto.getPageSize()).isEqualTo(10);
+        assertThat(dto.getTotalElements()).isEqualTo(1);
+        assertThat(dto.getData()).hasSize(1);
+        assertThat(dto.getData().getFirst().getId()).isEqualTo(id);
     }
 }

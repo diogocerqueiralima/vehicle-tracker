@@ -22,15 +22,15 @@ class LocationPublisherImpl(
 
         LOGGER.info("Publishing location from device with id: {}", location.deviceId)
 
-        val event = ReceiveLocationEvent.newBuilder()
-            .timestamp(location.timestamp)
-            .latitude(location.latitude)
-            .longitude(location.longitude)
-            .altitude(location.altitude)
-            .speed(location.speed)
-            .course(location.course)
-            .deviceId(location.deviceId)
-            .build()
+        val event = ReceiveLocationEvent(
+            timestamp = location.timestamp,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            altitude = location.altitude,
+            speed = location.speed,
+            course = location.course,
+            deviceId = location.deviceId
+        )
 
         rabbitTemplate.convertAndSend("", applicationConfig.locationQueueName, event)
     }

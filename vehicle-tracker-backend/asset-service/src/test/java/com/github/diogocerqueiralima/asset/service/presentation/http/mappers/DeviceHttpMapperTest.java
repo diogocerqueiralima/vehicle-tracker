@@ -114,11 +114,11 @@ class DeviceHttpMapperTest {
         PageResult<DeviceResult> result = new PageResult<>(1, 10, 1, 1, List.of(deviceResult));
         PageDTO<DeviceDTO> dto = DeviceHttpMapper.INSTANCE.toPageDTO(result);
 
-        assertEquals(1, dto.pageNumber());
-        assertEquals(10, dto.pageSize());
-        assertEquals(1, dto.totalElements());
-        assertEquals(1, dto.data().size());
-        assertEquals(id, dto.data().getFirst().getId());
+        assertEquals(1, dto.getPageNumber());
+        assertEquals(10, dto.getPageSize());
+        assertEquals(1, dto.getTotalElements());
+        assertEquals(1, dto.getData().size());
+        assertEquals(id, dto.getData().getFirst().getId());
     }
 
 }
