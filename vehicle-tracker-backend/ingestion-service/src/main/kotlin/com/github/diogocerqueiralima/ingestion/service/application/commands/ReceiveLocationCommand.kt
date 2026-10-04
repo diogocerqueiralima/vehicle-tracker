@@ -1,7 +1,6 @@
 package com.github.diogocerqueiralima.ingestion.service.application.commands
 
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import java.util.UUID
 
@@ -20,14 +19,14 @@ import java.util.UUID
  * @property deviceId unique identifier of the device
  */
 data class ReceiveLocationCommand(
-    @get:NotNull val time: Double,
-    @get:NotNull val date: Int,
+    val time: Double,
+    val date: Int,
     @get:NotBlank val latitude: String,
     @get:NotBlank @get:Size(min = 1, max = 1) val latitudeDirection: String,
     @get:NotBlank val longitude: String,
     @get:NotBlank @get:Size(min = 1, max = 1) val longitudeDirection: String,
-    @get:NotNull val altitude: Double,
-    @get:NotNull val speed: Double,
-    @get:NotNull val course: Double,
-    @get:NotNull val deviceId: UUID
+    val altitude: Double,
+    val speed: Double,
+    val course: Double,
+    val deviceId: UUID
 )
