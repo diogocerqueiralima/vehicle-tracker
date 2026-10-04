@@ -4,7 +4,6 @@ import com.github.diogocerqueiralima.asset.service.application.commands.GetVehic
 import com.github.diogocerqueiralima.asset.service.application.results.VehicleAssignmentResult;
 import com.github.diogocerqueiralima.schema.proto.DeviceId;
 import com.github.diogocerqueiralima.schema.proto.VehicleAssignmentResponse;
-import com.google.protobuf.util.Timestamps;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,9 +25,9 @@ class VehicleAssignmentGrpcMapperTest {
                 .build();
 
         GetVehicleAssignmentByDeviceIdCommand command =
-                VehicleAssignmentGrpcMapper.toGetVehicleAssignmentByDeviceIdCommand(request);
+                VehicleAssignmentGrpcMapper.INSTANCE.toGetVehicleAssignmentByDeviceIdCommand(request);
 
-        assertEquals(deviceId, command.deviceId());
+        assertEquals(deviceId, command.getDeviceId());
     }
 
     @Test
@@ -54,19 +53,19 @@ class VehicleAssignmentGrpcMapperTest {
                 true
         );
 
-        VehicleAssignmentResponse response = VehicleAssignmentGrpcMapper.toResponse(result);
+        VehicleAssignmentResponse response = VehicleAssignmentGrpcMapper.INSTANCE.toResponse(result);
 
         assertEquals(vehicleId.toString(), response.getVehicleId());
         assertEquals(deviceId.toString(), response.getDeviceId());
         assertEquals(installedBy.toString(), response.getInstalledBy());
-        assertEquals(assignedAt.toEpochMilli(), Timestamps.toMillis(response.getAssignedAt()));
+        assertEquals(assignedAt.toEpochMilli(), response.getAssignedAt().getSeconds() * 1000 + response.getAssignedAt().getNanos() / 1_000_000);
         assertEquals(assignedBy.toString(), response.getAssignedBy());
         assertFalse(response.hasUnassignedAt());
         assertFalse(response.hasUnassignedBy());
         assertFalse(response.hasRemovalReason());
         assertEquals(installedBy.toString(), response.getInstalledBy());
         assertTrue(response.getActive());
-        assertEquals(result.notes(), response.getNotes());
+        assertEquals(result.getNotes(), response.getNotes());
 
     }
 

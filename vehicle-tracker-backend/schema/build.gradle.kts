@@ -1,7 +1,7 @@
 import com.google.protobuf.gradle.id
 
 plugins {
-    id("java")
+    alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.protobuf.plugin)
 }
 
@@ -16,7 +16,7 @@ dependencies {
 
     implementation(libs.grpc.stub)
     implementation(libs.grpc.protobuf)
-    implementation(libs.protobuf)
+    api(libs.protobuf.kotlin)
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -38,6 +38,10 @@ protobuf {
     }
     generateProtoTasks {
         all().forEach {
+            // Kotlin DSL builders, generated alongside the Java classes
+            it.builtins {
+                id("kotlin")
+            }
             it.plugins {
                 id("grpc") {
                     option("@generated=omit")

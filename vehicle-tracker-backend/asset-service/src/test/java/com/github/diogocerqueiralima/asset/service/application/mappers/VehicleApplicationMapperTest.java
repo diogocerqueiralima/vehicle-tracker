@@ -29,12 +29,12 @@ class VehicleApplicationMapperTest {
         );
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
-        Vehicle vehicle = VehicleApplicationMapper.toDomain(command, now);
+        Vehicle vehicle = VehicleApplicationMapper.INSTANCE.toDomain(command, now);
 
         assertThat(vehicle.getId()).isNotNull();
         assertThat(vehicle.getCreatedAt()).isEqualTo(now);
         assertThat(vehicle.getUpdatedAt()).isEqualTo(now);
-        assertThat(vehicle.getVin()).isEqualTo(command.vin());
+        assertThat(vehicle.getVin()).isEqualTo(command.getVin());
         assertThat(vehicle.getOwnerId()).isEqualTo(userId);
     }
 
@@ -67,7 +67,7 @@ class VehicleApplicationMapperTest {
         );
 
         Instant updatedAt = Instant.parse("2026-03-20T10:00:00Z");
-        Vehicle mapped = VehicleApplicationMapper.toDomain(command, existingVehicle, updatedAt);
+        Vehicle mapped = VehicleApplicationMapper.INSTANCE.toDomain(command, existingVehicle, updatedAt);
 
         assertThat(mapped.getId()).isEqualTo(id);
         assertThat(mapped.getCreatedAt()).isEqualTo(createdAt);
@@ -92,11 +92,11 @@ class VehicleApplicationMapperTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        VehicleResult result = VehicleApplicationMapper.toResult(vehicle);
+        VehicleResult result = VehicleApplicationMapper.INSTANCE.toResult(vehicle);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.vin()).isEqualTo(vehicle.getVin());
-        assertThat(result.plate()).isEqualTo(vehicle.getPlate());
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getVin()).isEqualTo(vehicle.getVin());
+        assertThat(result.getPlate()).isEqualTo(vehicle.getPlate());
     }
 
 }

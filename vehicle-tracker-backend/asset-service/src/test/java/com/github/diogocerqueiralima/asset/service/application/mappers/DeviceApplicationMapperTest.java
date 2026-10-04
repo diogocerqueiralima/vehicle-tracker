@@ -7,7 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,12 +28,12 @@ class DeviceApplicationMapperTest {
         );
 
         Instant now = Instant.parse("2026-03-15T12:00:00Z");
-        Device device = DeviceApplicationMapper.toDomain(command, now, now);
+        Device device = DeviceApplicationMapper.INSTANCE.toDomain(command, now, now);
 
         assertThat(device.getId()).isEqualTo(id);
         assertThat(device.getCreatedAt()).isEqualTo(now);
         assertThat(device.getUpdatedAt()).isEqualTo(now);
-        assertThat(device.getSerialNumber()).isEqualTo(command.serialNumber());
+        assertThat(device.getSerialNumber()).isEqualTo(command.getSerialNumber());
         assertThat(device.getOwnerId()).isEqualTo(ownerId);
     }
 
@@ -65,7 +64,7 @@ class DeviceApplicationMapperTest {
         );
 
         Instant updatedAt = Instant.parse("2026-03-20T10:00:00Z");
-        Device mapped = DeviceApplicationMapper.toDomain(command, existingDevice.getCreatedAt(), updatedAt);
+        Device mapped = DeviceApplicationMapper.INSTANCE.toDomain(command, existingDevice.getCreatedAt(), updatedAt);
 
         assertThat(mapped.getId()).isEqualTo(id);
         assertThat(mapped.getCreatedAt()).isEqualTo(createdAt);
@@ -89,11 +88,11 @@ class DeviceApplicationMapperTest {
                 "123456789012345"
         );
 
-        DeviceResult result = DeviceApplicationMapper.toResult(device);
+        DeviceResult result = DeviceApplicationMapper.INSTANCE.toResult(device);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.serialNumber()).isEqualTo(device.getSerialNumber());
-        assertThat(result.imei()).isEqualTo(device.getImei());
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getSerialNumber()).isEqualTo(device.getSerialNumber());
+        assertThat(result.getImei()).isEqualTo(device.getImei());
     }
 
 }

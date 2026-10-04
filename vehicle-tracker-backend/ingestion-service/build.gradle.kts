@@ -21,7 +21,7 @@ dependencies {
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.integration.mqtt)
     implementation(libs.paho.client.mqttv3)
-    implementation(libs.protobuf)
+    implementation(libs.protobuf.kotlin)
     implementation(libs.kotlin.reflect)
 
     testImplementation(libs.spring.boot.starter.test)

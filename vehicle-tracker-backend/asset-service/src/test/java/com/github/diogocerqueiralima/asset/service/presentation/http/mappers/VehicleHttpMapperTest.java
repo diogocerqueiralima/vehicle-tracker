@@ -34,11 +34,11 @@ class VehicleHttpMapperTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        CreateVehicleCommand command = VehicleHttpMapper.toCreateCommand(request, userId);
+        CreateVehicleCommand command = VehicleHttpMapper.INSTANCE.toCreateCommand(request, userId);
 
-        assertThat(command.vin()).isEqualTo(request.vin());
-        assertThat(command.plate()).isEqualTo(request.plate());
-        assertThat(command.userId()).isEqualTo(userId);
+        assertThat(command.getVin()).isEqualTo(request.getVin());
+        assertThat(command.getPlate()).isEqualTo(request.getPlate());
+        assertThat(command.getUserId()).isEqualTo(userId);
     }
 
     @Test
@@ -54,12 +54,12 @@ class VehicleHttpMapperTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        UpdateVehicleCommand command = VehicleHttpMapper.toUpdateCommand(id, request, userId);
+        UpdateVehicleCommand command = VehicleHttpMapper.INSTANCE.toUpdateCommand(id, request, userId);
 
-        assertThat(command.id()).isEqualTo(id);
-        assertThat(command.plate()).isEqualTo(request.plate());
-        assertThat(command.model()).isEqualTo(request.model());
-        assertThat(command.userId()).isEqualTo(userId);
+        assertThat(command.getId()).isEqualTo(id);
+        assertThat(command.getPlate()).isEqualTo(request.getPlate());
+        assertThat(command.getModel()).isEqualTo(request.getModel());
+        assertThat(command.getUserId()).isEqualTo(userId);
     }
 
     @Test
@@ -78,11 +78,11 @@ class VehicleHttpMapperTest {
                 LocalDate.of(2024, 1, 15)
         );
 
-        VehicleDTO dto = VehicleHttpMapper.toDTO(result);
+        VehicleDTO dto = VehicleHttpMapper.INSTANCE.toDTO(result);
 
-        assertThat(dto.id()).isEqualTo(result.id());
-        assertThat(dto.vin()).isEqualTo(result.vin());
-        assertThat(dto.manufacturer()).isEqualTo(result.manufacturer());
+        assertThat(dto.getId()).isEqualTo(result.getId());
+        assertThat(dto.getVin()).isEqualTo(result.getVin());
+        assertThat(dto.getManufacturer()).isEqualTo(result.getManufacturer());
     }
 
     @Test
@@ -91,10 +91,10 @@ class VehicleHttpMapperTest {
         UUID id = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        GetVehicleByIdCommand command = VehicleHttpMapper.toGetByIdCommand(id, userId);
+        GetVehicleByIdCommand command = VehicleHttpMapper.INSTANCE.toGetByIdCommand(id, userId);
 
-        assertThat(command.id()).isEqualTo(id);
-        assertThat(command.userId()).isEqualTo(userId);
+        assertThat(command.getId()).isEqualTo(id);
+        assertThat(command.getUserId()).isEqualTo(userId);
     }
 
     @Test
@@ -102,11 +102,11 @@ class VehicleHttpMapperTest {
     void should_map_query_params_to_get_page_command() {
         UUID userId = UUID.randomUUID();
 
-        GetVehiclePageCommand command = VehicleHttpMapper.toGetPageCommand(2, 15, userId);
+        GetVehiclePageCommand command = VehicleHttpMapper.INSTANCE.toGetPageCommand(2, 15, userId);
 
-        assertThat(command.pageNumber()).isEqualTo(2);
-        assertThat(command.pageSize()).isEqualTo(15);
-        assertThat(command.userId()).isEqualTo(userId);
+        assertThat(command.getPageNumber()).isEqualTo(2);
+        assertThat(command.getPageSize()).isEqualTo(15);
+        assertThat(command.getUserId()).isEqualTo(userId);
     }
 
     @Test
@@ -127,12 +127,12 @@ class VehicleHttpMapperTest {
         );
 
         PageResult<VehicleResult> result = new PageResult<>(1, 10, 1, 1, List.of(vehicleResult));
-        PageDTO<VehicleDTO> dto = VehicleHttpMapper.toPageDTO(result);
+        PageDTO<VehicleDTO> dto = VehicleHttpMapper.INSTANCE.toPageDTO(result);
 
         assertThat(dto.pageNumber()).isEqualTo(1);
         assertThat(dto.pageSize()).isEqualTo(10);
         assertThat(dto.totalElements()).isEqualTo(1);
         assertThat(dto.data()).hasSize(1);
-        assertThat(dto.data().getFirst().id()).isEqualTo(id);
+        assertThat(dto.data().getFirst().getId()).isEqualTo(id);
     }
 }

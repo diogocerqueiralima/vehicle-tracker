@@ -1,10 +1,8 @@
 package com.github.diogocerqueiralima.asset.service.application.usecases;
 
+import com.github.diogocerqueiralima.error.common.exceptions.NotFoundException;
 import com.github.diogocerqueiralima.asset.service.application.commands.AssignDeviceToVehicleCommand;
 import com.github.diogocerqueiralima.asset.service.application.commands.UnassignDeviceFromVehicleCommand;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.DeviceNotFoundException;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.VehicleAssignmentNotFoundException;
-import com.github.diogocerqueiralima.asset.service.application.exceptions.VehicleNotFoundException;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.DevicePersistence;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.VehicleAssignmentPersistence;
 import com.github.diogocerqueiralima.asset.service.domain.ports.outbound.VehiclePersistence;
@@ -22,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,17 +94,17 @@ class VehicleAssignmentUseCaseImplTest {
                 "Installed in workshop A"
         );
 
-        when(devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)).thenReturn(Optional.of(vehicle));
+        when(devicePersistence.findByIdAndOwnerId(deviceId, assignedBy)).thenReturn(device);
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, assignedBy)).thenReturn(vehicle);
         when(vehicleAssignmentPersistence.save(any(VehicleAssignment.class))).thenReturn(savedAssignment);
 
         VehicleAssignmentResult result = vehicleAssignmentUseCase.assignDeviceToVehicle(command);
 
-        assertThat(result.deviceId()).isEqualTo(deviceId);
-        assertThat(result.vehicleId()).isEqualTo(vehicleId);
-        assertThat(result.assignedBy()).isEqualTo(assignedBy);
-        assertThat(result.installedBy()).isEqualTo(installedBy);
-        assertThat(result.active()).isTrue();
+        assertThat(result.getDeviceId()).isEqualTo(deviceId);
+        assertThat(result.getVehicleId()).isEqualTo(vehicleId);
+        assertThat(result.getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(result.getInstalledBy()).isEqualTo(installedBy);
+        assertThat(result.getActive()).isTrue();
 
         verify(vehicleAssignmentPersistence).save(any(VehicleAssignment.class));
     }
@@ -127,10 +124,10 @@ class VehicleAssignmentUseCaseImplTest {
                 null
         );
 
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.getAssignedBy())).thenReturn(null);
 
         assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
-                .isInstanceOf(DeviceNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Device not found for id: " + deviceId);
 
         verify(vehicleAssignmentPersistence, never()).save(any(VehicleAssignment.class));
@@ -161,11 +158,11 @@ class VehicleAssignmentUseCaseImplTest {
                 null
         );
 
-        when(devicePersistence.findByIdAndOwnerId(deviceId, command.assignedBy())).thenReturn(Optional.of(device));
-        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.assignedBy())).thenReturn(Optional.empty());
+        when(devicePersistence.findByIdAndOwnerId(deviceId, command.getAssignedBy())).thenReturn(device);
+        when(vehiclePersistence.findByIdAndOwnerId(vehicleId, command.getAssignedBy())).thenReturn(null);
 
         assertThatThrownBy(() -> vehicleAssignmentUseCase.assignDeviceToVehicle(command))
-                .isInstanceOf(VehicleNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Vehicle not found for id: " + vehicleId);
 
         verify(vehicleAssignmentPersistence, never()).save(any(VehicleAssignment.class));
@@ -235,19 +232,19 @@ class VehicleAssignmentUseCaseImplTest {
                 VehicleRemovalReason.RETIRED
         );
 
-        when(devicePersistence.isOwner(deviceId, command.unassignedBy())).thenReturn(true);
-        when(vehiclePersistence.isOwner(vehicleId, command.unassignedBy())).thenReturn(true);
+        when(devicePersistence.isOwner(deviceId, command.getUnassignedBy())).thenReturn(true);
+        when(vehiclePersistence.isOwner(vehicleId, command.getUnassignedBy())).thenReturn(true);
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
-                .thenReturn(Optional.of(activeAssignment));
+                .thenReturn(activeAssignment);
         when(vehicleAssignmentPersistence.save(any(VehicleAssignment.class))).thenReturn(closedAssignment);
 
         VehicleAssignmentResult result = vehicleAssignmentUseCase.unassignDeviceFromVehicle(command);
 
-        assertThat(result.deviceId()).isEqualTo(deviceId);
-        assertThat(result.vehicleId()).isEqualTo(vehicleId);
-        assertThat(result.assignedBy()).isEqualTo(assignedBy);
-        assertThat(result.installedBy()).isEqualTo(installedBy);
-        assertThat(result.active()).isFalse();
+        assertThat(result.getDeviceId()).isEqualTo(deviceId);
+        assertThat(result.getVehicleId()).isEqualTo(vehicleId);
+        assertThat(result.getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(result.getInstalledBy()).isEqualTo(installedBy);
+        assertThat(result.getActive()).isFalse();
 
         verify(vehicleAssignmentPersistence).save(any(VehicleAssignment.class));
     }
@@ -267,10 +264,10 @@ class VehicleAssignmentUseCaseImplTest {
         );
 
         when(vehicleAssignmentPersistence.findActiveByDeviceIdAndVehicleId(deviceId, vehicleId))
-                .thenReturn(Optional.empty());
+                .thenReturn(null);
 
         assertThatThrownBy(() -> vehicleAssignmentUseCase.unassignDeviceFromVehicle(command))
-                .isInstanceOf(VehicleAssignmentNotFoundException.class)
+                .isInstanceOf(NotFoundException.class)
                 .hasMessage("Active vehicle assignment not found for device id: " + deviceId + " and vehicle id: " + vehicleId);
 
         verify(vehicleAssignmentPersistence, never()).save(any(VehicleAssignment.class));

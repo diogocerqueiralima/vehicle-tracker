@@ -18,12 +18,12 @@ class SimCardApplicationMapperTest {
     @DisplayName("Should map create command to domain")
     void should_map_create_command_to_domain() {
 
-        CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", null);
-        SimCard simCard = SimCardApplicationMapper.toDomain(command, Instant.now());
+        CreateSimCardCommand command = new CreateSimCardCommand("8901000000000000001", "351910000001", "268010000000001", UUID.randomUUID());
+        SimCard simCard = SimCardApplicationMapper.INSTANCE.toDomain(command, Instant.now());
 
-        assertThat(simCard.getIccid()).isEqualTo(command.iccid());
-        assertThat(simCard.getMsisdn()).isEqualTo(command.msisdn());
-        assertThat(simCard.getImsi()).isEqualTo(command.imsi());
+        assertThat(simCard.getIccid()).isEqualTo(command.getIccid());
+        assertThat(simCard.getMsisdn()).isEqualTo(command.getMsisdn());
+        assertThat(simCard.getImsi()).isEqualTo(command.getImsi());
     }
 
     @Test
@@ -31,7 +31,7 @@ class SimCardApplicationMapperTest {
     void should_map_update_command_to_domain() {
 
         UUID id = UUID.randomUUID();
-        UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000002", "268010000000002", null);
+        UpdateSimCardCommand command = new UpdateSimCardCommand(id, "8901000000000000001", "351910000002", "268010000000002", UUID.randomUUID());
         SimCard existingSimCard = new SimCard(
                 id,
                 Instant.parse("2026-03-10T10:00:00Z"),
@@ -40,12 +40,12 @@ class SimCardApplicationMapperTest {
                 "351910000001",
                 "268010000000001"
         );
-        SimCard simCard = SimCardApplicationMapper.toDomain(command, existingSimCard, Instant.now());
+        SimCard simCard = SimCardApplicationMapper.INSTANCE.toDomain(command, existingSimCard, Instant.now());
 
         assertThat(simCard.getId()).isEqualTo(id);
-        assertThat(simCard.getIccid()).isEqualTo(command.iccid());
-        assertThat(simCard.getMsisdn()).isEqualTo(command.msisdn());
-        assertThat(simCard.getImsi()).isEqualTo(command.imsi());
+        assertThat(simCard.getIccid()).isEqualTo(command.getIccid());
+        assertThat(simCard.getMsisdn()).isEqualTo(command.getMsisdn());
+        assertThat(simCard.getImsi()).isEqualTo(command.getImsi());
     }
 
     @Test
@@ -56,14 +56,14 @@ class SimCardApplicationMapperTest {
         Instant createdAt = Instant.now();
         Instant updatedAt = Instant.now();
         SimCard simCard = new SimCard(id, null, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
-        SimCardResult result = SimCardApplicationMapper.toResult(simCard);
+        SimCardResult result = SimCardApplicationMapper.INSTANCE.toResult(simCard);
 
-        assertThat(result.id()).isEqualTo(id);
-        assertThat(result.createdAt()).isEqualTo(createdAt);
-        assertThat(result.updatedAt()).isEqualTo(updatedAt);
-        assertThat(result.iccid()).isEqualTo(simCard.getIccid());
-        assertThat(result.msisdn()).isEqualTo(simCard.getMsisdn());
-        assertThat(result.imsi()).isEqualTo(simCard.getImsi());
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getCreatedAt()).isEqualTo(createdAt);
+        assertThat(result.getUpdatedAt()).isEqualTo(updatedAt);
+        assertThat(result.getIccid()).isEqualTo(simCard.getIccid());
+        assertThat(result.getMsisdn()).isEqualTo(simCard.getMsisdn());
+        assertThat(result.getImsi()).isEqualTo(simCard.getImsi());
     }
 
 }

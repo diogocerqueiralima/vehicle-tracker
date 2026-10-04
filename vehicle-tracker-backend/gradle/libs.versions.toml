@@ -27,13 +27,13 @@ spring-grpc-dependencies = { module = "org.springframework.grpc:spring-grpc-depe
 spring-cloud-dependencies = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring-cloud" }
 paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho-client-mqttv3" }
 jackson-core = { module = "tools.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
 grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
-protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
-protobuf-java-util = { module = "com.google.protobuf:protobuf-java-util", version.ref = "protobuf" }
+protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
 hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial", version.ref = "hibernate" }
 bouncy-castle-provider = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncy-castle" }
 bouncy-castle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncy-castle" }

@@ -23,11 +23,11 @@ class SimCardHttpMapperTest {
     void should_map_create_request_to_command() {
 
         CreateSimCardRequestDTO request = new CreateSimCardRequestDTO("8901000000000000001", "351910000001", "268010000000001");
-        CreateSimCardCommand command = SimCardHttpMapper.toCreateCommand(request, UUID.randomUUID());
+        CreateSimCardCommand command = SimCardHttpMapper.INSTANCE.toCreateCommand(request, UUID.randomUUID());
 
-        assertThat(command.iccid()).isEqualTo(request.iccid());
-        assertThat(command.msisdn()).isEqualTo(request.msisdn());
-        assertThat(command.imsi()).isEqualTo(request.imsi());
+        assertThat(command.getIccid()).isEqualTo(request.getIccid());
+        assertThat(command.getMsisdn()).isEqualTo(request.getMsisdn());
+        assertThat(command.getImsi()).isEqualTo(request.getImsi());
     }
 
     @Test
@@ -35,11 +35,11 @@ class SimCardHttpMapperTest {
     void should_map_update_request_to_command() {
 
         UpdateSimCardRequestDTO request = new UpdateSimCardRequestDTO("8901000000000000001", "351910000002", "268010000000002");
-        UpdateSimCardCommand command = SimCardHttpMapper.toUpdateCommand(UUID.randomUUID(), request, UUID.randomUUID());
+        UpdateSimCardCommand command = SimCardHttpMapper.INSTANCE.toUpdateCommand(UUID.randomUUID(), request, UUID.randomUUID());
 
-        assertThat(command.iccid()).isEqualTo(request.iccid());
-        assertThat(command.msisdn()).isEqualTo(request.msisdn());
-        assertThat(command.imsi()).isEqualTo(request.imsi());
+        assertThat(command.getIccid()).isEqualTo(request.getIccid());
+        assertThat(command.getMsisdn()).isEqualTo(request.getMsisdn());
+        assertThat(command.getImsi()).isEqualTo(request.getImsi());
     }
 
     @Test
@@ -47,9 +47,9 @@ class SimCardHttpMapperTest {
     void should_map_id_to_get_command() {
 
         UUID id = UUID.randomUUID();
-        GetSimCardByIdCommand command = SimCardHttpMapper.toGetByIdCommand(id, UUID.randomUUID());
+        GetSimCardByIdCommand command = SimCardHttpMapper.INSTANCE.toGetByIdCommand(id, UUID.randomUUID());
 
-        assertThat(command.id()).isEqualTo(id);
+        assertThat(command.getId()).isEqualTo(id);
     }
 
     @Test
@@ -57,9 +57,9 @@ class SimCardHttpMapperTest {
     void should_map_id_to_delete_command() {
 
         UUID id = UUID.randomUUID();
-        DeleteSimCardByIdCommand command = SimCardHttpMapper.toDeleteByIdCommand(id, UUID.randomUUID());
+        DeleteSimCardByIdCommand command = SimCardHttpMapper.INSTANCE.toDeleteByIdCommand(id, UUID.randomUUID());
 
-        assertThat(command.id()).isEqualTo(id);
+        assertThat(command.getId()).isEqualTo(id);
     }
 
     @Test
@@ -70,14 +70,14 @@ class SimCardHttpMapperTest {
         Instant createdAt = Instant.now();
         Instant updatedAt = Instant.now();
         SimCardResult result = new SimCardResult(id, createdAt, updatedAt, "8901000000000000001", "351910000001", "268010000000001");
-        SimCardDTO dto = SimCardHttpMapper.toDTO(result);
+        SimCardDTO dto = SimCardHttpMapper.INSTANCE.toDTO(result);
 
-        assertThat(dto.id()).isEqualTo(result.id());
-        assertThat(dto.createdAt()).isEqualTo(result.createdAt());
-        assertThat(dto.updatedAt()).isEqualTo(result.updatedAt());
-        assertThat(dto.iccid()).isEqualTo(result.iccid());
-        assertThat(dto.msisdn()).isEqualTo(result.msisdn());
-        assertThat(dto.imsi()).isEqualTo(result.imsi());
+        assertThat(dto.getId()).isEqualTo(result.getId());
+        assertThat(dto.getCreatedAt()).isEqualTo(result.getCreatedAt());
+        assertThat(dto.getUpdatedAt()).isEqualTo(result.getUpdatedAt());
+        assertThat(dto.getIccid()).isEqualTo(result.getIccid());
+        assertThat(dto.getMsisdn()).isEqualTo(result.getMsisdn());
+        assertThat(dto.getImsi()).isEqualTo(result.getImsi());
     }
 
 }

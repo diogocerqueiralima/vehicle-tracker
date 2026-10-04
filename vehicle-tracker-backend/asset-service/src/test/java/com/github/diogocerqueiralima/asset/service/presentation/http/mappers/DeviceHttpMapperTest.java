@@ -32,12 +32,12 @@ class DeviceHttpMapperTest {
                 ownerId
         );
 
-        CreateOrUpdateDeviceCommand command = DeviceHttpMapper.toCommand(id, request);
+        CreateOrUpdateDeviceCommand command = DeviceHttpMapper.INSTANCE.toCommand(id, request);
 
-        assertEquals(id, command.id());
-        assertEquals(request.serialNumber(), command.serialNumber());
-        assertEquals(request.imei(), command.imei());
-        assertEquals(ownerId, command.ownerId());
+        assertEquals(id, command.getId());
+        assertEquals(request.getSerialNumber(), command.getSerialNumber());
+        assertEquals(request.getImei(), command.getImei());
+        assertEquals(ownerId, command.getOwnerId());
     }
 
     @Test
@@ -58,12 +58,12 @@ class DeviceHttpMapperTest {
                 "123456789012345"
         );
 
-        DeviceDTO dto = DeviceHttpMapper.toDTO(result);
+        DeviceDTO dto = DeviceHttpMapper.INSTANCE.toDTO(result);
 
-        assertEquals(result.id(), dto.id());
-        assertEquals(ownerId, result.ownerId());
-        assertEquals(result.serialNumber(), dto.serialNumber());
-        assertEquals(result.manufacturer(), dto.manufacturer());
+        assertEquals(result.getId(), dto.getId());
+        assertEquals(ownerId, result.getOwnerId());
+        assertEquals(result.getSerialNumber(), dto.getSerialNumber());
+        assertEquals(result.getManufacturer(), dto.getManufacturer());
     }
 
     @Test
@@ -74,10 +74,10 @@ class DeviceHttpMapperTest {
         UUID userId = UUID.randomUUID();
         boolean isAdmin = true;
 
-        GetDeviceByIdCommand command = DeviceHttpMapper.toGetByIdCommand(id, userId, isAdmin);
+        GetDeviceByIdCommand command = DeviceHttpMapper.INSTANCE.toGetByIdCommand(id, userId, isAdmin);
 
-        assertEquals(id, command.id());
-        assertEquals(userId, command.userId());
+        assertEquals(id, command.getId());
+        assertEquals(userId, command.getUserId());
         assertTrue(command.isAdmin());
     }
 
@@ -86,11 +86,11 @@ class DeviceHttpMapperTest {
     void should_map_query_params_to_get_page_command() {
         UUID userId = UUID.randomUUID();
 
-        GetDevicePageCommand command = DeviceHttpMapper.toGetPageCommand(2, 15, userId);
+        GetDevicePageCommand command = DeviceHttpMapper.INSTANCE.toGetPageCommand(2, 15, userId);
 
-        assertEquals(2, command.pageNumber());
-        assertEquals(15, command.pageSize());
-        assertEquals(userId, command.userId());
+        assertEquals(2, command.getPageNumber());
+        assertEquals(15, command.getPageSize());
+        assertEquals(userId, command.getUserId());
     }
 
     @Test
@@ -112,13 +112,13 @@ class DeviceHttpMapperTest {
         );
 
         PageResult<DeviceResult> result = new PageResult<>(1, 10, 1, 1, List.of(deviceResult));
-        PageDTO<DeviceDTO> dto = DeviceHttpMapper.toPageDTO(result);
+        PageDTO<DeviceDTO> dto = DeviceHttpMapper.INSTANCE.toPageDTO(result);
 
         assertEquals(1, dto.pageNumber());
         assertEquals(10, dto.pageSize());
         assertEquals(1, dto.totalElements());
         assertEquals(1, dto.data().size());
-        assertEquals(id, dto.data().getFirst().id());
+        assertEquals(id, dto.data().getFirst().getId());
     }
 
 }

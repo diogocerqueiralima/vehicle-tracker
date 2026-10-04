@@ -51,12 +51,12 @@ class SimCardControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("SIM card created successfully.");
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(result.id());
-        assertThat(response.getBody().data().createdAt()).isEqualTo(result.createdAt());
-        assertThat(response.getBody().data().updatedAt()).isEqualTo(result.updatedAt());
-        assertThat(response.getBody().data().iccid()).isEqualTo(result.iccid());
-        assertThat(response.getBody().data().msisdn()).isEqualTo(result.msisdn());
-        assertThat(response.getBody().data().imsi()).isEqualTo(result.imsi());
+        assertThat(response.getBody().data().getId()).isEqualTo(result.getId());
+        assertThat(response.getBody().data().getCreatedAt()).isEqualTo(result.getCreatedAt());
+        assertThat(response.getBody().data().getUpdatedAt()).isEqualTo(result.getUpdatedAt());
+        assertThat(response.getBody().data().getIccid()).isEqualTo(result.getIccid());
+        assertThat(response.getBody().data().getMsisdn()).isEqualTo(result.getMsisdn());
+        assertThat(response.getBody().data().getImsi()).isEqualTo(result.getImsi());
     }
 
     @Test
@@ -78,12 +78,12 @@ class SimCardControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("SIM card updated successfully.");
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(result.id());
-        assertThat(response.getBody().data().createdAt()).isEqualTo(result.createdAt());
-        assertThat(response.getBody().data().updatedAt()).isEqualTo(result.updatedAt());
-        assertThat(response.getBody().data().iccid()).isEqualTo(result.iccid());
-        assertThat(response.getBody().data().msisdn()).isEqualTo("351910000002");
-        assertThat(response.getBody().data().imsi()).isEqualTo("268010000000002");
+        assertThat(response.getBody().data().getId()).isEqualTo(result.getId());
+        assertThat(response.getBody().data().getCreatedAt()).isEqualTo(result.getCreatedAt());
+        assertThat(response.getBody().data().getUpdatedAt()).isEqualTo(result.getUpdatedAt());
+        assertThat(response.getBody().data().getIccid()).isEqualTo(result.getIccid());
+        assertThat(response.getBody().data().getMsisdn()).isEqualTo("351910000002");
+        assertThat(response.getBody().data().getImsi()).isEqualTo("268010000000002");
     }
 
     @Test
@@ -103,12 +103,12 @@ class SimCardControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message()).isEqualTo("SIM card fetched successfully.");
         assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().id()).isEqualTo(result.id());
-        assertThat(response.getBody().data().createdAt()).isEqualTo(result.createdAt());
-        assertThat(response.getBody().data().updatedAt()).isEqualTo(result.updatedAt());
-        assertThat(response.getBody().data().iccid()).isEqualTo(result.iccid());
-        assertThat(response.getBody().data().msisdn()).isEqualTo("351910000002");
-        assertThat(response.getBody().data().imsi()).isEqualTo("268010000000002");
+        assertThat(response.getBody().data().getId()).isEqualTo(result.getId());
+        assertThat(response.getBody().data().getCreatedAt()).isEqualTo(result.getCreatedAt());
+        assertThat(response.getBody().data().getUpdatedAt()).isEqualTo(result.getUpdatedAt());
+        assertThat(response.getBody().data().getIccid()).isEqualTo(result.getIccid());
+        assertThat(response.getBody().data().getMsisdn()).isEqualTo("351910000002");
+        assertThat(response.getBody().data().getImsi()).isEqualTo("268010000000002");
     }
 
     @Test
