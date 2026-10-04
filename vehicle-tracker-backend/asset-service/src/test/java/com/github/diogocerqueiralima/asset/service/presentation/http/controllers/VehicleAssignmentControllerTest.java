@@ -83,11 +83,11 @@ class VehicleAssignmentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Device assigned to vehicle successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().getDeviceId()).isEqualTo(deviceId);
-        assertThat(response.getBody().data().getVehicleId()).isEqualTo(vehicleId);
-        assertThat(response.getBody().data().getActive()).isTrue();
+        assertThat(response.getBody().getMessage()).isEqualTo("Device assigned to vehicle successfully.");
+        assertThat(response.getBody().getData()).isNotNull();
+        assertThat(response.getBody().getData().getDeviceId()).isEqualTo(deviceId);
+        assertThat(response.getBody().getData().getVehicleId()).isEqualTo(vehicleId);
+        assertThat(response.getBody().getData().getActive()).isTrue();
         assertThat(commandCaptor.getValue().getAssignedBy()).isEqualTo(userId);
     }
 
@@ -132,14 +132,14 @@ class VehicleAssignmentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Device unassigned from vehicle successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().getDeviceId()).isEqualTo(deviceId);
-        assertThat(response.getBody().data().getVehicleId()).isEqualTo(vehicleId);
-        assertThat(response.getBody().data().getUnassignedAt()).isNotNull();
-        assertThat(response.getBody().data().getUnassignedBy()).isNotNull();
-        assertThat(response.getBody().data().getRemovalReason()).isEqualTo(VehicleRemovalReason.RETIRED);
-        assertThat(response.getBody().data().getActive()).isFalse();
+        assertThat(response.getBody().getMessage()).isEqualTo("Device unassigned from vehicle successfully.");
+        assertThat(response.getBody().getData()).isNotNull();
+        assertThat(response.getBody().getData().getDeviceId()).isEqualTo(deviceId);
+        assertThat(response.getBody().getData().getVehicleId()).isEqualTo(vehicleId);
+        assertThat(response.getBody().getData().getUnassignedAt()).isNotNull();
+        assertThat(response.getBody().getData().getUnassignedBy()).isNotNull();
+        assertThat(response.getBody().getData().getRemovalReason()).isEqualTo(VehicleRemovalReason.RETIRED);
+        assertThat(response.getBody().getData().getActive()).isFalse();
         assertThat(commandCaptor.getValue().getUnassignedBy()).isEqualTo(userId);
     }
 
@@ -182,15 +182,15 @@ class VehicleAssignmentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Vehicle assignment history fetched successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().pageNumber()).isEqualTo(1);
-        assertThat(response.getBody().data().pageSize()).isEqualTo(10);
-        assertThat(response.getBody().data().totalPages()).isEqualTo(1);
-        assertThat(response.getBody().data().totalElements()).isEqualTo(1L);
-        assertThat(response.getBody().data().data()).hasSize(1);
-        assertThat(response.getBody().data().data().getFirst().getDeviceId()).isEqualTo(deviceId);
-        assertThat(response.getBody().data().data().getFirst().getVehicleId()).isEqualTo(vehicleId);
+        assertThat(response.getBody().getMessage()).isEqualTo("Vehicle assignment history fetched successfully.");
+        assertThat(response.getBody().getData()).isNotNull();
+        assertThat(response.getBody().getData().getPageNumber()).isEqualTo(1);
+        assertThat(response.getBody().getData().getPageSize()).isEqualTo(10);
+        assertThat(response.getBody().getData().getTotalPages()).isEqualTo(1);
+        assertThat(response.getBody().getData().getTotalElements()).isEqualTo(1L);
+        assertThat(response.getBody().getData().getData()).hasSize(1);
+        assertThat(response.getBody().getData().getData().getFirst().getDeviceId()).isEqualTo(deviceId);
+        assertThat(response.getBody().getData().getData().getFirst().getVehicleId()).isEqualTo(vehicleId);
         assertThat(commandCaptor.getValue().getVehicleId()).isEqualTo(vehicleId);
         assertThat(commandCaptor.getValue().getUserId()).isEqualTo(userId);
         assertThat(commandCaptor.getValue().getPageNumber()).isEqualTo(1);

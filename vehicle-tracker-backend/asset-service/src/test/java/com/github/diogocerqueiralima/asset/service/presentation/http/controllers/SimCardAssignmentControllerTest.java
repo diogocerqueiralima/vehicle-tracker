@@ -74,11 +74,11 @@ class SimCardAssignmentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Device assigned to SIM card successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().getDeviceId()).isEqualTo(deviceId);
-        assertThat(response.getBody().data().getSimCardId()).isEqualTo(simCardId);
-        assertThat(response.getBody().data().getActive()).isTrue();
+        assertThat(response.getBody().getMessage()).isEqualTo("Device assigned to SIM card successfully.");
+        assertThat(response.getBody().getData()).isNotNull();
+        assertThat(response.getBody().getData().getDeviceId()).isEqualTo(deviceId);
+        assertThat(response.getBody().getData().getSimCardId()).isEqualTo(simCardId);
+        assertThat(response.getBody().getData().getActive()).isTrue();
         assertThat(commandCaptor.getValue().getAssignedBy()).isEqualTo(userId);
     }
 
@@ -121,14 +121,14 @@ class SimCardAssignmentControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo("Device unassigned from SIM card successfully.");
-        assertThat(response.getBody().data()).isNotNull();
-        assertThat(response.getBody().data().getDeviceId()).isEqualTo(deviceId);
-        assertThat(response.getBody().data().getSimCardId()).isEqualTo(simCardId);
-        assertThat(response.getBody().data().getUnassignedAt()).isNotNull();
-        assertThat(response.getBody().data().getUnassignedBy()).isNotNull();
-        assertThat(response.getBody().data().getRemovalReason()).isEqualTo(SimCardRemovalReason.UPGRADE);
-        assertThat(response.getBody().data().getActive()).isFalse();
+        assertThat(response.getBody().getMessage()).isEqualTo("Device unassigned from SIM card successfully.");
+        assertThat(response.getBody().getData()).isNotNull();
+        assertThat(response.getBody().getData().getDeviceId()).isEqualTo(deviceId);
+        assertThat(response.getBody().getData().getSimCardId()).isEqualTo(simCardId);
+        assertThat(response.getBody().getData().getUnassignedAt()).isNotNull();
+        assertThat(response.getBody().getData().getUnassignedBy()).isNotNull();
+        assertThat(response.getBody().getData().getRemovalReason()).isEqualTo(SimCardRemovalReason.UPGRADE);
+        assertThat(response.getBody().getData().getActive()).isFalse();
         assertThat(commandCaptor.getValue().getUnassignedBy()).isEqualTo(userId);
     }
 

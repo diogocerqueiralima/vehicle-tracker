@@ -1,5 +1,6 @@
 plugins {
-    id("java")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -16,6 +17,7 @@ dependencies {
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
+    api(libs.jackson.module.kotlin)
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

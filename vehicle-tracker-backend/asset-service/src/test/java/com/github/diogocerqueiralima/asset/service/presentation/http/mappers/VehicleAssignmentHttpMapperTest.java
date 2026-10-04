@@ -152,16 +152,16 @@ class VehicleAssignmentHttpMapperTest {
 
         PageDTO<VehicleAssignmentDTO> dto = VehicleAssignmentHttpMapper.INSTANCE.toPageDTO(pageResult);
 
-        assertThat(dto.pageNumber()).isEqualTo(1);
-        assertThat(dto.pageSize()).isEqualTo(10);
-        assertThat(dto.totalPages()).isEqualTo(3);
-        assertThat(dto.totalElements()).isEqualTo(25L);
-        assertThat(dto.data()).hasSize(1);
-        assertThat(dto.data().getFirst().getDeviceId()).isEqualTo(deviceId);
-        assertThat(dto.data().getFirst().getVehicleId()).isEqualTo(vehicleId);
-        assertThat(dto.data().getFirst().getAssignedAt()).isEqualTo(assignedAt);
-        assertThat(dto.data().getFirst().getAssignedBy()).isEqualTo(assignedBy);
-        assertThat(dto.data().getFirst().getActive()).isTrue();
+        assertThat(dto.getPageNumber()).isEqualTo(1);
+        assertThat(dto.getPageSize()).isEqualTo(10);
+        assertThat(dto.getTotalPages()).isEqualTo(3);
+        assertThat(dto.getTotalElements()).isEqualTo(25L);
+        assertThat(dto.getData()).hasSize(1);
+        assertThat(dto.getData().getFirst().getDeviceId()).isEqualTo(deviceId);
+        assertThat(dto.getData().getFirst().getVehicleId()).isEqualTo(vehicleId);
+        assertThat(dto.getData().getFirst().getAssignedAt()).isEqualTo(assignedAt);
+        assertThat(dto.getData().getFirst().getAssignedBy()).isEqualTo(assignedBy);
+        assertThat(dto.getData().getFirst().getActive()).isTrue();
     }
 
 }

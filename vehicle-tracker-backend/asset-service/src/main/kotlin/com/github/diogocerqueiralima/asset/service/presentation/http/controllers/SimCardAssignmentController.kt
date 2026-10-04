@@ -8,7 +8,7 @@ import com.github.diogocerqueiralima.asset.service.presentation.http.mappers.Sim
 import com.github.diogocerqueiralima.api.common.dto.ApiResponseDTO
 import com.github.diogocerqueiralima.api.common.dto.PageDTO
 import com.github.diogocerqueiralima.api.common.headers.ReservedHeaders
-import com.github.diogocerqueiralima.api.common.uris.ApplicationURIs.*
+import com.github.diogocerqueiralima.api.common.uris.ApplicationURIs.SIM_CARDS_ASSIGNMENTS_BASE_URI
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
