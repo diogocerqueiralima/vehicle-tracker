@@ -1,5 +1,6 @@
 plugins {
-    id("java")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -21,6 +22,7 @@ dependencies {
     implementation(libs.spring.integration.mqtt)
     implementation(libs.paho.client.mqttv3)
     implementation(libs.protobuf)
+    implementation(libs.kotlin.reflect)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
