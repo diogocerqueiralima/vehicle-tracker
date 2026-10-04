@@ -1,5 +1,7 @@
 plugins {
-    id("java")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.kotlin.allopen)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -25,11 +27,17 @@ dependencies {
     implementation(libs.bouncy.castle.bcpkix)
     implementation(libs.postgresql)
     implementation(libs.springdoc)
+    implementation(libs.kotlin.reflect)
     implementation(platform(libs.spring.grpc.dependencies))
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+// JPA entities must stay non-final so Hibernate can proxy them
+allOpen {
+    annotation("jakarta.persistence.Entity")
 }
 
 tasks.test {
