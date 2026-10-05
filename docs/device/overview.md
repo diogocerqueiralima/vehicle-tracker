@@ -6,7 +6,7 @@ This document provides a high-level overview of the devices used in the vehicle-
 
 ## Project structure
 
-The firmware lives in `vehicle-tracker-embedded`. The code is split into components, each with its own source files and tests. The `main` folder only holds the entry point, and `main_test` is a separate app that builds the components together with their tests.
+The firmware lives in `vehicle-tracker-embedded`. The code is split into components, each with its own source files. The `main` folder only holds the entry point, and `main-test` is a separate app that holds all the tests and builds them together with the components.
 
 ```
 vehicle-tracker-embedded/
@@ -17,14 +17,16 @@ vehicle-tracker-embedded/
 │   └── main.c
 ├── main_test/
 │   ├── CMakeLists.txt
-│   └── main.c
+│   └── main/
+│       ├── CMakeLists.txt
+│       ├── main.c
+│       └── <component>/
+│           └── <component>_test.c
 └── components/
     └── <component>/
         ├── CMakeLists.txt
         ├── <file>.h
-        ├── <file>.c
-        └── test/
-            └── <component>_test.c
+        └── <file>.c
 ```
 
 ## Storage

@@ -22,20 +22,20 @@ Prefer the host, since it is faster and does not need a board. Use the board onl
 
 Tests are written in C with the Unity framework, which is bundled with ESP-IDF.
 
-1. Create the test file in the `test` folder of the component it verifies.
+1. Create the test file in `main-test/main`, inside a folder named after the component it verifies, as `<component>/<component>_test.c`.
 2. Group related tests in the same file, named after what they exercise.
 3. Name each test after the behavior and the condition being checked, not after the function being called.
 4. Keep each test focused on one behavior, so a failure points directly to what broke.
 5. Replace external dependencies with test doubles in unit tests.
 
-Tests live next to the code they verify, inside each component. See the [Project structure](../overview.md#project-structure) for the full layout.
+Tests live in the `main-test` app, not inside the components, so the firmware build never includes the test framework. See the [Project structure](../overview.md#project-structure) for the full layout.
 
 ## Running tests
 
-Tests are not part of the firmware. They are built as their own app, `main_test`, which includes the components and their tests. Run all the commands below from the `main_test` folder:
+Tests are not part of the firmware. They are built as their own app, `main-test`, which holds the tests and includes the components. Run all the commands below from the `main-test` folder:
 
 ```bash
-cd vehicle-tracker-embedded/main_test
+cd vehicle-tracker-embedded/main-test
 ```
 
 ### On the host
