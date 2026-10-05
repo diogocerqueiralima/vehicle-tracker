@@ -1,6 +1,6 @@
 # Authentication Configuration
 
-This document describes the authentication configuration, which holds the credentials the device uses to connect to the MQTT broker. For how these credentials are issued and renewed, refer to the [Certificate Lifecycle](../authentication/certificate-lifecycle.md).
+This document describes the authentication configuration, which holds the credentials the device uses to connect to the MQTT broker. For how these credentials are issued and renewed, refer to the [Certificate Lifecycle](../security/authentication/certificate-lifecycle.md).
 
 ## Settings
 
@@ -57,4 +57,4 @@ The device stores the request so that every read returns the same one. A PEM-enc
 
 Writing `certificate` stores the issued certificate and then deletes the stored CSR, which the device no longer needs. The certificate is stored first, so an interruption between the two steps leaves the device with both, and reading `csr` returns the request the certificate was issued for. Once the CSR is deleted, reading `csr` is refused until the credentials are revoked.
 
-Revoking deletes the installed certificate, then the stored CSR if there is one, then the private key they were bound to. Without that key the device can no longer prove it owns the certificate, so the certificate becomes unusable. The certificate is deleted first so that an interruption partway through cannot leave the device stuck on the refusal above. If the device is interrupted after deleting the certificate, the next `csr` read either generates a new key pair, when no CSR is stored, or returns the stale CSR still on file. In the second case, revoke again to finish the revocation; reading `csr` on its own does not complete it.
+Revoking deletes the installed certificate, then the stored CSR if there is one, then the private key they were bound to. Without that key the device can no longer prove it owns the certificate, so the certificate becomes unusable. The certificate is deleted first so that an interruption partway through cannot leave the device stuck on the refusal above. If the device is interrupted after deleting the certificate, the next `csr` read either generates a new key pair, when no CSR is stored, or returns the stale CSR still on file. In the second case, revoke again to finish the revocation; reading `csr` on its own does not complete it. This only revokes on the device. The client must also revoke the certificate on the Identity Service, as described in the [Certificate Lifecycle](../security/authentication/certificate-lifecycle.md#certificate-revocation).
