@@ -70,8 +70,8 @@ esp_err_t storage_erase(const storage_ctx_t* ctx);
  *
  * Getters read the stored value into @p out_value. Setters store @p value under the context's key and commit it.
  * All of them return ESP_OK on success, ESP_ERR_INVALID_ARG on an invalid context or null output,
- * ESP_ERR_NVS_NOT_FOUND (getters) when no value is stored or the stored value has a different type,
- * ESP_ERR_NVS_READ_ONLY (setters) when the mode is read-only, or an appropriate error code on failure.
+ * ESP_ERR_NVS_NOT_FOUND (getters) when no value is stored, ESP_ERR_NVS_TYPE_MISMATCH when the stored
+ * value has a different type, ESP_ERR_NVS_READ_ONLY (setters) when the mode is read-only, or an appropriate error code on failure.
  * @{
  */
 esp_err_t storage_get_u8(const storage_ctx_t* ctx, uint8_t* out_value);
