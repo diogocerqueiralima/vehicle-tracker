@@ -6,7 +6,7 @@ This document provides a high-level overview of the devices used in the vehicle-
 
 ## Project structure
 
-The firmware lives in `vehicle-tracker-embedded`. The code is split into components, each with its own source files. The `main` folder only holds the entry point, and `main_test` is a separate app that holds all the tests and builds them together with the components.
+The firmware lives in `vehicle-tracker-embedded`. The code is split into components, each with its own source files. The `main` folder only holds the entry point, and `main-test` is a separate app that holds all the tests and builds them together with the components.
 
 ```
 vehicle-tracker-embedded/
