@@ -1,6 +1,6 @@
 # Authentication Configuration
 
-This document describes the authentication configuration, which holds the credentials the device uses to connect to the MQTT broker. For how these credentials are issued and renewed, refer to the [Certificate Lifecycle](../authentication/certificate-lifecycle.md).
+This document describes the authentication configuration, which holds the credentials the device uses to connect to the MQTT broker. For how these credentials are issued and renewed, refer to the [Certificate Lifecycle](../security/authentication/certificate-lifecycle.md).
 
 ## Settings
 
