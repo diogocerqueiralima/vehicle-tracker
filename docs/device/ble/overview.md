@@ -67,7 +67,7 @@ Changes to the contract are additive: new services and characteristics are added
 
 ## Authentication
 
-Authentication is handled at the BLE protocol level through the native pairing and bonding mechanism, using a PIN (Passkey). The device will reject any configuration request from unauthenticated clients. For how the passkey works, refer to [BLE Authentication](authentication.md).
+Authentication is handled at the BLE protocol level through the native pairing and bonding mechanism, using a passkey. The device will reject any configuration request from unauthenticated clients. For how the passkey works, refer to [BLE Authentication](authentication.md).
 
 ## GATT Server
 

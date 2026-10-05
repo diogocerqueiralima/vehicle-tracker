@@ -27,7 +27,7 @@ stateDiagram-v2
 |---|---|
 | **Advertising** | The device is discoverable, advertising its identifier, and waiting for a client. |
 | **Connected** | A client has connected, but it is not yet allowed to access the GATT server. |
-| **Pairing** | The client and the device pair and bond, using the PIN (Passkey). |
+| **Pairing** | The client and the device pair and bond, using the passkey. |
 | **Ready** | The client is authenticated and can read and write characteristics. |
 | **Disconnected** | The connection has ended and its state is discarded. |
 
@@ -41,7 +41,7 @@ The device accepts the connection but rejects every request until the client is 
 
 ### Pairing
 
-The client proves it knows the PIN through the native pairing and bonding mechanism. When pairing succeeds, the device stores the bond so that the client does not need to pair again. When it fails, or when it is not completed within the [timeout](#timeouts), the device closes the connection.
+The client proves it knows the passkey through the native pairing and bonding mechanism. When pairing succeeds, the device stores the bond so that the client does not need to pair again. When it fails, or when it is not completed within the [timeout](#timeouts), the device closes the connection.
 
 ### Ready
 

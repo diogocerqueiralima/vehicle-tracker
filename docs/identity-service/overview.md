@@ -103,7 +103,7 @@ The `AbstractCertificate` class is an abstract implementation of the `Certificat
 ### RegularCertificate
 The `RegularCertificate` class extends `AbstractCertificate` and represents a certificate that can be revoked. It includes an instance of `RevokeCertificateOptions` to manage the revocation status of the certificate.
 
-This type of certificate is used for devices or services that require long-term authentication. It can be revoked if the device is compromised, if the user requests a new CSR via BLE, or when it reaches its natural expiry.
+This type of certificate is used for devices or services that require long-term authentication. It can be revoked if the device is compromised, if the user revokes the device's credentials, or when it reaches its natural expiry.
 
 ### CertificateFactory
 The `CertificateFactory` interface defines a generic factory for creating certificates. It includes a method to create a certificate based on a `CertificateSigningRequest`, a serial number, and validity dates.
