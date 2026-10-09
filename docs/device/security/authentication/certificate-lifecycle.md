@@ -2,6 +2,25 @@
 
 The system uses a single certificate issued by the Identity Service. This certificate is used for authenticating the device with the MQTT broker and other services.
 
+## Device Key and CSR
+
+The device creates its own key pair. The private key proves that the device owns its certificate, so it is the part that must never leave the device.
+
+- **Creating a request** generates a new NIST P-256 key pair in the device's key store, replacing any key that is there, and signs the request with it. The common name is the device identifier (see [Security](../overview.md#identity)).
+- **The private key** is created without export permission and never leaves the key store. Only the request can be read.
+- **The request is stored**, so every read returns the same one. A PEM-encoded P-256 CSR is around 480 bytes, larger than a single BLE packet, so the client reads it in several chunks, and all of them must come from the same request.
+- **The request is kept** only until a certificate is installed. Once a certificate is installed, reading the request is refused until the credentials are revoked, because a new request would replace the key the certificate depends on.
+
+### Installing a certificate
+
+The device stores the certificate first and then deletes the stored request. An interruption between the two steps leaves both in storage, and reading the request returns the one the certificate was issued for.
+
+### Revoking on the device
+
+The device deletes the installed certificate first, then the stored request if there is one, then the private key they were bound to. The certificate goes first so that an interruption cannot leave the device refusing every read.
+
+If the device is interrupted after the certificate is deleted, the next read of the request either creates a new key pair, when no request is stored, or returns the stale request still on file. In the second case, revoke again to finish. Reading the request alone does not complete the revocation.
+
 ## Certificate Enrollment
 
 Before a device can authenticate with the system, it must obtain a Certificate. The enrollment process is user-driven and takes place via BLE.

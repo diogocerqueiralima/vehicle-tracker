@@ -27,34 +27,13 @@ The device produces these values itself. Clients can read them but not write the
 
 The [Authentication Service](../ble/config/authentication.md) exposes these values over BLE.
 
-## CSR generation
+## Behavior
 
-The device does not generate a request on every read. Reading `csr` returns the stored request when there is one, and the device only builds a new one when it holds none, which happens on first boot or after the credentials have been revoked. Once a certificate is installed, the device deletes the request (see [Installing and revoking](#installing-and-revoking)) and refuses any further read, because generating a new request would replace the key the installed certificate depends on:
+Clients rely on the following rules when they work with the credentials:
 
-<div align="center">
+- Reading `csr` returns the stored request. When none is stored, the device creates one. This happens on first boot and after the credentials have been revoked.
+- Writing `certificate` stores the certificate and removes the stored request, so the request is only available until a certificate is installed.
+- While a certificate is installed and no request is stored, reading `csr` is refused. A new request requires the credentials to be revoked first.
+- Writing `1` to `revoke` removes the installed certificate and the credentials kept on the device, so the device no longer holds any credentials afterwards.
 
-```mermaid
-flowchart TD
-    A[Read csr] --> B{CSR stored?}
-    B -- yes --> C[Return the stored CSR]
-    B -- no --> G{Certificate installed?}
-    G -- yes --> H[Refuse the read]
-    G -- no --> D[Generate a new key pair]
-    D --> E[Build the CSR and sign it with that key]
-    E --> F[Persist the CSR]
-    F --> C
-```
-
-</div>
-
-To get a new CSR while a certificate is installed, the client must first revoke the current credentials.
-
-Generating a request creates a new NIST P-256 key pair in the device's key store, replacing whatever was there, and signs the request with it. The common name is the device identifier, the same one the device shows as a QR code for registration. The private key is created without export permission and never leaves the key store, so only the request itself can be read. Generation takes a few seconds on the first read, and later reads are served from storage.
-
-The device stores the request so that every read returns the same one. A PEM-encoded P-256 CSR is around 480 bytes, larger than a single BLE packet, so the client reads it in several chunks, and all of them must come from the same request. The request is only needed until the certificate is installed, so the device keeps it until then.
-
-## Installing and revoking
-
-Writing `certificate` stores the issued certificate and then deletes the stored CSR, which the device no longer needs. The certificate is stored first, so an interruption between the two steps leaves the device with both, and reading `csr` returns the request the certificate was issued for. Once the CSR is deleted, reading `csr` is refused until the credentials are revoked.
-
-Revoking deletes the installed certificate, then the stored CSR if there is one, then the private key they were bound to. Without that key the device can no longer prove it owns the certificate, so the certificate becomes unusable. The certificate is deleted first so that an interruption partway through cannot leave the device stuck on the refusal above. If the device is interrupted after deleting the certificate, the next `csr` read either generates a new key pair, when no CSR is stored, or returns the stale CSR still on file. In the second case, revoke again to finish the revocation; reading `csr` on its own does not complete it. This only revokes on the device. The client must also revoke the certificate on the Identity Service, as described in the [Certificate Lifecycle](../security/authentication/certificate-lifecycle.md#certificate-revocation).
+For how the key pair and the request are created, and the order in which the device performs each step, refer to [Device Key and CSR](../security/authentication/certificate-lifecycle.md#device-key-and-csr).

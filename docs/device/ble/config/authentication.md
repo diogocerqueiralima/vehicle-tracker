@@ -1,6 +1,6 @@
 # Authentication Service
 
-The Authentication Service exposes the device's authentication configuration over BLE. This document lists its UUIDs, types and allowed actions. For what each characteristic means and its default value, refer to the [Authentication Configuration](../../config/authentication.md). It also explains how the device generates the CSR and revokes the credentials.
+The Authentication Service exposes the device's authentication configuration over BLE. This document lists its UUIDs, types and allowed actions. For what each characteristic means and its default value, refer to the [Authentication Configuration](../../config/authentication.md). The rules a client sees when it reads the CSR or revokes the credentials are described in its [Behavior](../../config/authentication.md#behavior) section.
 
 ## Structure
 
@@ -17,4 +17,4 @@ The Authentication Service exposes the device's authentication configuration ove
 
 ## Error Codes
 
-A `csr` read that is [refused](../../config/authentication.md#csr-generation) because a certificate is installed but no CSR is stored fails with ATT error `0x13` (`Value Not Allowed`).
+A `csr` read that is [refused](../../config/authentication.md#behavior) because a certificate is installed but no CSR is stored fails with ATT error `0x13` (`Value Not Allowed`).

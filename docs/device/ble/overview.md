@@ -15,7 +15,7 @@ The BLE layer is the interface between the mobile application and the device. It
 | The BLE layer owns | The BLE layer does not own |
 |---|---|
 | The GATT server and the services and characteristics it exposes. | What each setting means, its key, its validation rules and its default. Those belong to the [configuration layer](../config/overview.md). |
-| Pairing and bonding with the client, through the native BLE mechanism. | Credential rules, such as when a CSR is generated, refused or deleted, and how credentials are revoked. Those belong to the configuration layer too. |
+| Pairing and bonding with the client, through the native BLE mechanism. | Credential rules, such as when a CSR is generated, refused or deleted, and how credentials are revoked. Those belong to the [security layer](../security/overview.md), which the configuration layer uses. |
 | Transporting values: chunking of [file characteristics](characteristics/file-characteristic.md) and respecting the negotiated MTU. | Persisting values. Storage is reached only through the configuration layer. |
 | Translating the outcome of a request into an error code the client understands. | Deciding whether a value is valid. |
 
@@ -44,7 +44,7 @@ The BLE layer treats the configuration layer as the single source of truth for s
 
 Access control stays in the BLE layer. It enforces **who may talk to the device**, through pairing and bonding, and an unauthenticated client is rejected before any request reaches the configuration layer.
 
-Credential operations, such as reading the CSR or revoking the credentials, are part of the configuration. The configuration layer decides what they do: when a CSR is generated, when a read is refused, and what revoking removes. The BLE layer exposes them as characteristics and relays the result. The [Authentication Configuration](../config/authentication.md) describes their behavior.
+Credential operations, such as reading the CSR or revoking the credentials, are exposed through the configuration layer. The security layer decides what they do: when a CSR is generated, when a read is refused, and what revoking removes. The BLE layer exposes them as characteristics and relays the result. The [Authentication Configuration](../config/authentication.md#behavior) describes the behavior a client sees.
 
 ### Stability towards the mobile application
 
