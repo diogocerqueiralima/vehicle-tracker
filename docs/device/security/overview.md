@@ -23,7 +23,7 @@ The identity is not a secret, but it must not change once it is generated, becau
 
 The device relies on a few keys, each with a different purpose:
 
-- **Device key pair**: a NIST P-256 key pair generated on the device. The public key goes into the CSR, and the private key proves that the device owns its certificate. The private key is created without export permission and never leaves the device. See [Configuration](../config/authentication.md) for how it is generated and revoked.
+- **Device key pair**: a NIST P-256 key pair generated on the device. The public key goes into the CSR, and the private key proves that the device owns its certificate. The private key is created without export permission and never leaves the device. See [Certificate Lifecycle](./authentication/certificate-lifecycle.md#device-key-and-csr) for how it is generated and revoked.
 - **NVS encryption keys**: protect the encrypted NVS partition, which holds the credentials and configuration. See [Storage](../storage/overview.md).
 - **Firmware signing key**: used by the build to sign the firmware, so the device can verify it before running it. Only the public part is on the device.
 
