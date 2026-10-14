@@ -17,7 +17,6 @@ void setUp() {
     TEST_ASSERT_EQUAL(ESP_OK, nvs_flash_erase());
     TEST_ASSERT_EQUAL(ESP_OK, storage_init());
     TEST_ASSERT_EQUAL(ESP_OK, security_init());
-    TEST_ASSERT_EQUAL(ESP_OK, security_revoke());
 }
 
 void tearDown() {

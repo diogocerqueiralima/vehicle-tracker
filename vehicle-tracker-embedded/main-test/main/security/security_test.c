@@ -14,6 +14,19 @@
 #define TEST_TAG "[security]"
 #define PEM_HEADER "-----BEGIN CERTIFICATE REQUEST-----"
 #define TEST_CERT "test-certificate"
+
+// Self-signed P-256 CA certificate, generated for these tests
+#define TEST_CA \
+"-----BEGIN CERTIFICATE-----\n" \
+"MIIBeTCCAR+gAwIBAgIUdard9L6FS6vwlUrep4YmccFPtFswCgYIKoZIzj0EAwIw\n" \
+"EjEQMA4GA1UEAwwHVGVzdCBDQTAeFw0yNjEwMTQxODI2MTlaFw0zNjEwMTExODI2\n" \
+"MTlaMBIxEDAOBgNVBAMMB1Rlc3QgQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNC\n" \
+"AARxzGskExGuCIbwplxqovN9GjOPAz9hQ6XsLA/GSQDJdm+pb5PqxX6f2R1tOroe\n" \
+"TFyqwyUZP7NFPUSZal+5NoiHo1MwUTAdBgNVHQ4EFgQUYnI8eeIpgmncNt8nBN39\n" \
+"rwzNSC8wHwYDVR0jBBgwFoAUYnI8eeIpgmncNt8nBN39rwzNSC8wDwYDVR0TAQH/\n" \
+"BAUwAwEB/zAKBggqhkjOPQQDAgNIADBFAiEAz04wJOFxH7fXSEp7E+vC7DOKH1s2\n" \
+"Ebyik0xDTriPE8QCIHDhaqFbp3k6vUSu799qmRzXwfy/brP5Eq0UcLASLqfj\n" \
+"-----END CERTIFICATE-----\n"
 #define SUBJECT_MAX_LEN 64
 
 /**
@@ -125,6 +138,113 @@ TEST_CASE("get csr returns null until a request is created, then the stored PEM"
 
     free(stored_csr);
     free(csr);
+}
+
+// --- security_install_certificate ---
+
+TEST_CASE("install certificate stores it, removes the stored request and keeps the key", TEST_TAG) {
+    psa_key_id_t key_id = PSA_KEY_ID_NULL;
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_install_certificate(nullptr));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(TEST_CERT));
+
+    char certificate[sizeof(TEST_CERT)];
+    TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&cert_ctx, certificate, sizeof(certificate)));
+    TEST_ASSERT_EQUAL_STRING(TEST_CERT, certificate);
+
+    // The request is removed once the certificate is installed, but the key it was signed with stays
+    TEST_ASSERT_NULL(security_get_csr());
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_private_key(&key_id));
+}
+
+// --- security_get_certificate ---
+
+TEST_CASE("get certificate returns null until one is installed, then the stored PEM", TEST_TAG) {
+    TEST_ASSERT_NULL(security_get_certificate());
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(TEST_CERT));
+
+    char *certificate = security_get_certificate();
+    TEST_ASSERT_NOT_NULL(certificate);
+    TEST_ASSERT_EQUAL_STRING(TEST_CERT, certificate);
+    free(certificate);
+}
+
+// --- security_add_ca_certificate ---
+
+/**
+ * Counts how many PEM certificate blocks are in the stored CA store.
+ */
+static int count_stored_ca_certificates(void) {
+    size_t size = 0;
+    TEST_ASSERT_EQUAL(ESP_OK, storage_get_str_size(&ca_ctx, &size));
+
+    char *stored = malloc(size);
+    TEST_ASSERT_NOT_NULL(stored);
+    TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&ca_ctx, stored, size));
+
+    int count = 0;
+    for (const char *p = stored; (p = strstr(p, "BEGIN CERTIFICATE")) != nullptr; p++) {
+        count++;
+    }
+
+    free(stored);
+    return count;
+}
+
+/**
+ * Counts how many certificates the global CA store holds, by walking the chain.
+ */
+static int count_ca_store_certificates(void) {
+    int count = 0;
+    for (const mbedtls_x509_crt *crt = security_get_ca_store(); crt != nullptr && crt->version != 0; crt = crt->next) {
+        count++;
+    }
+    return count;
+}
+
+TEST_CASE("add ca certificate rejects invalid input without storing anything", TEST_TAG) {
+    size_t size = 0;
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_add_ca_certificate(nullptr));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_add_ca_certificate("not a certificate"));
+    TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, storage_get_str_size(&ca_ctx, &size));
+    TEST_ASSERT_EQUAL(0, count_ca_store_certificates());
+}
+
+TEST_CASE("add ca certificate stores it and appends later ones", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_OK, security_add_ca_certificate(TEST_CA));
+    TEST_ASSERT_EQUAL(1, count_stored_ca_certificates());
+    TEST_ASSERT_EQUAL(1, count_ca_store_certificates());
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_add_ca_certificate(TEST_CA));
+    TEST_ASSERT_EQUAL(2, count_stored_ca_certificates());
+    TEST_ASSERT_EQUAL(2, count_ca_store_certificates());
+}
+
+TEST_CASE("ca certificates survive revoke", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_OK, security_add_ca_certificate(TEST_CA));
+    TEST_ASSERT_EQUAL(ESP_OK, security_revoke());
+    TEST_ASSERT_EQUAL(1, count_stored_ca_certificates());
+}
+
+// --- security_init with stored CA certificates ---
+
+TEST_CASE("init installs the stored ca certificates", TEST_TAG) {
+    // Write two certificates straight to storage, so the global store is empty until init loads them
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&ca_ctx, TEST_CA TEST_CA));
+    TEST_ASSERT_EQUAL(0, count_ca_store_certificates());
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_init());
+    TEST_ASSERT_EQUAL(2, count_ca_store_certificates());
+}
+
+TEST_CASE("init fails when the stored ca list is not valid", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&ca_ctx, "not a certificate\n"));
+    TEST_ASSERT_EQUAL(ESP_FAIL, security_init());
 }
 
 // --- security_revoke ---
