@@ -188,6 +188,7 @@ static esp_err_t load_ca_store() {
 
     if (ret != 0) {
 
+        // 4.1 If parsing fails, log the error, erase the stored CA list and return ESP_FAIL
         ESP_LOGE(TAG, "Failed to install stored CA certificates: %d, erasing the certificate.", ret);
         err = storage_erase(&ca_ctx);
 
@@ -255,9 +256,10 @@ esp_err_t security_init() {
     err = load_ca_store();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to load CA store: %s, restart the device.", esp_err_to_name(err));
+        return ESP_FAIL;
     }
 
-    // 7. If we reach this point, the device identity is valid, so we return ESP_OK
+    // 7. If we reach this point, the device identity and the CA store are valid, so we return ESP_OK
     ESP_LOGI(TAG, "Security initialized.");
     return ESP_OK;
 }
