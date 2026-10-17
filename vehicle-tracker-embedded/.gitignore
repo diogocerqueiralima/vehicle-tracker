@@ -4,3 +4,5 @@ managed_components/**
 .vscode
 build.clang
 dependencies.lock
+
+sdkconfig.old
