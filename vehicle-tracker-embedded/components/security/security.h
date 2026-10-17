@@ -29,11 +29,12 @@
  * Rebuilds the global CA store from the CA certificates stored in the storage layer. If none are stored, the store is empty.
  * Calling this function again rebuilds the store, so it does not install a certificate twice.
  *
- * If the stored CA certificate cannot be installed, it is not valid and cannot be used, so it is erased and the store stays empty.
- * This is not an error, so the device can still start and receive a new CA certificate.
+ * If the stored CA certificate cannot be installed, the failure is logged and the store stays empty. This is not an
+ * error, so the device can still start and receive a new CA certificate. The certificate stays in the storage layer,
+ * and security_has_ca_certificate() reports the mismatch with ESP_ERR_INVALID_STATE.
  *
- * @return ESP_OK on success, or an appropriate error code on failure. If the invalid CA certificate cannot be erased,
- * the function returns that error. Any identity generated during the call has already been stored by then.
+ * @return ESP_OK on success, or an appropriate error code if the crypto library cannot be initialized
+ * or the device identity cannot be read, generated or stored. Any identity generated during the call has already been stored by then.
  */
 esp_err_t security_init();
 
@@ -86,6 +87,8 @@ char *security_get_csr();
  * @brief Installs the device certificate issued for the CSR. The certificate is stored first, then the stored CSR is deleted.
  *
  * An interruption between the two steps leaves both in storage, and the stored CSR is the one the certificate was issued for.
+ * The same happens if the CSR cannot be deleted: the certificate is installed, the failure is only logged, and the
+ * function returns ESP_OK. The leftover CSR is removed the next time the credentials are revoked.
  *
  * The certificate is checked to be valid PEM before it is stored, so an invalid one never reaches the storage layer.
  * It is not checked against the private key or the CA certificate, so a certificate issued for another key is accepted.

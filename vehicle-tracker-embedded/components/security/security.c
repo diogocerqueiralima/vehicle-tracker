@@ -496,10 +496,10 @@ esp_err_t security_install_certificate(const char *certificate) {
     // 4. Delete the stored request, which is no longer needed once a certificate is installed
     err = storage_erase(&csr_ctx);
 
-    // 4.1 A request that is not stored is not an error, so only other failures are reported
+    // 4.1 The certificate is already installed, so a request that cannot be deleted is only logged. A request
+    // that is not stored is not a failure at all.
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "Failed to delete CSR: %s", esp_err_to_name(err));
-        return err;
+        ESP_LOGW(TAG, "Certificate installed, but the CSR could not be deleted: %s", esp_err_to_name(err));
     }
 
     // 5. Log the installation and return ESP_OK
@@ -514,41 +514,33 @@ esp_err_t security_set_ca_certificate(const char *ca_certificate) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 2. Check that the certificate is valid PEM before it is stored. The length includes the null terminator.
+    // 2. Parse the certificate into a local context first, so the trusted one is untouched until the new one is ready.
+    // The length includes the null terminator.
     mbedtls_x509_crt parsed;
     mbedtls_x509_crt_init(&parsed);
     const int ret = mbedtls_x509_crt_parse(&parsed, (const unsigned char *) ca_certificate, strlen(ca_certificate) + 1);
-    const bool single = parsed.next == nullptr;
-    mbedtls_x509_crt_free(&parsed);
 
     // 2.1 If the certificate is not valid PEM, or holds more than one certificate, log the error and return ESP_ERR_INVALID_ARG
-    if (ret != 0 || !single) {
+    if (ret != 0 || parsed.next != nullptr) {
         ESP_LOGE(TAG, "Invalid CA certificate: %d", ret);
+        mbedtls_x509_crt_free(&parsed);
         return ESP_ERR_INVALID_ARG;
     }
 
     // 3. Store the certificate, replacing the one already stored
-    esp_err_t err = storage_set_str(&ca_ctx, ca_certificate);
+    const esp_err_t err = storage_set_str(&ca_ctx, ca_certificate);
 
-    // 3.1 If storing the certificate fails, log the error and return the error
+    // 3.1 If storing the certificate fails, the previous one is still stored and trusted, so return the error
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to store CA certificate: %s", esp_err_to_name(err));
+        mbedtls_x509_crt_free(&parsed);
         return err;
     }
 
-    // 4. Replace the certificate in the global store, so it is trusted without a reset
+    // 4. Swap the parsed certificate into the global store, so it is trusted without a reset.
+    // This cannot fail, and the global store takes over the memory of the local context, which is not freed.
     mbedtls_x509_crt_free(&global_ca_store);
-    mbedtls_x509_crt_init(&global_ca_store);
-
-    // 4.1 If the install fails, the stored certificate is still loaded by the next security_init
-    if (
-        mbedtls_x509_crt_parse(
-            &global_ca_store, (const unsigned char *) ca_certificate, strlen(ca_certificate) + 1
-        ) != 0
-    ) {
-        ESP_LOGE(TAG, "Failed to install CA certificate");
-        return ESP_FAIL;
-    }
+    global_ca_store = parsed;
 
     // 5. Log the addition and return ESP_OK
     ESP_LOGI(TAG, "CA certificate set");
