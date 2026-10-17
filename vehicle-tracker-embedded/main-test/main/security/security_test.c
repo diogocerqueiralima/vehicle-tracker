@@ -102,11 +102,10 @@ TEST_CASE("create csr stores a PEM request with the identity as common name", TE
     uint8_t identity[UUID_LEN];
     TEST_ASSERT_EQUAL(ESP_OK, security_get_identity(identity));
 
-    char *uuid = uuid_to_string(identity);
-    TEST_ASSERT_NOT_NULL(uuid);
+    char uuid[UUID_STRING_LEN];
+    TEST_ASSERT_EQUAL(ESP_OK, uuid_to_string(identity, uuid));
     char expected_subject[SUBJECT_MAX_LEN];
     snprintf(expected_subject, sizeof(expected_subject), "CN=%s", uuid);
-    free(uuid);
 
     TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
 

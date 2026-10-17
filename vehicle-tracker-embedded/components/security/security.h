@@ -6,9 +6,10 @@
 #include "storage.h"
 #include "mbedtls/x509_crt.h"
 #include "psa/crypto_types.h"
+#include "uuid.h"
 
 /** Size of the device identity in bytes. The identity is a UUIDv4, which is 16 bytes long. */
-#define SECURITY_IDENTITY_MAX_LEN   16
+#define SECURITY_IDENTITY_MAX_LEN   UUID_LEN
 #define SECURITY_NAMESPACE          "security"
 #define SECURITY_IDENTITY_KEY       "identity"
 

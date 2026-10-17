@@ -87,7 +87,7 @@ static esp_err_t security_generate_private_key() {
     }
 
     // 3.3 Log the successful key generation and return ESP_OK
-    ESP_LOGI(TAG, "Key generated and stored with ID: %d", KEY_ID);
+    ESP_LOGI(TAG, "Key generated and stored with ID: %d", (int) KEY_ID);
     return ESP_OK;
 }
 
@@ -187,7 +187,14 @@ static esp_err_t load_ca_store() {
     free(stored);
 
     if (ret != 0) {
-        ESP_LOGE(TAG, "Failed to install stored CA certificates: %d", ret);
+
+        ESP_LOGE(TAG, "Failed to install stored CA certificates: %d, erasing the certificate.", ret);
+        err = storage_erase(&ca_ctx);
+
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to erase invalid CA store: %s", esp_err_to_name(err));
+        }
+
         return ESP_FAIL;
     }
 
@@ -247,15 +254,7 @@ esp_err_t security_init() {
     // 6. Install every stored CA certificate into the global store
     err = load_ca_store();
     if (err != ESP_OK) {
-
-        // 6.1 We should erase the list of CA certificates, because it is not valid and cannot be used.
-        ESP_LOGE(TAG, "Failed to load CA store: %s, erasing the CA certificates.", esp_err_to_name(err));
-        err = storage_erase(&ca_ctx);
-        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGE(TAG, "Failed to erase invalid CA store: %s, you must restart the device.", esp_err_to_name(err));
-            return err;
-        }
-
+        ESP_LOGE(TAG, "Failed to load CA store: %s, restart the device.", esp_err_to_name(err));
     }
 
     // 7. If we reach this point, the device identity is valid, so we return ESP_OK
@@ -349,15 +348,15 @@ esp_err_t security_create_csr() {
         return err;
     }
 
-    char *uuid = uuid_to_string(identity);
-    if (uuid == nullptr) {
-        ESP_LOGE(TAG, "Failed to convert UUIDv4 to string");
-        return ESP_FAIL;
+    char uuid[UUID_STRING_LEN];
+    err = uuid_to_string(identity, uuid);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to convert UUIDv4 to string: %s", esp_err_to_name(err));
+        return err;
     }
 
     char subject[CSR_SUBJECT_MAX_LEN];
     const int subject_len = snprintf(subject, sizeof(subject), "CN=%s", uuid);
-    free(uuid);
 
     if (subject_len < 0 || subject_len >= (int) sizeof(subject)) {
         ESP_LOGE(TAG, "Failed to build CSR subject");
@@ -547,13 +546,6 @@ esp_err_t security_set_ca_certificate(const char *ca_certificate) {
             &global_ca_store, (const unsigned char *) ca_certificate, strlen(ca_certificate) + 1
         ) != 0
     ) {
-
-        err = storage_erase(&ca_ctx);
-        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGE(TAG, "Failed to erase invalid CA certificate: %s", esp_err_to_name(err));
-            return err;
-        }
-
         ESP_LOGE(TAG, "Failed to install CA certificate");
         return ESP_FAIL;
     }

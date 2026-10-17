@@ -3,6 +3,9 @@
 #define UUID_H
 #define UUID_LEN 16
 
+/** Size of the buffer that holds the string form of a UUID: 36 characters and the null terminator. */
+#define UUID_STRING_LEN 37
+
 #include <stdint.h>
 
 #include "esp_err.h"
@@ -21,10 +24,10 @@ esp_err_t uuid_generate_v4(uint8_t *uuid);
  *
  * @brief Converts a UUID to a string representation. The output string will be in the standard UUID format.
  *
- * @param uuid Pointer to the UUID bytes to convert.
- * @return A pointer to a newly allocated string containing the UUID in string format or NULL if the conversion fails.
- * The caller is responsible for freeing the returned string using free().
+ * @param uuid Pointer to the UUID bytes to convert. Must be at least 16 bytes long.
+ * @param out Buffer that receives the string, including the null terminator. Must be at least UUID_STRING_LEN bytes long.
+ * @return ESP_OK on success, or ESP_ERR_INVALID_ARG if an argument is NULL.
  */
-char *uuid_to_string(const uint8_t *uuid);
+esp_err_t uuid_to_string(const uint8_t *uuid, char *out);
 
 #endif

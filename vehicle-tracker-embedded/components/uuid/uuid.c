@@ -1,7 +1,7 @@
 #include "uuid.h"
 #include "esp_random.h"
 
-#include <stdlib.h>
+#include <stdio.h>
 
 esp_err_t uuid_generate_v4(uint8_t *uuid) {
 
@@ -22,22 +22,16 @@ esp_err_t uuid_generate_v4(uint8_t *uuid) {
     return ESP_OK;
 }
 
-char *uuid_to_string(const uint8_t *uuid) {
+esp_err_t uuid_to_string(const uint8_t *uuid, char *out) {
 
-    // 1. Validate the input UUID
-    if (uuid == NULL) {
-        return nullptr;
+    // 1. Validate the input UUID and the output buffer
+    if (uuid == NULL || out == NULL) {
+        return ESP_ERR_INVALID_ARG;
     }
 
-    // 2. Allocate memory for the string representation of the UUID
-    char *uuid_str = malloc(37); // 36 characters + null terminator
-    if (uuid_str == NULL) {
-        return nullptr;
-    }
-
-    // 3. Format the UUID into the string representation
+    // 2. Format the UUID into the string representation
     snprintf(
-        uuid_str, 37, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        out, UUID_STRING_LEN, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         uuid[0], uuid[1], uuid[2], uuid[3],
         uuid[4], uuid[5],
         uuid[6], uuid[7],
@@ -45,5 +39,5 @@ char *uuid_to_string(const uint8_t *uuid) {
         uuid[10], uuid[11], uuid[12], uuid[13], uuid[14], uuid[15]
     );
 
-    return uuid_str;
+    return ESP_OK;
 }
