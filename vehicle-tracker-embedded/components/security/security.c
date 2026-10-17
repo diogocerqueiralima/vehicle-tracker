@@ -22,7 +22,8 @@
 
 static const char *TAG = "[SECURITY]";
 
-// CA certificates the device trusts. Loaded from the storage layer by security_init, and extended by security_add_ca_certificate.
+// CA certificate the device trusts. Loaded from the storage layer by security_init,
+// and replaced by security_set_ca_certificate.
 static mbedtls_x509_crt global_ca_store;
 
 /**
@@ -247,8 +248,16 @@ esp_err_t security_init() {
     // 6. Install every stored CA certificate into the global store
     err = load_ca_store();
     if (err != ESP_OK) {
-        free(device_identity);
-        return err;
+
+        // 6.1 We should erase the list of CA certificates, because it is not valid and cannot be used.
+        ESP_LOGE(TAG, "Failed to load CA store: %s, erasing the CA certificates.", esp_err_to_name(err));
+        err = storage_erase(&ca_ctx);
+        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGE(TAG, "Failed to erase invalid CA store: %s, you must restart the device.", esp_err_to_name(err));
+            free(device_identity);
+            return err;
+        }
+
     }
 
     // 7. If we reach this point, the device identity is valid, so we can free the allocated memory and return ESP_OK
@@ -453,28 +462,40 @@ esp_err_t security_install_certificate(const char *certificate) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 2. Store the certificate first, so an interruption leaves the request in place
+    // 2. Check that the certificate is valid PEM before it is stored. The length includes the null terminator.
+    mbedtls_x509_crt parsed;
+    mbedtls_x509_crt_init(&parsed);
+    const int ret = mbedtls_x509_crt_parse(&parsed, (const unsigned char *) certificate, strlen(certificate) + 1);
+    mbedtls_x509_crt_free(&parsed);
+
+    // 2.1 If the certificate is not valid PEM, log the error and return ESP_ERR_INVALID_ARG
+    if (ret != 0) {
+        ESP_LOGE(TAG, "Failed to parse certificate: %d", ret);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 3. Store the certificate first, so an interruption leaves the request in place
     esp_err_t err = storage_set_str(&cert_ctx, certificate);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to store certificate: %s", esp_err_to_name(err));
         return err;
     }
 
-    // 3. Delete the stored request, which is no longer needed once a certificate is installed
+    // 4. Delete the stored request, which is no longer needed once a certificate is installed
     err = storage_erase(&csr_ctx);
 
-    // 3.1 A request that is not stored is not an error, so only other failures are reported
+    // 4.1 A request that is not stored is not an error, so only other failures are reported
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
         ESP_LOGE(TAG, "Failed to delete CSR: %s", esp_err_to_name(err));
         return err;
     }
 
-    // 4. Log the installation and return ESP_OK
+    // 5. Log the installation and return ESP_OK
     ESP_LOGI(TAG, "Certificate installed");
     return ESP_OK;
 }
 
-esp_err_t security_add_ca_certificate(const char *ca_certificate) {
+esp_err_t security_set_ca_certificate(const char *ca_certificate) {
 
     // 1. Validate the input
     if (ca_certificate == nullptr) {
@@ -485,79 +506,87 @@ esp_err_t security_add_ca_certificate(const char *ca_certificate) {
     mbedtls_x509_crt parsed;
     mbedtls_x509_crt_init(&parsed);
     const int ret = mbedtls_x509_crt_parse(&parsed, (const unsigned char *) ca_certificate, strlen(ca_certificate) + 1);
+    const bool single = parsed.next == nullptr;
     mbedtls_x509_crt_free(&parsed);
 
-    // 2.1 If the certificate is not valid PEM, log the error and return ESP_ERR_INVALID_ARG
-    if (ret != 0) {
-        ESP_LOGE(TAG, "Failed to parse CA certificate: %d", ret);
+    // 2.1 If the certificate is not valid PEM, or holds more than one certificate, log the error and return ESP_ERR_INVALID_ARG
+    if (ret != 0 || !single) {
+        ESP_LOGE(TAG, "Invalid CA certificate: %d", ret);
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 3. Read the CA certificates already stored. The size includes the null terminator, and zero means none are stored.
-    size_t stored_size = 0;
-    esp_err_t err = storage_get_str_size(&ca_ctx, &stored_size);
+    // 3. Store the certificate, replacing the one already stored
+    esp_err_t err = storage_set_str(&ca_ctx, ca_certificate);
 
-    // 3.1 If there was an error checking for the store, log the error and return the error
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "Failed to check CA store: %s", esp_err_to_name(err));
-        return err;
-    }
-
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        stored_size = 0;
-    }
-
-    // 4. Allocate room for the stored certificates, the new one and the null terminator
-    const size_t new_len = strlen(ca_certificate);
-    char *ca_list = malloc(stored_size + new_len + 1);
-    if (ca_list == nullptr) {
-        ESP_LOGE(TAG, "Failed to allocate memory for CA store");
-        return ESP_ERR_NO_MEM;
-    }
-    ca_list[0] = '\0';
-
-    // 4.1 Read the stored certificates, so the new one is appended after them
-    if (stored_size > 0) {
-        err = storage_get_str(&ca_ctx, ca_list, stored_size);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to read CA store: %s", esp_err_to_name(err));
-            free(ca_list);
-            return err;
-        }
-
-        // 4.2 Separate the stored PEM blocks from the new one with a line break, if one is missing
-        const size_t stored_len = strlen(ca_list);
-        if (stored_len > 0 && ca_list[stored_len - 1] != '\n') {
-            strcat(ca_list, "\n");
-        }
-    }
-
-    // 4.3 Append the new certificate
-    strcat(ca_list, ca_certificate);
-
-    // 5. Store the updated list and free the buffer
-    err = storage_set_str(&ca_ctx, ca_list);
-    free(ca_list);
-
-    // 5.1 If storing the list fails, log the error and return the error
+    // 3.1 If storing the certificate fails, log the error and return the error
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to store CA certificate: %s", esp_err_to_name(err));
         return err;
     }
 
-    // 6. Install the certificate into the global store, so it is trusted without a reset
-    if (mbedtls_x509_crt_parse(&global_ca_store, (const unsigned char *) ca_certificate, strlen(ca_certificate) + 1) != 0) {
+    // 4. Replace the certificate in the global store, so it is trusted without a reset
+    mbedtls_x509_crt_free(&global_ca_store);
+    mbedtls_x509_crt_init(&global_ca_store);
+
+    // 4.1 If the install fails, the stored certificate is still loaded by the next security_init
+    if (
+        mbedtls_x509_crt_parse(
+            &global_ca_store, (const unsigned char *) ca_certificate, strlen(ca_certificate) + 1
+        ) != 0
+    ) {
+
+        err = storage_erase(&ca_ctx);
+        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGE(TAG, "Failed to erase invalid CA certificate: %s", esp_err_to_name(err));
+            return err;
+        }
+
         ESP_LOGE(TAG, "Failed to install CA certificate");
         return ESP_FAIL;
     }
 
-    // 7. Log the addition and return ESP_OK
-    ESP_LOGI(TAG, "CA certificate added");
+    // 5. Log the addition and return ESP_OK
+    ESP_LOGI(TAG, "CA certificate set");
     return ESP_OK;
 }
 
-const mbedtls_x509_crt *security_get_ca_store() {
-    return &global_ca_store;
+esp_err_t security_has_ca_certificate() {
+
+    // 1. Check whether the global store holds a certificate, by walking the chain. An empty store has a first entry with version zero.
+    int count = 0;
+    for (const mbedtls_x509_crt *crt = &global_ca_store; crt != nullptr && crt->version != 0; crt = crt->next) {
+        count++;
+    }
+
+    // 1.1 The device holds exactly one CA certificate, so more than one means the store is not valid
+    if (count > 1) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    const bool loaded = count == 1;
+
+    // 2. Check whether the storage layer holds one. The size includes the null terminator.
+    size_t size = 0;
+    const esp_err_t err = storage_get_str_size(&ca_ctx, &size);
+
+    // 2.1 If the storage layer cannot be read, return the error
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "Failed to check CA store: %s", esp_err_to_name(err));
+        return err;
+    }
+    const bool stored = err == ESP_OK && size > 1;
+
+    // 3. Installed in both places
+    if (loaded && stored) {
+        return ESP_OK;
+    }
+
+    // 4. Installed in neither place
+    if (!loaded && !stored) {
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    // 5. Installed in only one place, so the global store and the storage layer disagree
+    return ESP_ERR_INVALID_STATE;
 }
 
 esp_err_t security_revoke() {

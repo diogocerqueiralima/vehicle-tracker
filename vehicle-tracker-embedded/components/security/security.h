@@ -87,8 +87,11 @@ char *security_get_csr();
  *
  * An interruption between the two steps leaves both in storage, and the stored CSR is the one the certificate was issued for.
  *
+ * The certificate is checked to be valid PEM before it is stored, so an invalid one never reaches the storage layer.
+ * It is not checked against the private key or the CA certificate, so a certificate issued for another key is accepted.
+ *
  * @param certificate the certificate as a null-terminated string in PEM format. Must not be NULL.
- * @return ESP_OK on success, or an appropriate error code on failure.
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG if the argument is NULL or not a valid certificate, or an appropriate error code on failure.
  */
 esp_err_t security_install_certificate(const char *certificate);
 
@@ -106,29 +109,25 @@ char *security_get_certificate();
 
 /**
  *
- * @brief Adds a CA certificate to the store of CA certificates the device trusts. The store is kept in the storage layer,
- * so the certificates survive a reset.
+ * @brief Sets the CA certificate the device trusts. The certificate is kept in the storage layer, so it survives a reset.
  *
- * The certificate is validated before it is stored, so an invalid certificate never reaches the storage layer.
- * The store holds the certificates as concatenated PEM blocks, and each call appends the new certificate to them.
- * Revoking the credentials does not remove the CA certificates.
+ * The device holds a single CA certificate, so a call replaces the one already stored.
+ * The certificate must hold exactly one certificate, and it is validated before it is stored, so an invalid certificate never reaches the storage layer.
+ * Revoking the credentials does not remove the CA certificate.
  *
  * @param ca_certificate the CA certificate as a null-terminated string in PEM format. Must not be NULL.
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if the argument is NULL or not a valid certificate, or an appropriate error code on failure.
  */
-esp_err_t security_add_ca_certificate(const char *ca_certificate);
+esp_err_t security_set_ca_certificate(const char *ca_certificate);
 
 /**
  *
- * @brief Returns the global CA store, which holds the CA certificates the device trusts.
+ * @brief Checks whether the CA certificate is installed, which means exactly one certificate is both in the global CA store and in the storage layer.
  *
- * The store is owned by the security layer. The caller must not modify it, and the pointer is only valid
- * until the next call to security_init() or security_add_ca_certificate().
- *
- * @return a pointer to the first certificate in the store. The store is empty when it holds no certificate,
- * so the caller must check the version of the first certificate before reading it.
+ * @return ESP_OK if the certificate is in both, ESP_ERR_NOT_FOUND if it is in neither,
+ * ESP_ERR_INVALID_STATE if it is in only one of them or the global store holds more than one certificate, or the storage error if the storage layer cannot be read.
  */
-const mbedtls_x509_crt *security_get_ca_store();
+esp_err_t security_has_ca_certificate();
 
 /**
  *
