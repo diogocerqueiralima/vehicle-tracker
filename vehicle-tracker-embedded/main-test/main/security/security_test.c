@@ -12,6 +12,13 @@
 #include "uuid.h"
 
 #define TEST_TAG "[security]"
+
+// The storage contexts of the values the security layer keeps, built from the keys it publishes
+static const storage_ctx_t identity_ctx = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_IDENTITY_KEY);
+static const storage_ctx_t csr_ctx      = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CSR_KEY);
+static const storage_ctx_t cert_ctx     = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CERT_KEY);
+static const storage_ctx_t ca_ctx       = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CA_KEY);
+
 #define PEM_HEADER "-----BEGIN CERTIFICATE REQUEST-----"
 // Self-signed P-256 CA certificate, generated for these tests, also used as the device certificate
 #define TEST_CA \
@@ -112,11 +119,11 @@ TEST_CASE("create csr stores a PEM request with the identity as common name", TE
 
 TEST_CASE("create csr fails when a CSR or a certificate is already stored", TEST_TAG) {
     TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
-    TEST_ASSERT_EQUAL(ESP_ERR_NVS_INVALID_STATE, security_create_csr());
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_create_csr());
 
     TEST_ASSERT_EQUAL(ESP_OK, storage_erase(&csr_ctx));
     TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&cert_ctx, TEST_CERT));
-    TEST_ASSERT_EQUAL(ESP_ERR_NVS_INVALID_STATE, security_create_csr());
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_create_csr());
 }
 
 // --- security_get_csr ---

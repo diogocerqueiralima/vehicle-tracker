@@ -15,12 +15,18 @@
 #include "psa/crypto_struct.h"
 
 #define KEY_ID      PSA_KEY_ID_USER_MIN // Key ID for the private key used in the application.
+#define KEY_SVC_ID  mbedtls_svc_key_id_make(0, KEY_ID)
 #define KEY_SIZE    256
 
 #define CSR_SUBJECT_MAX_LEN 64   // Fits "CN=" followed by the 36 character UUID string and the null terminator.
 #define CSR_PEM_MAX_LEN     1024 // A PEM encoded P-256 CSR is around 480 bytes, so this leaves room to spare.
 
 static const char *TAG = "[SECURITY]";
+
+static const storage_ctx_t identity_ctx = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_IDENTITY_KEY);
+static const storage_ctx_t csr_ctx      = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CSR_KEY);
+static const storage_ctx_t cert_ctx     = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CERT_KEY);
+static const storage_ctx_t ca_ctx       = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CA_KEY);
 
 // CA certificate the device trusts. Loaded from the storage layer by security_init,
 // and replaced by security_set_ca_certificate.
@@ -46,7 +52,7 @@ static mbedtls_x509_crt global_ca_store;
 static esp_err_t security_generate_private_key() {
 
     // 1. Delete the key of any previous request, so the new request is never signed with an old key
-    const psa_status_t destroy_status = psa_destroy_key(mbedtls_svc_key_id_make(0, KEY_ID));
+    const psa_status_t destroy_status = psa_destroy_key(KEY_SVC_ID);
 
     // 1.1 Destroying a key that does not exist is not an error, so only other failures are reported
     if (destroy_status != PSA_SUCCESS && destroy_status != PSA_ERROR_INVALID_HANDLE) {
@@ -57,14 +63,14 @@ static esp_err_t security_generate_private_key() {
     // 2. Set the attributes for the new key
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_PERSISTENT);
-    psa_set_key_id(&attributes, KEY_ID);
+    psa_set_key_id(&attributes, KEY_SVC_ID);
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
     psa_set_key_algorithm(&attributes, MBEDTLS_PK_ALG_ECDSA(PSA_ALG_SHA_256));
     psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
     psa_set_key_bits(&attributes, KEY_SIZE);
 
     // 3. Generate the new key
-    psa_key_id_t key_id;
+    mbedtls_svc_key_id_t key_id;
     const psa_status_t status = psa_generate_key(&attributes, &key_id);
     psa_reset_key_attributes(&attributes);
 
@@ -75,8 +81,8 @@ static esp_err_t security_generate_private_key() {
     }
 
     // 3.2 Check if the generated key ID matches the expected ID
-    if (key_id != KEY_ID) {
-        ESP_LOGE(TAG, "Generated key ID does not match expected ID: %d", (int) key_id);
+    if (!mbedtls_svc_key_id_equal(key_id, KEY_SVC_ID)) {
+        ESP_LOGE(TAG, "Generated key ID does not match expected ID: %d", (int) MBEDTLS_SVC_KEY_ID_GET_KEY_ID(key_id));
         return ESP_FAIL;
     }
 
@@ -100,7 +106,7 @@ static esp_err_t security_write_csr_pem(const char *subject, unsigned char *pem)
     // 1. Wrap the device key from the PSA key store
     mbedtls_pk_context key;
     mbedtls_pk_init(&key);
-    int ret = mbedtls_pk_wrap_psa(&key, mbedtls_svc_key_id_make(0, KEY_ID));
+    int ret = mbedtls_pk_wrap_psa(&key, KEY_SVC_ID);
     if (ret != 0) {
         ESP_LOGE(TAG, "Failed to wrap private key: %d", ret);
         mbedtls_pk_free(&key);
@@ -200,12 +206,8 @@ esp_err_t security_init() {
         return ESP_FAIL;
     }
 
-    // 2. Allocate memory for the device identity
-    uint8_t *device_identity = malloc(sizeof(uint8_t) * UUID_LEN);
-    if (device_identity == nullptr) {
-        ESP_LOGE(TAG, "Failed to allocate memory for device identity");
-        return ESP_ERR_NO_MEM;
-    }
+    // 2. Reserve room for the device identity
+    uint8_t device_identity[UUID_LEN];
 
     // 3. Try to read the device identity from storage
     esp_err_t err = storage_get_blob(&identity_ctx, device_identity, UUID_LEN);
@@ -219,29 +221,26 @@ esp_err_t security_init() {
         // 4.1 Generate a new UUIDv4
         err = uuid_generate_v4(device_identity);
 
-        // 4.1.1 If the UUID generation fails, free the allocated memory and return the error
+        // 4.1.1 If the UUID generation fails, return the error
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "Failed to generate UUIDv4: %s", esp_err_to_name(err));
-            free(device_identity);
             return err;
         }
 
         // 4.2 Store the new UUIDv4 in storage
         err = storage_set_blob(&identity_ctx, device_identity, UUID_LEN);
 
-        // 4.2.1 If storing the UUID fails, free the allocated memory and return the error
+        // 4.2.1 If storing the UUID fails, return the error
         if (err != ESP_OK) {
-            free(device_identity);
             ESP_LOGE(TAG, "Failed to store UUIDv4: %s", esp_err_to_name(err));
             return err;
         }
 
     }
 
-    // 5. If reading the identity from storage fails for any reason, free the allocated memory and return the error
+    // 5. If reading the identity from storage fails for any reason, return the error
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get UUIDv4: %s", esp_err_to_name(err));
-        free(device_identity);
         return err;
     }
 
@@ -254,15 +253,13 @@ esp_err_t security_init() {
         err = storage_erase(&ca_ctx);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
             ESP_LOGE(TAG, "Failed to erase invalid CA store: %s, you must restart the device.", esp_err_to_name(err));
-            free(device_identity);
             return err;
         }
 
     }
 
-    // 7. If we reach this point, the device identity is valid, so we can free the allocated memory and return ESP_OK
+    // 7. If we reach this point, the device identity is valid, so we return ESP_OK
     ESP_LOGI(TAG, "Security initialized.");
-    free(device_identity);
     return ESP_OK;
 }
 
@@ -291,7 +288,7 @@ esp_err_t security_get_private_key(psa_key_id_t *key_id) {
 
     // 2. Check if the key already exists in the PSA key store
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    const psa_status_t status = psa_get_key_attributes(KEY_ID, &attributes);
+    const psa_status_t status = psa_get_key_attributes(KEY_SVC_ID, &attributes);
 
     // 2.1 If the key exists, return ESP_OK and set the key_id to the existing key's ID
     if (status == PSA_SUCCESS) {
@@ -316,10 +313,10 @@ esp_err_t security_create_csr() {
     size_t csr_size;
     esp_err_t err = storage_get_str_size(&csr_ctx, &csr_size);
 
-    // 1.1 If a CSR already exists, log the information and return ESP_ERR_NVS_INVALID_STATE
+    // 1.1 If a CSR already exists, log the information and return ESP_ERR_INVALID_STATE
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "CSR already exists, skipping generation");
-        return ESP_ERR_NVS_INVALID_STATE;
+        return ESP_ERR_INVALID_STATE;
     }
 
     // 1.2 If there was an error checking for the CSR, log the error and return the error
@@ -332,10 +329,10 @@ esp_err_t security_create_csr() {
     size_t cert_size;
     err = storage_get_str_size(&cert_ctx, &cert_size);
 
-    // 2.1 If a certificate already exists, log the information and return ESP_ERR_NVS_INVALID_STATE
+    // 2.1 If a certificate already exists, log the information and return ESP_ERR_INVALID_STATE
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "Certificate already exists, skipping CSR generation");
-        return ESP_ERR_NVS_INVALID_STATE;
+        return ESP_ERR_INVALID_STATE;
     }
 
     // 2.2 If there was an error checking for the certificate, log the error and return the error
@@ -404,6 +401,14 @@ char *security_get_csr() {
     // 1. Check if the CSR exists in storage
     size_t csr_size;
     esp_err_t err = storage_get_str_size(&csr_ctx, &csr_size);
+
+    // 1.1 Nothing stored is a normal result, so it is only logged as information
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGI(TAG, "No CSR stored");
+        return nullptr;
+    }
+
+    // 1.2 Any other failure is an error
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get CSR size: %s", esp_err_to_name(err));
         return nullptr;
@@ -432,6 +437,14 @@ char *security_get_certificate() {
     // 1. Check if the certificate exists in storage
     size_t cert_size;
     esp_err_t err = storage_get_str_size(&cert_ctx, &cert_size);
+
+    // 1.1 Nothing stored is a normal result, so it is only logged as information
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGI(TAG, "No certificate stored");
+        return nullptr;
+    }
+
+    // 1.2 Any other failure is an error
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get certificate size: %s", esp_err_to_name(err));
         return nullptr;
@@ -610,7 +623,7 @@ esp_err_t security_revoke() {
     }
 
     // 3. Delete the private key, which the certificate and the CSR were bound to
-    const psa_status_t destroy_status = psa_destroy_key(mbedtls_svc_key_id_make(0, KEY_ID));
+    const psa_status_t destroy_status = psa_destroy_key(KEY_SVC_ID);
 
     // 3.1 A key that does not exist is not an error, so only other failures are reported
     if (destroy_status != PSA_SUCCESS && destroy_status != PSA_ERROR_INVALID_HANDLE) {

@@ -16,11 +16,6 @@
 #define SECURITY_CERT_KEY           "cert"
 #define SECURITY_CA_KEY             "ca"
 
-static const storage_ctx_t identity_ctx = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_IDENTITY_KEY);
-static const storage_ctx_t csr_ctx      = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CSR_KEY);
-static const storage_ctx_t cert_ctx     = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CERT_KEY);
-static const storage_ctx_t ca_ctx       = STORAGE_RW(SECURITY_NAMESPACE, SECURITY_CA_KEY);
-
 /**
  *
  * @brief Initializes the security layer. Must be called after storage_init().
@@ -69,7 +64,8 @@ esp_err_t security_get_private_key(psa_key_id_t *key_id);
  * If a CSR already exists, this function will return a error without generating a new one.
  * Each request generates a new private key in the PSA key store, replacing the key of any previous request.
  *
- * @return ESP_OK on success, or an appropriate error code on failure.
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE if a CSR or a certificate is already stored,
+ * or an appropriate error code on failure.
  */
 esp_err_t security_create_csr();
 
