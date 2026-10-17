@@ -39,6 +39,8 @@ typedef struct
     storage_mode_t mode;
 } storage_ctx_t;
 
+#define STORAGE_RW(ns_, key_) ((storage_ctx_t){.namespace = (ns_), .key = (key_), .mode = STORAGE_MODE_READ_WRITE})
+
 /**
  *
  * @brief Initializes the storage system, preparing it for read/write operations.
