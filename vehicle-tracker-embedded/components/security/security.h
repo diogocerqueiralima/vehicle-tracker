@@ -29,9 +29,9 @@
  * Rebuilds the global CA store from the CA certificates stored in the storage layer. If none are stored, the store is empty.
  * Calling this function again rebuilds the store, so it does not install a certificate twice.
  *
- * If the stored CA certificate cannot be installed, the function returns ESP_FAIL and the device should be restarted.
- * The certificate stays in the storage layer, so it is not lost, and the global CA store stays empty until the next
- * successful call. Any identity generated during the call has already been stored by then.
+ * If the stored CA certificate cannot be installed, it is not valid and cannot be used, so it is erased from the storage
+ * layer and the function returns ESP_FAIL. The device should be restarted, and the next call starts with an empty CA store,
+ * ready to receive a new CA certificate. Any identity generated during the call has already been stored by then.
  *
  * @return ESP_OK on success, ESP_FAIL if the stored CA certificate cannot be installed, or an appropriate error code
  * if the crypto library cannot be initialized or the device identity cannot be read, generated or stored.
