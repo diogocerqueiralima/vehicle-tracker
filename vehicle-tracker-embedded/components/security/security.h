@@ -33,8 +33,11 @@ static const storage_ctx_t ca_ctx       = STORAGE_RW(SECURITY_NAMESPACE, SECURIT
  * Rebuilds the global CA store from the CA certificates stored in the storage layer. If none are stored, the store is empty.
  * Calling this function again rebuilds the store, so it does not install a certificate twice.
  *
- * @return ESP_OK on success, or an appropriate error code on failure. If the stored CA certificates cannot be installed,
- * the function returns an error. Any identity generated during the call has already been stored by then.
+ * If the stored CA certificate cannot be installed, it is not valid and cannot be used, so it is erased and the store stays empty.
+ * This is not an error, so the device can still start and receive a new CA certificate.
+ *
+ * @return ESP_OK on success, or an appropriate error code on failure. If the invalid CA certificate cannot be erased,
+ * the function returns that error. Any identity generated during the call has already been stored by then.
  */
 esp_err_t security_init();
 

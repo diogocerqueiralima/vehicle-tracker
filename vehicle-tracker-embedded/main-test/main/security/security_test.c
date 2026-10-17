@@ -261,9 +261,15 @@ TEST_CASE("has ca certificate reports an invalid state when more than one certif
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_has_ca_certificate());
 }
 
-TEST_CASE("init fails when the stored ca list is not valid", TEST_TAG) {
+TEST_CASE("init erases the stored ca certificate when it is not valid", TEST_TAG) {
+    size_t size = 0;
+
     TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&ca_ctx, "not a certificate\n"));
-    TEST_ASSERT_EQUAL(ESP_FAIL, security_init());
+    TEST_ASSERT_EQUAL(ESP_OK, security_init());
+
+    // The invalid certificate cannot be used, so it is gone from both the storage layer and the global store
+    TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, storage_get_str_size(&ca_ctx, &size));
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_has_ca_certificate());
 }
 
 // --- security_revoke ---
