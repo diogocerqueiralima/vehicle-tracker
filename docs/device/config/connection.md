@@ -11,4 +11,6 @@ This document describes the connection configuration, which controls how the dev
 | qos | integer | The Quality of Service level for MQTT messages (0, 1, or 2). | 0 |
 | recon_interval | integer | The interval in seconds between attempts to reconnect to the MQTT broker after the connection is lost. | 30 |
 
+A write is refused when the value is not valid: the keep-alive and reconnect intervals must be greater than zero, the QoS must be 0, 1 or 2, and the broker URL must not be empty and must be shorter than 256 characters.
+
 The [Connection Service](../ble/config/connection.md) exposes these settings over BLE.

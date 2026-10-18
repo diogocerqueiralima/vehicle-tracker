@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "esp_log.h"
 #include "mbedtls/md.h"
@@ -203,6 +204,69 @@ static esp_err_t load_ca_store() {
     return ESP_OK;
 }
 
+/**
+ *
+ * @brief Gets the size of the PEM stored under a context, mapping a missing value to ESP_ERR_NOT_FOUND.
+ *
+ * @param ctx the context of the PEM.
+ * @param out_len receives the size in bytes, including the null terminator.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when nothing is stored, or an appropriate error code on failure.
+ */
+static esp_err_t get_pem_size(const storage_ctx_t *ctx, size_t *out_len) {
+
+    // 1. Validate the output
+    if (out_len == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Read the size from storage. A value that is not stored is a normal result, not a failure.
+    const esp_err_t err = storage_get_str_size(ctx, out_len);
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get size of %s: %s", ctx->key, esp_err_to_name(err));
+    }
+
+    return err;
+}
+
+/**
+ *
+ * @brief Reads the PEM stored under a context into a caller buffer, mapping the storage errors to the ones documented
+ * for the PEM getters.
+ *
+ * @param ctx the context of the PEM.
+ * @param out_value the buffer that receives the null-terminated PEM.
+ * @param max_len the size of the buffer in bytes.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when nothing is stored, ESP_ERR_INVALID_SIZE when the buffer is too
+ * small, or an appropriate error code on failure.
+ */
+static esp_err_t read_pem(const storage_ctx_t *ctx, char *out_value, size_t max_len) {
+
+    // 1. Validate the output
+    if (out_value == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Read the PEM from storage
+    const esp_err_t err = storage_get_str(ctx, out_value, max_len);
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    if (err == ESP_ERR_NVS_INVALID_LENGTH) {
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to read %s: %s", ctx->key, esp_err_to_name(err));
+    }
+
+    return err;
+}
+
 esp_err_t security_init() {
 
     ESP_LOGI(TAG, "Initializing security");
@@ -397,78 +461,6 @@ esp_err_t security_create_csr() {
     return ESP_OK;
 }
 
-char *security_get_csr() {
-
-    // 1. Check if the CSR exists in storage
-    size_t csr_size;
-    esp_err_t err = storage_get_str_size(&csr_ctx, &csr_size);
-
-    // 1.1 Nothing stored is a normal result, so it is only logged as information
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGI(TAG, "No CSR stored");
-        return nullptr;
-    }
-
-    // 1.2 Any other failure is an error
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get CSR size: %s", esp_err_to_name(err));
-        return nullptr;
-    }
-
-    // 2. Allocate memory for the CSR
-    char *csr = malloc(csr_size);
-    if (csr == nullptr) {
-        ESP_LOGE(TAG, "Failed to allocate memory for CSR");
-        return nullptr;
-    }
-
-    // 3. Read the CSR from storage
-    err = storage_get_str(&csr_ctx, csr, csr_size);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get CSR from storage: %s", esp_err_to_name(err));
-        free(csr);
-        return nullptr;
-    }
-
-    return csr;
-}
-
-char *security_get_certificate() {
-
-    // 1. Check if the certificate exists in storage
-    size_t cert_size;
-    esp_err_t err = storage_get_str_size(&cert_ctx, &cert_size);
-
-    // 1.1 Nothing stored is a normal result, so it is only logged as information
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGI(TAG, "No certificate stored");
-        return nullptr;
-    }
-
-    // 1.2 Any other failure is an error
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get certificate size: %s", esp_err_to_name(err));
-        return nullptr;
-    }
-
-    // 2. Allocate memory for the certificate
-    char *cert = malloc(cert_size);
-    if (cert == nullptr) {
-        ESP_LOGE(TAG, "Failed to allocate memory for certificate");
-        return nullptr;
-    }
-
-    // 3. Read the certificate from storage
-    err = storage_get_str(&cert_ctx, cert, cert_size);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get certificate from storage: %s", esp_err_to_name(err));
-        free(cert);
-        return nullptr;
-    }
-
-    return cert;
-}
-
 esp_err_t security_install_certificate(const char *certificate) {
 
     // 1. Validate the input
@@ -586,6 +578,75 @@ esp_err_t security_has_ca_certificate() {
 
     // 5. Installed in only one place, so the global store and the storage layer disagree
     return ESP_ERR_INVALID_STATE;
+}
+
+esp_err_t security_get_csr_size(size_t *out_len) {
+    return get_pem_size(&csr_ctx, out_len);
+}
+
+esp_err_t security_read_csr(char *out_value, size_t max_len) {
+    return read_pem(&csr_ctx, out_value, max_len);
+}
+
+esp_err_t security_get_certificate_size(size_t *out_len) {
+    return get_pem_size(&cert_ctx, out_len);
+}
+
+esp_err_t security_read_certificate(char *out_value, size_t max_len) {
+    return read_pem(&cert_ctx, out_value, max_len);
+}
+
+esp_err_t security_get_ca_certificate_size(size_t *out_len) {
+    return get_pem_size(&ca_ctx, out_len);
+}
+
+esp_err_t security_read_ca_certificate(char *out_value, size_t max_len) {
+    return read_pem(&ca_ctx, out_value, max_len);
+}
+
+esp_err_t security_certificate_is_expired(bool *expired) {
+
+    // 1. Validate the output
+    if (expired == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Read the installed certificate
+    size_t size = 0;
+    esp_err_t err = security_get_certificate_size(&size);
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    char *pem = malloc(size);
+    if (pem == nullptr) {
+        ESP_LOGE(TAG, "Failed to allocate memory for certificate");
+        return ESP_ERR_NO_MEM;
+    }
+
+    err = security_read_certificate(pem, size);
+    if (err != ESP_OK) {
+        free(pem);
+        return err;
+    }
+
+    // 3. Parse the certificate to get the end of its validity
+    mbedtls_x509_crt parsed;
+    mbedtls_x509_crt_init(&parsed);
+    const int ret = mbedtls_x509_crt_parse(&parsed, (const unsigned char *) pem, size);
+    free(pem);
+
+    if (ret != 0) {
+        ESP_LOGE(TAG, "Failed to parse stored certificate: %d", ret);
+        mbedtls_x509_crt_free(&parsed);
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // 4. Compare the end of validity with the system clock, which must be synchronized
+    *expired = mbedtls_x509_time_is_past(&parsed.valid_to) != 0;
+
+    mbedtls_x509_crt_free(&parsed);
+    return ESP_OK;
 }
 
 esp_err_t security_revoke() {

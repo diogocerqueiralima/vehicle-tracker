@@ -33,7 +33,21 @@ static const storage_ctx_t ca_ctx       = STORAGE_RW(SECURITY_NAMESPACE, SECURIT
 "Ebyik0xDTriPE8QCIHDhaqFbp3k6vUSu799qmRzXwfy/brP5Eq0UcLASLqfj\n" \
 "-----END CERTIFICATE-----\n"
 #define TEST_CERT TEST_CA
+// Self-signed P-256 certificate whose validity ended on 2021-01-01, generated for these tests
+#define TEST_EXPIRED_CERT \
+"-----BEGIN CERTIFICATE-----\n" \
+"MIIBgjCCASmgAwIBAgIUDNJlZpedaOqS40coIAUWz7BSuxgwCgYIKoZIzj0EAwIw\n" \
+"FzEVMBMGA1UEAwwMRXhwaXJlZCBUZXN0MB4XDTIwMDEwMTAwMDAwMFoXDTIxMDEw\n" \
+"MTAwMDAwMFowFzEVMBMGA1UEAwwMRXhwaXJlZCBUZXN0MFkwEwYHKoZIzj0CAQYI\n" \
+"KoZIzj0DAQcDQgAEWJNJ0i77T1J1sjj72oHn2nVL/ifU1E75xGG1Wkp+kM+G5QHb\n" \
+"x0BKTeYtJmGWv2aKG43/Edcls0npUOG67nFhO6NTMFEwHQYDVR0OBBYEFKOIRhcS\n" \
+"moINUgGGCDHWeRg2a26kMB8GA1UdIwQYMBaAFKOIRhcSmoINUgGGCDHWeRg2a26k\n" \
+"MA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDRwAwRAIgGaVsk+epmGhE3zqR\n" \
+"H5W1ts8wKFoL51njD/z0YgSZKtYCIFHYPEGbgFP07yuBdOUamD72fPAr49r6swfy\n" \
+"UrEPp3D7\n" \
+"-----END CERTIFICATE-----\n"
 #define SUBJECT_MAX_LEN 64
+#define CSR_BUFFER_LEN  1024
 
 /**
  * Parses the PEM request and checks that its subject matches the expected one.
@@ -109,11 +123,10 @@ TEST_CASE("create csr stores a PEM request with the identity as common name", TE
 
     TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
 
-    char *csr = security_get_csr();
-    TEST_ASSERT_NOT_NULL(csr);
+    char csr[CSR_BUFFER_LEN];
+    TEST_ASSERT_EQUAL(ESP_OK, security_read_csr(csr, sizeof(csr)));
     TEST_ASSERT_NOT_NULL(strstr(csr, PEM_HEADER));
     assert_csr_subject(csr, expected_subject);
-    free(csr);
 }
 
 TEST_CASE("create csr fails when a CSR or a certificate is already stored", TEST_TAG) {
@@ -125,30 +138,11 @@ TEST_CASE("create csr fails when a CSR or a certificate is already stored", TEST
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_create_csr());
 }
 
-// --- security_get_csr ---
-
-TEST_CASE("get csr returns null until a request is created, then the stored PEM", TEST_TAG) {
-    TEST_ASSERT_NULL(security_get_csr());
-
-    TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
-
-    char *csr = security_get_csr();
-    TEST_ASSERT_NOT_NULL(csr);
-
-    char *stored_csr = malloc(strlen(csr) + 1);
-    TEST_ASSERT_NOT_NULL(stored_csr);
-    size_t stored_len = strlen(csr) + 1;
-    TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&csr_ctx, stored_csr, stored_len));
-    TEST_ASSERT_EQUAL_STRING(stored_csr, csr);
-
-    free(stored_csr);
-    free(csr);
-}
-
 // --- security_install_certificate ---
 
 TEST_CASE("install certificate stores it, removes the stored request and keeps the key", TEST_TAG) {
     psa_key_id_t key_id = PSA_KEY_ID_NULL;
+    size_t size = 0;
 
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_install_certificate(nullptr));
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_install_certificate("not a certificate"));
@@ -161,7 +155,7 @@ TEST_CASE("install certificate stores it, removes the stored request and keeps t
     TEST_ASSERT_EQUAL_STRING(TEST_CERT, certificate);
 
     // The request is removed once the certificate is installed, but the key it was signed with stays
-    TEST_ASSERT_NULL(security_get_csr());
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_get_csr_size(&size));
     TEST_ASSERT_EQUAL(ESP_OK, security_get_private_key(&key_id));
 }
 
@@ -174,21 +168,7 @@ TEST_CASE("install certificate rejects an invalid certificate and keeps the requ
 
     // Nothing is stored, and the request is still there for the next attempt
     TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, storage_get_str_size(&cert_ctx, &size));
-    TEST_ASSERT_NOT_NULL_MESSAGE(security_get_csr(), "the request must stay stored");
-}
-
-// --- security_get_certificate ---
-
-TEST_CASE("get certificate returns null until one is installed, then the stored PEM", TEST_TAG) {
-    TEST_ASSERT_NULL(security_get_certificate());
-
-    TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
-    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(TEST_CERT));
-
-    char *certificate = security_get_certificate();
-    TEST_ASSERT_NOT_NULL(certificate);
-    TEST_ASSERT_EQUAL_STRING(TEST_CERT, certificate);
-    free(certificate);
+    TEST_ASSERT_EQUAL_MESSAGE(ESP_OK, security_get_csr_size(&size), "the request must stay stored");
 }
 
 // --- security_set_ca_certificate ---
@@ -294,9 +274,80 @@ TEST_CASE("revoke deletes the certificate, the CSR and the private key", TEST_TA
     size_t size = 0;
     TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, storage_get_str_size(&cert_ctx, &size));
     TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, storage_get_str_size(&csr_ctx, &size));
-    TEST_ASSERT_NULL(security_get_csr());
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_get_csr_size(&size));
     TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_get_private_key(&key_id));
 
     // Revoking again, when nothing is left, is not an error
     TEST_ASSERT_EQUAL(ESP_OK, security_revoke());
+}
+
+// --- error-aware PEM getters ---
+
+TEST_CASE("pem getters report not found until the value is stored, then return it", TEST_TAG) {
+    size_t size = 0;
+    char buffer[2048];
+
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_get_csr_size(&size));
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_read_csr(buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_get_certificate_size(&size));
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_read_certificate(buffer, sizeof(buffer)));
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_get_ca_certificate_size(&size));
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_read_ca_certificate(buffer, sizeof(buffer)));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_csr_size(&size));
+    TEST_ASSERT_EQUAL(ESP_OK, security_read_csr(buffer, size));
+    TEST_ASSERT_EQUAL_UINT(size, strlen(buffer) + 1);
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(TEST_CERT));
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_certificate_size(&size));
+    TEST_ASSERT_EQUAL_UINT(sizeof(TEST_CERT), size);
+    TEST_ASSERT_EQUAL(ESP_OK, security_read_certificate(buffer, size));
+    TEST_ASSERT_EQUAL_STRING(TEST_CERT, buffer);
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_set_ca_certificate(TEST_CA));
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_ca_certificate_size(&size));
+    TEST_ASSERT_EQUAL(ESP_OK, security_read_ca_certificate(buffer, size));
+    TEST_ASSERT_EQUAL_STRING(TEST_CA, buffer);
+}
+
+TEST_CASE("pem getters reject null arguments and a buffer that is too small", TEST_TAG) {
+    char small[8];
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_get_csr_size(nullptr));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_read_certificate(nullptr, 10));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_set_ca_certificate(TEST_CA));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_SIZE, security_read_ca_certificate(small, sizeof(small)));
+}
+
+// --- security_certificate_is_expired ---
+
+TEST_CASE("certificate is expired reports not found without a certificate and not expired for a valid one", TEST_TAG) {
+    bool expired = true;
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_certificate_is_expired(nullptr));
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_FOUND, security_certificate_is_expired(&expired));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(TEST_CERT));
+    TEST_ASSERT_EQUAL(ESP_OK, security_certificate_is_expired(&expired));
+    TEST_ASSERT_FALSE(expired);
+}
+
+TEST_CASE("certificate is expired reports an expired certificate", TEST_TAG) {
+    bool expired = false;
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_create_csr());
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(TEST_EXPIRED_CERT));
+    TEST_ASSERT_EQUAL(ESP_OK, security_certificate_is_expired(&expired));
+    TEST_ASSERT_TRUE(expired);
+}
+
+TEST_CASE("certificate is expired rejects a stored certificate that cannot be parsed", TEST_TAG) {
+    bool expired = false;
+
+    // Stored behind the security layer's back, as a corrupt value would be
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&cert_ctx, "not a certificate"));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_certificate_is_expired(&expired));
 }

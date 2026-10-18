@@ -63,24 +63,12 @@ esp_err_t security_get_private_key(psa_key_id_t *key_id);
  * The CSR is generated (in PEM format) and stored in the storage layer under a predefined key.
  *
  * The CSR is only generated if there is no existing CSR and certificate already stored.
- * If a CSR already exists, this function will return a error without generating a new one.
  * Each request generates a new private key in the PSA key store, replacing the key of any previous request.
  *
  * @return ESP_OK on success, ESP_ERR_INVALID_STATE if a CSR or a certificate is already stored,
  * or an appropriate error code on failure.
  */
 esp_err_t security_create_csr();
-
-/**
- *
- * @brief Retrieves the Certificate Signing Request (CSR) from the storage layer.
- * The CSR is returned as a null-terminated string in PEM format.
- *
- * In case of an error, the function returns NULL. The caller is responsible for freeing the returned string.
- *
- * @return the CSR as a null-terminated string in PEM format, or NULL on error.
- */
-char *security_get_csr();
 
 /**
  *
@@ -97,18 +85,6 @@ char *security_get_csr();
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if the argument is NULL or not a valid certificate, or an appropriate error code on failure.
  */
 esp_err_t security_install_certificate(const char *certificate);
-
-/**
- *
- * @brief Retrieves the installed device certificate from the storage layer.
- * The certificate is returned as a null-terminated string in PEM format.
- *
- * In case of an error, or when no certificate is installed, the function returns NULL.
- * The caller is responsible for freeing the returned string.
- *
- * @return the certificate as a null-terminated string in PEM format, or NULL on error.
- */
-char *security_get_certificate();
 
 /**
  *
@@ -131,6 +107,85 @@ esp_err_t security_set_ca_certificate(const char *ca_certificate);
  * ESP_ERR_INVALID_STATE if it is in only one of them or the global store holds more than one certificate, or the storage error if the storage layer cannot be read.
  */
 esp_err_t security_has_ca_certificate();
+
+/**
+ *
+ * @brief Gets the size of the buffer needed to read the Certificate Signing Request (CSR), in bytes including the null terminator.
+ *
+ * Unlike a read that returns NULL, this tells a CSR that is not stored apart from a failure.
+ *
+ * @param out_len the pointer to the variable that receives the size. Must not be NULL.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when the CSR is not stored, ESP_ERR_INVALID_ARG if the argument is NULL,
+ * or an appropriate error code on failure.
+ */
+esp_err_t security_get_csr_size(size_t *out_len);
+
+/**
+ *
+ * @brief Reads the Certificate Signing Request (CSR) from the storage layer into a caller buffer, as a null-terminated string in PEM format.
+ *
+ * @param out_value the buffer that receives the CSR. Must not be NULL.
+ * @param max_len the size of the buffer in bytes, as reported by the matching size function.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when the CSR is not stored, ESP_ERR_INVALID_ARG if the buffer is NULL,
+ * ESP_ERR_INVALID_SIZE if the buffer is too small, or an appropriate error code on failure.
+ */
+esp_err_t security_read_csr(char *out_value, size_t max_len);
+
+/**
+ *
+ * @brief Gets the size of the buffer needed to read the installed device certificate, in bytes including the null terminator.
+ *
+ * @param out_len the pointer to the variable that receives the size. Must not be NULL.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when the certificate is not stored, ESP_ERR_INVALID_ARG if the argument is NULL,
+ * or an appropriate error code on failure.
+ */
+esp_err_t security_get_certificate_size(size_t *out_len);
+
+/**
+ *
+ * @brief Reads the installed device certificate from the storage layer into a caller buffer, as a null-terminated string in PEM format.
+ *
+ * @param out_value the buffer that receives the certificate. Must not be NULL.
+ * @param max_len the size of the buffer in bytes, as reported by the matching size function.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when the certificate is not stored, ESP_ERR_INVALID_ARG if the buffer is NULL,
+ * ESP_ERR_INVALID_SIZE if the buffer is too small, or an appropriate error code on failure.
+ */
+esp_err_t security_read_certificate(char *out_value, size_t max_len);
+
+/**
+ *
+ * @brief Gets the size of the buffer needed to read the CA certificate, in bytes including the null terminator.
+ *
+ * @param out_len the pointer to the variable that receives the size. Must not be NULL.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when the CA certificate is not stored, ESP_ERR_INVALID_ARG if the argument is NULL,
+ * or an appropriate error code on failure.
+ */
+esp_err_t security_get_ca_certificate_size(size_t *out_len);
+
+/**
+ *
+ * @brief Reads the CA certificate from the storage layer into a caller buffer, as a null-terminated string in PEM format.
+ *
+ * @param out_value the buffer that receives the CA certificate. Must not be NULL.
+ * @param max_len the size of the buffer in bytes, as reported by the matching size function.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when the CA certificate is not stored, ESP_ERR_INVALID_ARG if the buffer is NULL,
+ * ESP_ERR_INVALID_SIZE if the buffer is too small, or an appropriate error code on failure.
+ */
+esp_err_t security_read_ca_certificate(char *out_value, size_t max_len);
+
+/**
+ *
+ * @brief Checks whether the installed device certificate has expired.
+ *
+ * The certificate is read from the storage layer and its end of validity is compared with the system clock.
+ * The clock must be synchronized before this function is called. The function does not check it, so with an
+ * unsynchronized clock the result is not reliable.
+ *
+ * @param expired receives true when the certificate has expired. Must not be NULL.
+ * @return ESP_OK on success, ESP_ERR_NOT_FOUND when no certificate is installed, ESP_ERR_INVALID_ARG if the argument
+ * is NULL, ESP_ERR_INVALID_STATE if the stored certificate cannot be parsed, or an appropriate error code on failure.
+ */
+esp_err_t security_certificate_is_expired(bool *expired);
 
 /**
  *
