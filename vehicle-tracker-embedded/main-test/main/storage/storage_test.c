@@ -17,6 +17,19 @@
 // Longer than the 15 characters NVS accepts for namespaces and keys
 #define TOO_LONG_NAME "abcdefghijklmnop"
 
+/**
+ * Every test starts from an empty NVS partition, so no test depends on what another one stored.
+ */
+void setUp() {
+    storage_destroy();
+    TEST_ASSERT_EQUAL(ESP_OK, nvs_flash_erase());
+    TEST_ASSERT_EQUAL(ESP_OK, storage_init());
+}
+
+void tearDown() {
+    storage_destroy();
+}
+
 // --- Lifecycle ---
 
 TEST_CASE("init succeeds again after destroy", TEST_TAG) {
