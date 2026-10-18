@@ -14,7 +14,7 @@ Configuration values are grouped into sections, one for each area of the device'
 |---|---|---|
 | **Connection** | MQTT connection settings, such as the broker URL, keep-alive interval, QoS level, and reconnect interval. | [Connection Configuration](connection.md) |
 | **GPS** | GPS behavior, such as the location update frequency, fix timeout, and fix strategy. | [GPS Configuration](gps.md) |
-| **Authentication** | Credentials used to connect to the MQTT broker, such as the device certificate, the trusted CA certificate, and the certificate expiration. | [Authentication Configuration](authentication.md) |
+| **Authentication** | Credentials used to connect to the MQTT broker, such as the device certificate and the trusted CA certificate. | [Authentication Configuration](authentication.md) |
 
 ## Default Values
 
