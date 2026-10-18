@@ -32,9 +32,8 @@ The [Authentication Service](../ble/config/authentication.md) exposes these valu
 Clients rely on the following rules when they work with the credentials:
 
 - Reading `csr` returns the stored request. When none is stored, the device creates one. This happens on first boot and after the credentials have been revoked.
-- Writing `certificate` stores the certificate and removes the stored request, so the request is only available until a certificate is installed. A value that is not a valid PEM certificate is refused, and nothing changes. The device does not check that the certificate was issued for its own key.
-- Writing `ca` replaces the CA certificate, because the device trusts a single one. A value that is not a valid PEM certificate, or that holds more than one certificate, is refused.
+- Writing `certificate` stores the certificate and removes the stored request, so the request is only available until a certificate is installed.
 - While a certificate is installed and no request is stored, reading `csr` is refused. A new request requires the credentials to be revoked first.
-- Writing `1` to `revoke` removes the installed certificate and the credentials kept on the device, so the device no longer holds any credentials afterwards. The CA certificate is not a credential of the device, so it stays.
+- Writing `1` to `revoke` removes the installed certificate and the credentials kept on the device, so the device no longer holds any credentials afterwards.
 
 For how the key pair and the request are created, and the order in which the device performs each step, refer to [Device Key and CSR](../security/authentication/certificate-lifecycle.md#device-key-and-csr).

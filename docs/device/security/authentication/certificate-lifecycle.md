@@ -13,7 +13,7 @@ The device creates its own key pair. The private key proves that the device owns
 
 ### Installing a certificate
 
-The device checks that the certificate is valid PEM, stores it, and then deletes the stored request. A certificate that is not valid is refused before anything is stored, so the request stays in place. An interruption between the two steps leaves both in storage, and reading the request returns the one the certificate was issued for.
+The device stores the certificate first and then deletes the stored request. An interruption between the two steps leaves both in storage, and reading the request returns the one the certificate was issued for.
 
 ### Revoking on the device
 
