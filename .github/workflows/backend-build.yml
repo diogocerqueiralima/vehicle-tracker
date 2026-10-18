@@ -1,11 +1,27 @@
-name: Docker Build
+name: Backend Build
 
 on:
   push:
     branches-ignore: [ "main" ]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'vehicle-tracker-backend/**'
+              - '.github/workflows/backend-build.yml'
+
   build:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,12 +36,20 @@ jobs:
 
   build-status:
     name: build
-    needs: build
+    needs: [changes, build]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Check build result
         run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            echo "Change detection failed"
+            exit 1
+          fi
+          if [ "${{ needs.changes.outputs.backend }}" != "true" ]; then
+            echo "No backend changes, skipping"
+            exit 0
+          fi
           if [ "${{ needs.build.result }}" != "success" ]; then
             echo "One or more service builds failed"
             exit 1
