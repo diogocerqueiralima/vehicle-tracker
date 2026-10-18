@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'vehicle-tracker-backend/**'
-      - '.github/workflows/backend-build-push.yml'
+      - '.github/workflows/build-push-backend.yml'
   workflow_dispatch:
 
 jobs:
