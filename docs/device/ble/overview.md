@@ -44,7 +44,7 @@ The BLE layer treats the configuration layer as the single source of truth for s
 
 Access control stays in the BLE layer. It enforces **who may talk to the device**, through pairing and bonding, and an unauthenticated client is rejected before any request reaches the configuration layer.
 
-Credential operations, such as reading the CSR or revoking the credentials, are exposed through the configuration layer. The security layer decides what they do: when a CSR is generated, when a read is refused, and what revoking removes. The BLE layer exposes them as characteristics and relays the result. The [Authentication Configuration](../config/authentication.md#behavior) describes the behavior a client sees.
+Credential operations, such as reading the CSR or revoking the credentials, are exposed through the configuration layer. The security layer decides what they do: when a CSR is generated, when a read is refused, and what revoking removes. The BLE layer exposes them as characteristics and relays the result. The [Credentials](../security/authentication/credentials.md#operations-by-state) document describes the behavior a client sees.
 
 ### Stability towards the mobile application
 
