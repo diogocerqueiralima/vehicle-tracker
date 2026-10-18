@@ -35,7 +35,7 @@ jobs:
         run: ./buildContainer.sh
 
   build-status:
-    name: build
+    name: build-backend
     needs: [changes, build]
     if: always()
     runs-on: ubuntu-latest
