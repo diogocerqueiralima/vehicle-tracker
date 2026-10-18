@@ -3,6 +3,9 @@ name: Backend Build & Push
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'vehicle-tracker-backend/**'
+      - '.github/workflows/backend-build-push.yml'
   workflow_dispatch:
 
 jobs:
