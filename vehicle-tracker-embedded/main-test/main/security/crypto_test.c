@@ -280,6 +280,21 @@ TEST_CASE("certificate does not match a different key", TEST_TAG) {
     reset_key();
 }
 
+TEST_CASE("certificate with a bigger public key than the device key does not match and is not an error", TEST_TAG) {
+    reset_key();
+    import_key(KEY_A_RAW, sizeof(KEY_A_RAW));
+
+    mbedtls_x509_crt crt;
+    TEST_ASSERT_EQUAL(ESP_OK, crypto_parse_certificate(CERT_RSA_VALID, &crt));
+
+    bool matches = true;
+    TEST_ASSERT_EQUAL(ESP_OK, crypto_certificate_matches_key(&crt, TEST_KEY_ID, &matches));
+    TEST_ASSERT_FALSE(matches);
+
+    mbedtls_x509_crt_free(&crt);
+    reset_key();
+}
+
 TEST_CASE("certificate matches key fails when the key does not exist", TEST_TAG) {
     reset_key();
 

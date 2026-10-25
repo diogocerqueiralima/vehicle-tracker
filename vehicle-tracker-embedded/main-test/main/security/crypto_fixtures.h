@@ -11,7 +11,8 @@
  * The certificates are self signed by key A, with the subject CN=test-device:
  * - CERT_A_VALID is valid from 2020 to 2999;
  * - CERT_A_EXPIRED was valid from 2000 to 2001;
- * - CERT_A_FUTURE is valid from 2900 to 2999.
+ * - CERT_A_FUTURE is valid from 2900 to 2999;
+ * - CERT_RSA_VALID is self signed by an RSA 2048 key, valid from 2020 to 2999.
  */
 
 static const uint8_t KEY_A_RAW[] = {
@@ -57,5 +58,23 @@ static const char CERT_A_FUTURE[] =
     "kJ3OI520mh5SR7XjUSgCIAu303HuRFXMl0hjUQtb4/pxUdqWnbQL4utZkw7zKBjl\n"
     "-----END CERTIFICATE-----\n";
 
+static const char CERT_RSA_VALID[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIICpzCCAY+gAwIBAgIBATANBgkqhkiG9w0BAQsFADAWMRQwEgYDVQQDDAt0ZXN0\n"
+    "LWRldmljZTAgFw0yMDAxMDEwMDAwMDBaGA8yOTk5MDEwMTAwMDAwMFowFjEUMBIG\n"
+    "A1UEAwwLdGVzdC1kZXZpY2UwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB\n"
+    "AQD5MNXT9chkDcBmQZ7xsHzWv8p98RCiVUBrJrxfVhgm6h7owgVy5fMp/lph5srT\n"
+    "GYfL7j86F1mIS5EXLjCFAr52djV51PXFSu73flx+UGvIK7MTQlkygYM2QeXqZ2J8\n"
+    "8JCwFBmubVC44D52ElVlom4NeXuHKsmC/d+kNffziu8cHq0c/BENCQe4wdjgOwIc\n"
+    "7oe+EadZ5bDwt5bVQ2udBuhke7fLzErq/Q0enlxqAc+/gii5ptf6wJ9q1u3GJM0U\n"
+    "eGcrwhK0WiD5fIyUow2bhNXbBWJARZvRtnAVEteWNvv9iKZ+UkR1cDn6uFTD5Be7\n"
+    "KTXvI4pENvOu/29CpGgUFI+LAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAD4a5snk\n"
+    "wnBILOLxi5wOo9m/y5mqwYyr3J50FefxdhAKaeGQDBIgfmbdMgPdu0y1zHaAGsve\n"
+    "MJW934n5XusCPErozY8FyX0kReiEiCGC8S3vjTmbGN4oKvZnI3OO/Ib2AVyAy6jt\n"
+    "JDt/eB4p+6aJ8qZFJSpTBaWUsDcUhxDo/nwXb8iC9UnPgWgJ0UMv2vFv2ids3qgt\n"
+    "/r3OoAZxKD7FVNVWY51WDcJLBuRfkW13keySOc+SOnH+2Nr2B2Pz2vUKr6Zf9Qn+\n"
+    "P9bgJlXAZCXHOZcolr7y58eGF6C939mQU2dUCk6LchDd0CuNgTv1TPuFyEOBVydK\n"
+    "pRQLU/f7BkhMO9Y=\n"
+    "-----END CERTIFICATE-----\n";
 
 #endif

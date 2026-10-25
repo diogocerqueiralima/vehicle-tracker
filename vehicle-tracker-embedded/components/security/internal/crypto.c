@@ -154,6 +154,13 @@ esp_err_t crypto_certificate_matches_key(const mbedtls_x509_crt *crt, const psa_
 
     unsigned char crt_der[PUBLIC_KEY_DER_MAX_SIZE];
     const int crt_len = mbedtls_pk_write_pubkey_der(&crt->pk, crt_der, sizeof(crt_der));
+    if (crt_len == PSA_ERROR_BUFFER_TOO_SMALL) {
+        // Its public key is bigger than the one of the private key, for example RSA, so it cannot be the same
+        *out_matches = false;
+        err = ESP_OK;
+        goto cleanup;
+    }
+
     if (crt_len < 0) {
         ESP_LOGE(TAG, "Failed to write public key of the certificate");
         goto cleanup;

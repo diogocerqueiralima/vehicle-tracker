@@ -124,7 +124,7 @@ static esp_err_t load_state(security_state_t *out_state) {
  */
 static esp_err_t ensure_state() {
 
-    // 1. Keep the state if one is already saved
+    // 1. Load the saved state, if there is one
     security_state_t state;
     const esp_err_t err = load_state(&state);
     if (err != ESP_ERR_NVS_NOT_FOUND && err != ESP_OK) {
