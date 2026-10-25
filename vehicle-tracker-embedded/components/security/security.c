@@ -119,6 +119,7 @@ esp_err_t security_init() {
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to create identity context");
         free(security_context);
+        security_context = nullptr;
         return err;
     }
 
@@ -127,6 +128,7 @@ esp_err_t security_init() {
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to create state context");
         free(security_context);
+        security_context = nullptr;
         return err;
     }
 

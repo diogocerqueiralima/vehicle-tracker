@@ -176,6 +176,8 @@ esp_err_t crypto_certificate_is_valid(const mbedtls_x509_crt *crt, bool *out_val
         return ESP_ERR_INVALID_ARG;
     }
 
+    // TODO(#233): the system clock may not be synchronized yet
+
     // 2. Valid when the validity period already started and did not end yet
     *out_valid = !mbedtls_x509_time_is_future(&crt->valid_from) && !mbedtls_x509_time_is_past(&crt->valid_to);
 
