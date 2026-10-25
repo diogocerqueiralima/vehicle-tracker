@@ -1,5 +1,6 @@
 #include "security.h"
 
+#include "crypto.h"
 #include "esp_log.h"
 #include "nvs.h"
 #include "storage.h"
@@ -16,6 +17,23 @@ static security_context_t *security_context = nullptr;
  * @brief Storage context for the lifecycle state of the device credentials.
  */
 #define STATE_CTX ((storage_ctx_t){.namespace = "security", .key = "state", .mode = STORAGE_MODE_READ_WRITE})
+
+/**
+ * @brief Storage context for the PEM encoded CSR.
+ */
+#define CSR_CTX ((storage_ctx_t){.namespace = "security", .key = "csr", .mode = STORAGE_MODE_READ_WRITE})
+
+/**
+ * @brief Id of the device private key in the PSA key store. It is inside the range reserved for applications.
+ */
+#define PRIVATE_KEY_ID  PSA_KEY_ID_USER_MIN
+
+/**
+ * @brief Maximum size in bytes of the PEM encoded CSR, including the null terminator.
+ *
+ * The subject and the key type are fixed, so the CSR has a bounded size (around 400 bytes).
+ */
+#define CSR_MAX_SIZE 512
 
 #define TAG "security"
 
@@ -134,5 +152,43 @@ esp_err_t security_start_enrollment() {
         return ESP_ERR_INVALID_STATE;
     }
 
+    // 3. Generate the private key
+    esp_err_t err = crypto_generate_private_key(PRIVATE_KEY_ID);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to generate private key");
+        return err;
+    }
+
+    // 4. Generate the CSR, using the device identity as common name
+    char identity[UUID_STR_SIZE];
+    err = uuid_to_str(&security_context->identity, identity, sizeof(identity));
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to convert identity to string");
+        return err;
+    }
+
+    char csr[CSR_MAX_SIZE];
+    err = crypto_generate_csr(PRIVATE_KEY_ID, identity, csr, sizeof(csr));
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to generate CSR");
+        return err;
+    }
+
+    // 5. Save the CSR to storage
+    err = storage_set_str(&CSR_CTX, csr);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save CSR");
+        return err;
+    }
+
+    // 6. Transition to the ENROLLING state
+    security_context->state = SECURITY_STATE_ENROLLING;
+    err = storage_set_u32(&STATE_CTX, SECURITY_STATE_ENROLLING);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save state");
+        return err;
+    }
+
+    // 7. Enrollment started successfully
     return ESP_OK;
 }
