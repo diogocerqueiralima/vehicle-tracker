@@ -19,7 +19,6 @@ esp_err_t uuid_generate_v4(uuid_t *out_uuid) {
     out_uuid->bytes[8] = (out_uuid->bytes[8] & 0x3F) | 0x80;
 
     return ESP_OK;
-
 }
 
 esp_err_t uuid_to_str(const uuid_t *uuid, char *out_value, const size_t max_len) {
