@@ -131,6 +131,16 @@ TEST_CASE("saved lifecycle state is loaded on boot", TEST_TAG) {
     TEST_ASSERT_EQUAL(SECURITY_STATE_ACTIVE, context_state());
 }
 
+TEST_CASE("init rejects a saved state that is not a known one and stays not initialized", TEST_TAG) {
+    const storage_ctx_t ctx = STATE_CTX;
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_u32(&ctx, SECURITY_STATE_REVOKED + 1));
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_init());
+
+    security_context_t context;
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_context(&context));
+}
+
 // --- Enrollment ---
 
 TEST_CASE("enrollment from unprovisioned creates the key and the csr and transitions to enrolling", TEST_TAG) {

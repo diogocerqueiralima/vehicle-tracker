@@ -1,5 +1,7 @@
 #include "security.h"
 
+#include <inttypes.h>
+
 #include "crypto.h"
 #include "esp_log.h"
 #include "nvs.h"
@@ -77,16 +79,48 @@ static esp_err_t ensure_identity() {
 
 /**
  *
+ * @brief Loads the lifecycle state saved in storage.
+ *
+ * The state is kept in storage as a 32-bit unsigned integer. It is read as one and checked against the known states
+ * before being converted, so a corrupted value, or one written by a newer firmware, is never used as a state.
+ *
+ * @param out_state the state to be filled. It is only set on success.
+ * @return ESP_OK on success, ESP_ERR_NVS_NOT_FOUND when no state is saved, ESP_ERR_INVALID_STATE when the saved value
+ * is not a known state, or an appropriate error code on failure.
+ */
+static esp_err_t load_state(security_state_t *out_state) {
+
+    // 1. Read the raw value
+    uint32_t stored_state = 0;
+    const esp_err_t err = storage_get_u32(&STATE_CTX, &stored_state);
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    // 2. Make sure it is a known state
+    if (stored_state > SECURITY_STATE_REVOKED) {
+        ESP_LOGE(TAG, "Stored state %" PRIu32 " is not a valid state", stored_state);
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // 3. Convert it
+    *out_state = (security_state_t) stored_state;
+    return ESP_OK;
+}
+
+/**
+ *
  * @brief Makes sure the device has a lifecycle state, loading it from storage or starting as UNPROVISIONED
  * when none is saved. The state is kept in storage as a 32-bit unsigned integer, so it stays the same across reboots.
  *
- * @return the current lifecycle state, or an appropriate error code on failure.
+ * @return ESP_OK when the device has a lifecycle state, or an appropriate error code on failure, such as
+ * ESP_ERR_INVALID_STATE when the saved state is not a known one.
  */
 static esp_err_t ensure_state() {
 
     // 1. Keep the state if one is already saved
     security_state_t state;
-    const esp_err_t err = storage_get_u32(&STATE_CTX, (uint32_t *)&state);
+    const esp_err_t err = load_state(&state);
     if (err != ESP_ERR_NVS_NOT_FOUND && err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to load state");
         return err;
