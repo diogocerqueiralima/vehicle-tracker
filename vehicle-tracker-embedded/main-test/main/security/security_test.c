@@ -225,6 +225,8 @@ TEST_CASE("enrollment is rejected in the states that already have or wait for a 
 TEST_CASE("install accepts a valid certificate of the device key and transitions to active", TEST_TAG) {
     import_device_key(KEY_A_RAW, sizeof(KEY_A_RAW));
     boot_in_state(SECURITY_STATE_ENROLLING);
+    const storage_ctx_t saved_csr_ctx = CSR_CTX;
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&saved_csr_ctx, "csr"));
 
     TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(CERT_A_VALID));
 
@@ -235,6 +237,10 @@ TEST_CASE("install accepts a valid certificate of the device key and transitions
     char saved[sizeof(CERT_A_VALID)];
     TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&cert_ctx, saved, sizeof(saved)));
     TEST_ASSERT_EQUAL_STRING(CERT_A_VALID, saved);
+
+    // The CSR is not needed anymore
+    const storage_ctx_t csr_ctx = CSR_CTX;
+    TEST_ASSERT_FALSE(has_string(&csr_ctx));
 
     reset_key();
 }

@@ -202,7 +202,8 @@ esp_err_t security_start_enrollment() {
         return ESP_ERR_INVALID_STATE;
     }
 
-    // 3. Generate the private key
+    // 3. Generate the private key, which replaces the old one, and that is harmless if a later step fails because
+    // the old key is useless in these states
     esp_err_t err = crypto_generate_private_key(PRIVATE_KEY_ID);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to generate private key");
@@ -303,7 +304,14 @@ esp_err_t security_install_certificate(const char *cert_pem) {
         goto cleanup;
     }
 
-    // 7. Transition to the ACTIVE state
+    // 7. Delete the CSR, it is not needed anymore, and it is fine if there is none. If this fails, the device can still
+    // operate, so we log the error but continue to transition to ACTIVE
+    err = storage_erase(&CSR_CTX);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "Failed to delete CSR");
+    }
+
+    // 8. Transition to the ACTIVE state
     err = storage_set_u32(&STATE_CTX, SECURITY_STATE_ACTIVE);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save state");
