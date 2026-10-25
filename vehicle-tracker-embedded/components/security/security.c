@@ -558,7 +558,7 @@ esp_err_t security_install_certificate_authority(const char *ca_pem) {
     }
 
     // 3. Make sure it really is a certificate authority
-    if (!mbedtls_x509_crt_get_ca_istrue(&ca)) {
+    if (mbedtls_x509_crt_get_ca_istrue(&ca) != 1) {
         ESP_LOGE(TAG, "Certificate is not a certificate authority");
         err = ESP_ERR_INVALID_ARG;
         goto cleanup;
