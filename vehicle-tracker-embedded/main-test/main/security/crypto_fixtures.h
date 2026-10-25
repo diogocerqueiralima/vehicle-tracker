@@ -12,7 +12,8 @@
  * - CERT_A_VALID is valid from 2020 to 2999;
  * - CERT_A_EXPIRED was valid from 2000 to 2001;
  * - CERT_A_FUTURE is valid from 2900 to 2999;
- * - CERT_RSA_VALID is self signed by an RSA 2048 key, valid from 2020 to 2999.
+ * - CERT_RSA_VALID is self signed by an RSA 2048 key, valid from 2020 to 2999;
+ * - CERT_CA_VALID is a self signed CA certificate (CN=test-ca, basic constraints CA:TRUE), valid from 2020 to 2999.
  */
 
 static const uint8_t KEY_A_RAW[] = {
@@ -75,6 +76,17 @@ static const char CERT_RSA_VALID[] =
     "/r3OoAZxKD7FVNVWY51WDcJLBuRfkW13keySOc+SOnH+2Nr2B2Pz2vUKr6Zf9Qn+\n"
     "P9bgJlXAZCXHOZcolr7y58eGF6C939mQU2dUCk6LchDd0CuNgTv1TPuFyEOBVydK\n"
     "pRQLU/f7BkhMO9Y=\n"
+    "-----END CERTIFICATE-----\n";
+
+static const char CERT_CA_VALID[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIBKDCBzqADAgECAgEBMAoGCCqGSM49BAMCMBIxEDAOBgNVBAMMB3Rlc3QtY2Ew\n"
+    "IBcNMjAwMTAxMDAwMDAwWhgPMjk5OTAxMDEwMDAwMDBaMBIxEDAOBgNVBAMMB3Rl\n"
+    "c3QtY2EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQL7lK76XY842cVBKpiHnl6\n"
+    "1Zdm5CaNtg31A269+gEoXkCaHo41KDtPYCOU8ioAVpS+zbRJIfFMCf1f7TBos5eo\n"
+    "oxMwETAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0kAMEYCIQCoZViI97Yq\n"
+    "1lOsRB8Nw6Qs/zOywOc54kFjAzix7JIFXwIhAL2Rvp5B7jyc0Y2goXz5c6fKFmJM\n"
+    "ew+uhstKfHcm1Lce\n"
     "-----END CERTIFICATE-----\n";
 
 #endif

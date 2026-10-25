@@ -37,6 +37,11 @@ static pthread_mutex_t security_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define CERT_CTX ((storage_ctx_t){.namespace = "security", .key = "cert", .mode = STORAGE_MODE_READ_WRITE})
 
 /**
+ * @brief Storage context for the PEM encoded certificate authority.
+ */
+#define CA_CTX ((storage_ctx_t){.namespace = "security", .key = "ca", .mode = STORAGE_MODE_READ_WRITE})
+
+/**
  * @brief Id of the device private key in the PSA key store. It is inside the range reserved for applications.
  */
 #define PRIVATE_KEY_ID  PSA_KEY_ID_USER_MIN
@@ -521,6 +526,99 @@ esp_err_t security_destroy() {
     // 2. Release the security context, what is saved in storage is kept
     free(security_context);
     security_context = nullptr;
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
+}
+
+esp_err_t security_install_certificate_authority(const char *ca_pem) {
+
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    if (ca_pem == nullptr) {
+        err = ESP_ERR_INVALID_ARG;
+        goto unlock;
+    }
+
+    // 2. Parse the certificate authority
+    mbedtls_x509_crt ca;
+    err = crypto_parse_certificate(ca_pem, &ca);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to parse certificate authority");
+        goto unlock;
+    }
+
+    // 3. Make sure it really is a certificate authority
+    if (!mbedtls_x509_crt_get_ca_istrue(&ca)) {
+        ESP_LOGE(TAG, "Certificate is not a certificate authority");
+        err = ESP_ERR_INVALID_ARG;
+        goto cleanup;
+    }
+
+    // 4. Save it to storage, replacing the previous one
+    err = storage_set_str(&CA_CTX, ca_pem);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save certificate authority");
+    }
+
+cleanup:
+    mbedtls_x509_crt_free(&ca);
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
+}
+
+esp_err_t security_get_certificate_authority(char **out_pem) {
+
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    if (out_pem == nullptr) {
+        err = ESP_ERR_INVALID_ARG;
+        goto unlock;
+    }
+
+    // 2. Get the size of the certificate authority saved in storage
+    size_t size = 0;
+    err = storage_get_str_size(&CA_CTX, &size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get the certificate authority size");
+        goto unlock;
+    }
+
+    // 3. Load it
+    char *pem = malloc(size);
+    if (pem == nullptr) {
+        ESP_LOGE(TAG, "Failed to allocate certificate authority buffer");
+        err = ESP_ERR_NO_MEM;
+        goto unlock;
+    }
+
+    err = storage_get_str(&CA_CTX, pem, size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load certificate authority");
+        free(pem);
+        goto unlock;
+    }
+
+    *out_pem = pem;
 
 unlock:
     pthread_mutex_unlock(&security_mutex);

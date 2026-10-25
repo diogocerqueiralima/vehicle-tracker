@@ -149,4 +149,36 @@ esp_err_t security_revoke();
  */
 esp_err_t security_get_certificate(char **out_pem);
 
+/**
+ *
+ * @brief Installs the certificate authority in PEM format, which issues the certificates of the device.
+ *
+ * The certificate must be a well formed PEM encoded X.509 certificate that is a certificate authority, which means
+ * its basic constraints say so. It is saved in flash, so it stays the same across reboots, and it replaces the
+ * certificate authority installed before, if there is one. The device state does not change.
+ *
+ * Its signature and validity period are not verified, and it is not used yet to verify the certificate of the device.
+ * Whoever can call this function chooses what the device trusts, so it must only be reachable by an authenticated
+ * caller.
+ *
+ * @param ca_pem the certificate authority in PEM format, null terminated.
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized, ESP_ERR_INVALID_ARG
+ * when @p ca_pem is null, is malformed or is not a certificate authority, or an appropriate error code on failure.
+ */
+esp_err_t security_install_certificate_authority(const char *ca_pem);
+
+/**
+ *
+ * @brief Loads the certificate authority saved in storage by security_install_certificate_authority().
+ *
+ * The memory for the certificate authority is allocated by this function, the caller must release it with free().
+ *
+ * @param out_pem the pointer to be set to the allocated certificate authority in PEM format, null terminated. It is
+ * only set on success.
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized, ESP_ERR_INVALID_ARG
+ * when @p out_pem is null, ESP_ERR_NVS_NOT_FOUND when there is no certificate authority saved, or an appropriate
+ * error code on failure.
+ */
+esp_err_t security_get_certificate_authority(char **out_pem);
+
 #endif

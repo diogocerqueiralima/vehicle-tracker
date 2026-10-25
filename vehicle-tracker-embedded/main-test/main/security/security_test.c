@@ -18,6 +18,7 @@
 #define STATE_CTX ((storage_ctx_t){.namespace = "security", .key = "state", .mode = STORAGE_MODE_READ_WRITE})
 #define CSR_CTX ((storage_ctx_t){.namespace = "security", .key = "csr", .mode = STORAGE_MODE_READ_WRITE})
 #define CERT_CTX ((storage_ctx_t){.namespace = "security", .key = "cert", .mode = STORAGE_MODE_READ_WRITE})
+#define CA_CTX ((storage_ctx_t){.namespace = "security", .key = "ca", .mode = STORAGE_MODE_READ_WRITE})
 
 // Id of the device private key, it must stay in sync with PRIVATE_KEY_ID in security.c
 #define DEVICE_KEY_ID PSA_KEY_ID_USER_MIN
@@ -162,7 +163,7 @@ TEST_CASE("destroy releases the context and the other functions are rejected", T
     TEST_ASSERT_EQUAL(ESP_OK, security_destroy());
 
     security_context_t context;
-    char *pem = NULL;
+    char *pem = nullptr;
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_context(&context));
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_start_enrollment());
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_install_certificate(CERT_A_VALID));
@@ -465,7 +466,7 @@ TEST_CASE("get certificate returns the installed certificate and keeps the activ
     const storage_ctx_t cert_ctx = CERT_CTX;
     TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&cert_ctx, CERT_A_VALID));
 
-    char *pem = NULL;
+    char *pem = nullptr;
     TEST_ASSERT_EQUAL(ESP_OK, security_get_certificate(&pem));
     TEST_ASSERT_NOT_NULL(pem);
     TEST_ASSERT_EQUAL_STRING(CERT_A_VALID, pem);
@@ -480,7 +481,7 @@ TEST_CASE("get certificate returns an expired certificate and starts the renewal
     const storage_ctx_t cert_ctx = CERT_CTX;
     TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&cert_ctx, CERT_A_EXPIRED));
 
-    char *pem = NULL;
+    char *pem = nullptr;
     TEST_ASSERT_EQUAL(ESP_OK, security_get_certificate(&pem));
     TEST_ASSERT_NOT_NULL(pem);
     TEST_ASSERT_EQUAL_STRING(CERT_A_EXPIRED, pem);
@@ -495,7 +496,7 @@ TEST_CASE("get certificate keeps a renewing device renewing", TEST_TAG) {
     const storage_ctx_t cert_ctx = CERT_CTX;
     TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&cert_ctx, CERT_A_EXPIRED));
 
-    char *pem = NULL;
+    char *pem = nullptr;
     TEST_ASSERT_EQUAL(ESP_OK, security_get_certificate(&pem));
     free(pem);
 
@@ -510,7 +511,7 @@ TEST_CASE("get certificate is rejected in the states that have no certificate", 
     for (size_t i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
         boot_in_state(states[i]);
 
-        char *pem = NULL;
+        char *pem = nullptr;
         TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_certificate(&pem));
         TEST_ASSERT_NULL(pem);
     }
@@ -525,7 +526,7 @@ TEST_CASE("get certificate rejects a null output", TEST_TAG) {
 TEST_CASE("get certificate fails when no certificate is saved", TEST_TAG) {
     boot_in_state(SECURITY_STATE_ACTIVE);
 
-    char *pem = NULL;
+    char *pem = nullptr;
     TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, security_get_certificate(&pem));
     TEST_ASSERT_NULL(pem);
 }
@@ -535,8 +536,111 @@ TEST_CASE("get certificate fails when the saved certificate is corrupted", TEST_
     const storage_ctx_t cert_ctx = CERT_CTX;
     TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&cert_ctx, "not a certificate"));
 
-    char *pem = NULL;
+    char *pem = nullptr;
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_get_certificate(&pem));
     TEST_ASSERT_NULL(pem);
     TEST_ASSERT_EQUAL(SECURITY_STATE_ACTIVE, context_state());
+}
+
+// --- Certificate authority ---
+
+TEST_CASE("install certificate authority saves it and does not change the state", TEST_TAG) {
+    const security_state_t states[] = {SECURITY_STATE_UNPROVISIONED, SECURITY_STATE_ACTIVE};
+
+    for (size_t i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
+        boot_in_state(states[i]);
+
+        TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate_authority(CERT_CA_VALID));
+
+        const storage_ctx_t ca_ctx = CA_CTX;
+        char saved[sizeof(CERT_CA_VALID)];
+        TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&ca_ctx, saved, sizeof(saved)));
+        TEST_ASSERT_EQUAL_STRING(CERT_CA_VALID, saved);
+        TEST_ASSERT_EQUAL(states[i], context_state());
+        TEST_ASSERT_EQUAL(states[i], stored_state());
+    }
+}
+
+TEST_CASE("install certificate authority replaces the previous one", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+    const storage_ctx_t ca_ctx = CA_CTX;
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&ca_ctx, "previous"));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate_authority(CERT_CA_VALID));
+
+    char saved[sizeof(CERT_CA_VALID)];
+    TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&ca_ctx, saved, sizeof(saved)));
+    TEST_ASSERT_EQUAL_STRING(CERT_CA_VALID, saved);
+}
+
+TEST_CASE("install certificate authority rejects a null certificate", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_install_certificate_authority(NULL));
+}
+
+TEST_CASE("install certificate authority rejects text that is not a certificate and saves nothing", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_install_certificate_authority("not a certificate"));
+
+    const storage_ctx_t ca_ctx = CA_CTX;
+    TEST_ASSERT_FALSE(has_string(&ca_ctx));
+}
+
+TEST_CASE("install certificate authority rejects a certificate that is not an authority and saves nothing", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_install_certificate_authority(CERT_A_VALID));
+
+    const storage_ctx_t ca_ctx = CA_CTX;
+    TEST_ASSERT_FALSE(has_string(&ca_ctx));
+}
+
+TEST_CASE("install certificate authority is rejected when the security layer is not initialized", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_install_certificate_authority(CERT_CA_VALID));
+}
+
+TEST_CASE("get certificate authority loads the installed one", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate_authority(CERT_CA_VALID));
+
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_certificate_authority(&pem));
+    TEST_ASSERT_NOT_NULL(pem);
+    TEST_ASSERT_EQUAL_STRING(CERT_CA_VALID, pem);
+    free(pem);
+}
+
+TEST_CASE("get certificate authority fails when none is installed", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, security_get_certificate_authority(&pem));
+    TEST_ASSERT_NULL(pem);
+}
+
+TEST_CASE("get certificate authority rejects a null output", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_get_certificate_authority(nullptr));
+}
+
+TEST_CASE("get certificate authority is rejected when the security layer is not initialized", TEST_TAG) {
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_certificate_authority(&pem));
+    TEST_ASSERT_NULL(pem);
+}
+
+TEST_CASE("certificate authority survives a destroy and a new init", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate_authority(CERT_CA_VALID));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_destroy());
+    TEST_ASSERT_EQUAL(ESP_OK, security_init());
+
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_certificate_authority(&pem));
+    TEST_ASSERT_EQUAL_STRING(CERT_CA_VALID, pem);
+    free(pem);
 }
