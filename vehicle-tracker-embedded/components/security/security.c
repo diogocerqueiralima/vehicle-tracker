@@ -54,6 +54,11 @@ static esp_err_t ensure_identity() {
     // 1. Keep the identity if one is already saved
     uuid_t identity;
     esp_err_t err = storage_get_blob(&IDENTITY_CTX, identity.bytes, UUID_BYTES_SIZE);
+    if (err == ESP_OK) {
+        security_context->identity = identity;
+        return ESP_OK;
+    }
+
     if (err != ESP_ERR_NVS_NOT_FOUND) {
         return err;
     }

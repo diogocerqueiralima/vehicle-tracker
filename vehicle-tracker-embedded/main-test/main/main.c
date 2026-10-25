@@ -3,6 +3,25 @@
 #include <stdlib.h>
 
 #include "esp_log.h"
+#include "nvs_flash.h"
+#include "storage.h"
+
+/**
+ * Runs before every test of every suite. Every test starts from an empty NVS partition, so no test depends on what
+ * another one stored.
+ */
+void setUp() {
+    storage_destroy();
+    TEST_ASSERT_EQUAL(ESP_OK, nvs_flash_erase());
+    TEST_ASSERT_EQUAL(ESP_OK, storage_init());
+}
+
+/**
+ * Runs after every test of every suite.
+ */
+void tearDown() {
+    storage_destroy();
+}
 
 void app_main()
 {

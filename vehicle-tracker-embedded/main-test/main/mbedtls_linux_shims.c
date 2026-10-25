@@ -20,7 +20,7 @@ void esp_mbedtls_mem_free(void *ptr) {
     free(ptr);
 }
 
-mbedtls_ms_time_t mbedtls_ms_time(void) {
+mbedtls_ms_time_t mbedtls_ms_time() {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     return (mbedtls_ms_time_t) now.tv_sec * 1000 + now.tv_nsec / 1000000;
