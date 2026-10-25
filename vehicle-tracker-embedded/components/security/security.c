@@ -159,7 +159,7 @@ esp_err_t security_start_enrollment() {
         return err;
     }
 
-    // 4. Generate the CSR, using the device identity as common name
+    // 4. Get the device identity as a string, to use it as the common name in the CSR
     char identity[UUID_STR_SIZE];
     err = uuid_to_str(&security_context->identity, identity, sizeof(identity));
     if (err != ESP_OK) {
@@ -167,6 +167,7 @@ esp_err_t security_start_enrollment() {
         return err;
     }
 
+    // 5. Generate the CSR, signed with the private key
     char csr[CSR_MAX_SIZE];
     err = crypto_generate_csr(PRIVATE_KEY_ID, identity, csr, sizeof(csr));
     if (err != ESP_OK) {
@@ -174,14 +175,14 @@ esp_err_t security_start_enrollment() {
         return err;
     }
 
-    // 5. Save the CSR to storage
+    // 6. Save the CSR to storage
     err = storage_set_str(&CSR_CTX, csr);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save CSR");
         return err;
     }
 
-    // 6. Transition to the ENROLLING state
+    // 7. Transition to the ENROLLING state
     security_context->state = SECURITY_STATE_ENROLLING;
     err = storage_set_u32(&STATE_CTX, SECURITY_STATE_ENROLLING);
     if (err != ESP_OK) {
@@ -189,6 +190,6 @@ esp_err_t security_start_enrollment() {
         return err;
     }
 
-    // 7. Enrollment started successfully
+    // 8. Enrollment started successfully
     return ESP_OK;
 }
