@@ -62,13 +62,14 @@ esp_err_t security_get_context(security_context_t *context);
  *
  * @brief Starts the enrollment process for the device.
  *
- * The device must be in the UNPROVISIONED state. It generates a new private key and a CSR signed with it, and saves
- * the CSR in flash. The private key is kept in the PSA key store and never leaves it, it is only used through its id.
- * If the device already had a private key, it is replaced. The device then transitions to the ENROLLING state,
- * waiting for the certificate issued from the CSR to be installed with security_install_certificate().
+ * The device must be in the UNPROVISIONED state, or in the EXPIRED or REVOKED state to enroll again. It generates a
+ * new private key and a CSR signed with it, and saves the CSR in flash. The private key is kept in the PSA key store
+ * and never leaves it, it is only used through its id. If the device already had a private key, it is replaced.
+ * The device then transitions to the ENROLLING state, waiting for the certificate issued from the CSR to be installed
+ * with security_install_certificate().
  *
  * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized or the device is not in
- * the UNPROVISIONED state, or an appropriate error code on failure.
+ * the UNPROVISIONED, EXPIRED or REVOKED state, or an appropriate error code on failure.
  */
 esp_err_t security_start_enrollment();
 
@@ -88,5 +89,41 @@ esp_err_t security_start_enrollment();
  * is expired or is not yet valid, or an appropriate error code on failure.
  */
 esp_err_t security_install_certificate(const char *cert_pem);
+
+/**
+ *
+ * @brief Revokes the device, so it stops being trusted to authenticate with other services.
+ *
+ * The device must be in the ACTIVE or RENEWING state. It deletes the private key, the certificate and the CSR, and
+ * only after that the device transitions to the REVOKED state, which is saved in flash, so it stays revoked across
+ * reboots. It must be enrolled again to get new credentials.
+ *
+ * If deleting one of them fails, the error is returned and the state does not change. Some credentials may already be
+ * deleted, so calling this function again is safe: what is already deleted is skipped.
+ *
+ * This function does not tell the issuer of the certificate, which must revoke it on its side.
+ *
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized or the device is not in
+ * the ACTIVE or RENEWING state, or an appropriate error code on failure.
+ */
+esp_err_t security_revoke();
+
+/**
+ *
+ * @brief Retrieves the certificate installed by security_install_certificate().
+ *
+ * The device must be in the ACTIVE or RENEWING state. The certificate is returned even when it is expired. If it is
+ * expired and the device is in the ACTIVE state, the device transitions to the RENEWING state, which is saved in flash.
+ * The system clock must be set (for example by SNTP) before calling this function, otherwise a valid certificate may
+ * look not yet valid.
+ *
+ * The memory for the certificate is allocated by this function, the caller must release it with free().
+ *
+ * @param out_pem the pointer to be set to the allocated certificate in PEM format, null terminated. It is only set on
+ * success.
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized or the device is not in
+ * the ACTIVE or RENEWING state, ESP_ERR_INVALID_ARG when @p out_pem is null, or an appropriate error code on failure.
+ */
+esp_err_t security_get_certificate(char **out_pem);
 
 #endif

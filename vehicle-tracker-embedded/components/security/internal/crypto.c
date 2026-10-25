@@ -181,3 +181,22 @@ esp_err_t crypto_certificate_is_valid(const mbedtls_x509_crt *crt, bool *out_val
 
     return ESP_OK;
 }
+
+esp_err_t crypto_destroy_private_key(const psa_key_id_t key_id) {
+
+    // 1. Make sure the PSA crypto subsystem is ready
+    if (psa_crypto_init() != PSA_SUCCESS) {
+        ESP_LOGE(TAG, "Failed to initialize PSA crypto");
+        return ESP_FAIL;
+    }
+
+    // 2. Destroy the key, a missing key is already what the caller wants
+    const psa_status_t status = psa_destroy_key(key_id);
+    if (status != PSA_SUCCESS && status != PSA_ERROR_INVALID_HANDLE) {
+        ESP_LOGE(TAG, "Failed to destroy private key");
+        return ESP_FAIL;
+    }
+
+    return ESP_OK;
+}
+

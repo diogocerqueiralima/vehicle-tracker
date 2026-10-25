@@ -76,4 +76,16 @@ esp_err_t crypto_certificate_matches_key(const mbedtls_x509_crt *crt, psa_key_id
  */
 esp_err_t crypto_certificate_is_valid(const mbedtls_x509_crt *crt, bool *out_valid);
 
+/**
+ *
+ * @brief Destroys the private key saved under the given id, removing it from the PSA key store.
+ *
+ * Anything signed with the key can no longer be produced after this call.
+ * It is not an error if no key exists under the id.
+ *
+ * @param key_id the id of the private key.
+ * @return ESP_OK when no key exists under the id anymore, or an appropriate error code on failure.
+ */
+esp_err_t crypto_destroy_private_key(psa_key_id_t key_id);
+
 #endif

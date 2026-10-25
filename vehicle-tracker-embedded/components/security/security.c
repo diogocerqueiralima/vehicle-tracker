@@ -150,9 +150,13 @@ esp_err_t security_start_enrollment() {
         return ESP_ERR_INVALID_STATE;
     }
 
-    // 2. Make sure the device is in the UNPROVISIONED state
+    // 2. Make sure the device is in a state that allows enrollment: UNPROVISIONED,
+    // or EXPIRED and REVOKED to enroll again
     const security_state_t current_state = security_context->state;
-    if (current_state != SECURITY_STATE_UNPROVISIONED) {
+    if (
+        current_state != SECURITY_STATE_UNPROVISIONED && current_state != SECURITY_STATE_EXPIRED &&
+        current_state != SECURITY_STATE_REVOKED
+    ) {
         ESP_LOGE(TAG, "Device is not in the correct state for enrollment");
         return ESP_ERR_INVALID_STATE;
     }
@@ -271,3 +275,128 @@ cleanup:
     mbedtls_x509_crt_free(&cert);
     return err;
 }
+
+esp_err_t security_revoke() {
+
+    // 1. Make sure the security layer is initialized
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // 2. Make sure the device has a certificate to revoke, which is the case in the ACTIVE and RENEWING states
+    const security_state_t current_state = security_context->state;
+    if (current_state != SECURITY_STATE_ACTIVE && current_state != SECURITY_STATE_RENEWING) {
+        ESP_LOGE(TAG, "Device is not in the correct state for revocation");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // 3. Delete the private key
+    esp_err_t err = crypto_destroy_private_key(PRIVATE_KEY_ID);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to delete private key");
+        return err;
+    }
+
+    // 4. Delete the certificate, it is fine if there is none
+    err = storage_erase(&CERT_CTX);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "Failed to delete certificate");
+        return err;
+    }
+
+    // 5. Delete the CSR, it is fine if there is none
+    err = storage_erase(&CSR_CTX);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "Failed to delete CSR");
+        return err;
+    }
+
+    // 6. Transition to the REVOKED state, only after everything was deleted
+    err = storage_set_u32(&STATE_CTX, SECURITY_STATE_REVOKED);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save state");
+        return err;
+    }
+
+    security_context->state = SECURITY_STATE_REVOKED;
+
+    return ESP_OK;
+}
+
+esp_err_t security_get_certificate(char **out_pem) {
+
+    // 1. Make sure the security layer is initialized
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (out_pem == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Make sure the device has a certificate, which is the case in the ACTIVE and RENEWING states
+    const security_state_t current_state = security_context->state;
+    if (current_state != SECURITY_STATE_ACTIVE && current_state != SECURITY_STATE_RENEWING) {
+        ESP_LOGE(TAG, "Device is not in the correct state to have a certificate");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // 3. Load the certificate from storage
+    size_t size = 0;
+    esp_err_t err = storage_get_str_size(&CERT_CTX, &size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get the certificate size");
+        return err;
+    }
+
+    char *pem = malloc(size);
+    if (pem == nullptr) {
+        ESP_LOGE(TAG, "Failed to allocate certificate buffer");
+        return ESP_ERR_NO_MEM;
+    }
+
+    err = storage_get_str(&CERT_CTX, pem, size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load certificate");
+        goto fail;
+    }
+
+    // 4. Check if the certificate is still valid
+    mbedtls_x509_crt cert;
+    err = crypto_parse_certificate(pem, &cert);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to parse certificate");
+        goto fail;
+    }
+
+    bool valid = false;
+    err = crypto_certificate_is_valid(&cert, &valid);
+    mbedtls_x509_crt_free(&cert);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to check the certificate validity");
+        goto fail;
+    }
+
+    // 5. An expired certificate on an ACTIVE device starts the renewal
+    if (!valid && current_state == SECURITY_STATE_ACTIVE) {
+        err = storage_set_u32(&STATE_CTX, SECURITY_STATE_RENEWING);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to save state");
+            goto fail;
+        }
+
+        security_context->state = SECURITY_STATE_RENEWING;
+
+        // TODO(#232): launch the job that renews the certificate
+    }
+
+    *out_pem = pem;
+    return ESP_OK;
+
+fail:
+    free(pem);
+    return err;
+}
+
