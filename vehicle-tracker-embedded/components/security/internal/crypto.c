@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "esp_log.h"
 #include "mbedtls/pk.h"
+#include <string.h>
+#include "mbedtls/x509_crt.h"
 #include "mbedtls/x509_csr.h"
 
 #define TAG "crypto"
@@ -16,6 +18,11 @@
  * @brief Maximum size in bytes of the CSR subject, including the "CN=" prefix and the null terminator.
  */
 #define SUBJECT_MAX_SIZE 128
+
+/**
+ * @brief Size in bytes of a buffer able to hold the SubjectPublicKeyInfo DER of an ECDSA P-256 public key (91 bytes).
+ */
+#define PUBLIC_KEY_DER_MAX_SIZE 128
 
 esp_err_t crypto_generate_private_key(const psa_key_id_t key_id) {
 
@@ -55,11 +62,12 @@ esp_err_t crypto_generate_private_key(const psa_key_id_t key_id) {
 
 esp_err_t crypto_generate_csr(const psa_key_id_t key_id, const char *common_name, char *out_pem, const size_t size) {
 
+    // 1. Validate the arguments
     if (common_name == nullptr || out_pem == nullptr) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 1. Build the subject
+    // 2. Build the subject
     char subject[SUBJECT_MAX_SIZE];
     const int written = snprintf(subject, sizeof(subject), "CN=%s", common_name);
     if (written < 0 || (size_t) written >= sizeof(subject)) {
@@ -67,7 +75,7 @@ esp_err_t crypto_generate_csr(const psa_key_id_t key_id, const char *common_name
         return ESP_ERR_INVALID_ARG;
     }
 
-    // 2. Wrap the PSA private key, so it can be used to sign the CSR
+    // 3. Wrap the PSA private key, so it can be used to sign the CSR
     mbedtls_pk_context pk;
     mbedtls_pk_init(&pk);
     if (mbedtls_pk_wrap_psa(&pk, key_id) != 0) {
@@ -76,7 +84,7 @@ esp_err_t crypto_generate_csr(const psa_key_id_t key_id, const char *common_name
         return ESP_FAIL;
     }
 
-    // 3. Configure the CSR
+    // 4. Configure the CSR
     mbedtls_x509write_csr csr;
     mbedtls_x509write_csr_init(&csr);
     mbedtls_x509write_csr_set_key(&csr, &pk);
@@ -88,7 +96,7 @@ esp_err_t crypto_generate_csr(const psa_key_id_t key_id, const char *common_name
         goto cleanup;
     }
 
-    // 4. Sign it and write it as PEM
+    // 5. Sign it and write it as PEM
     if (mbedtls_x509write_csr_pem(&csr, (unsigned char *) out_pem, size) != 0) {
         ESP_LOGE(TAG, "Failed to write CSR");
         goto cleanup;
@@ -100,4 +108,76 @@ cleanup:
     mbedtls_x509write_csr_free(&csr);
     mbedtls_pk_free(&pk);
     return err;
+}
+
+esp_err_t crypto_parse_certificate(const char *cert_pem, mbedtls_x509_crt *out_crt) {
+
+    // 1. Validate the arguments
+    if (cert_pem == nullptr || out_crt == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Parse the certificate, the length must include the null terminator for PEM data
+    mbedtls_x509_crt_init(out_crt);
+    if (mbedtls_x509_crt_parse(out_crt, (const unsigned char *) cert_pem, strlen(cert_pem) + 1) != 0) {
+        ESP_LOGE(TAG, "Failed to parse certificate");
+        mbedtls_x509_crt_free(out_crt);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t crypto_certificate_matches_key(const mbedtls_x509_crt *crt, const psa_key_id_t key_id, bool *out_matches) {
+
+    // 1. Validate the arguments
+    if (crt == nullptr || out_matches == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Wrap the PSA private key, so its public key can be written
+    mbedtls_pk_context pk;
+    mbedtls_pk_init(&pk);
+    esp_err_t err = ESP_FAIL;
+    if (mbedtls_pk_wrap_psa(&pk, key_id) != 0) {
+        ESP_LOGE(TAG, "Failed to wrap private key");
+        goto cleanup;
+    }
+
+    // 3. Write both public keys as DER. The data is written at the end of the buffers
+    unsigned char key_der[PUBLIC_KEY_DER_MAX_SIZE];
+    const int key_len = mbedtls_pk_write_pubkey_der(&pk, key_der, sizeof(key_der));
+    if (key_len < 0) {
+        ESP_LOGE(TAG, "Failed to write public key of the private key");
+        goto cleanup;
+    }
+
+    unsigned char crt_der[PUBLIC_KEY_DER_MAX_SIZE];
+    const int crt_len = mbedtls_pk_write_pubkey_der(&crt->pk, crt_der, sizeof(crt_der));
+    if (crt_len < 0) {
+        ESP_LOGE(TAG, "Failed to write public key of the certificate");
+        goto cleanup;
+    }
+
+    // 4. Compare them, the DER is written at the end of the buffers, so we compare the last key_len bytes of both
+    *out_matches = key_len == crt_len &&
+                   memcmp(key_der + sizeof(key_der) - key_len, crt_der + sizeof(crt_der) - crt_len, key_len) == 0;
+    err = ESP_OK;
+
+cleanup:
+    mbedtls_pk_free(&pk);
+    return err;
+}
+
+esp_err_t crypto_certificate_is_valid(const mbedtls_x509_crt *crt, bool *out_valid) {
+
+    // 1. Validate the arguments
+    if (crt == nullptr || out_valid == nullptr) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Valid when the validity period already started and did not end yet
+    *out_valid = !mbedtls_x509_time_is_future(&crt->valid_from) && !mbedtls_x509_time_is_past(&crt->valid_to);
+
+    return ESP_OK;
 }

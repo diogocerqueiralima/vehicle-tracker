@@ -24,6 +24,11 @@ static security_context_t *security_context = nullptr;
 #define CSR_CTX ((storage_ctx_t){.namespace = "security", .key = "csr", .mode = STORAGE_MODE_READ_WRITE})
 
 /**
+ * @brief Storage context for the PEM encoded certificate.
+ */
+#define CERT_CTX ((storage_ctx_t){.namespace = "security", .key = "cert", .mode = STORAGE_MODE_READ_WRITE})
+
+/**
  * @brief Id of the device private key in the PSA key store. It is inside the range reserved for applications.
  */
 #define PRIVATE_KEY_ID  PSA_KEY_ID_USER_MIN
@@ -183,13 +188,86 @@ esp_err_t security_start_enrollment() {
     }
 
     // 7. Transition to the ENROLLING state
-    security_context->state = SECURITY_STATE_ENROLLING;
     err = storage_set_u32(&STATE_CTX, SECURITY_STATE_ENROLLING);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save state");
         return err;
     }
 
+    security_context->state = SECURITY_STATE_ENROLLING;
+
     // 8. Enrollment started successfully
     return ESP_OK;
+}
+
+esp_err_t security_install_certificate(const char *cert_pem) {
+
+    // 1. Make sure the security layer is initialized
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // 2. Make sure the device is in the ENROLLING state
+    const security_state_t current_state = security_context->state;
+    if (current_state != SECURITY_STATE_ENROLLING) {
+        ESP_LOGE(TAG, "Device is not in the correct state for certificate installation");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    // 3. Parse the certificate
+    mbedtls_x509_crt cert;
+    esp_err_t err = crypto_parse_certificate(cert_pem, &cert);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to parse certificate");
+        return err;
+    }
+
+    // 4. Make sure the certificate belongs to the device private key
+    bool matches = false;
+    err = crypto_certificate_matches_key(&cert, PRIVATE_KEY_ID, &matches);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to check the certificate public key");
+        goto cleanup;
+    }
+
+    if (!matches) {
+        ESP_LOGE(TAG, "Certificate does not match the device private key");
+        err = ESP_ERR_INVALID_ARG;
+        goto cleanup;
+    }
+
+    // 5. Make sure the certificate is inside its validity period
+    bool valid = false;
+    err = crypto_certificate_is_valid(&cert, &valid);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to check the certificate validity");
+        goto cleanup;
+    }
+
+    if (!valid) {
+        ESP_LOGE(TAG, "Certificate is expired or not yet valid");
+        err = ESP_ERR_INVALID_ARG;
+        goto cleanup;
+    }
+
+    // 6. Save the certificate to storage
+    err = storage_set_str(&CERT_CTX, cert_pem);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save certificate");
+        goto cleanup;
+    }
+
+    // 7. Transition to the ACTIVE state
+    err = storage_set_u32(&STATE_CTX, SECURITY_STATE_ACTIVE);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to save state");
+        goto cleanup;
+    }
+
+    security_context->state = SECURITY_STATE_ACTIVE;
+
+cleanup:
+    mbedtls_x509_crt_free(&cert);
+    return err;
 }
