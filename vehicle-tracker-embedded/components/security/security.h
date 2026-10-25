@@ -5,6 +5,12 @@
 #include "esp_err.h"
 #include "uuid.h"
 
+/*
+ * Thread safety: every function of the security layer holds an internal mutex while it runs, so they can be called
+ * from different tasks. Each call is atomic, but a sequence of calls is not. For example, the state read with
+ * security_get_context() can change before the next call, as it is only a snapshot.
+ */
+
 /**
  * @brief Lifecycle state of the device credentials. It decides what the device allows, such as when it creates a new CSR.
  */
@@ -43,9 +49,11 @@ typedef struct {
  * as UNPROVISIONED when none is saved.
  *
  * This function creates or loads the security context, which contains the device identity and lifecycle state.
+ * It must be called only once, calling it again returns ESP_ERR_INVALID_STATE. If it fails, the security layer is
+ * left not initialized.
  *
- * @return ESP_OK on successful initialization, ESP_ERR_INVALID_STATE when storage is not initialized, or an
- * appropriate error code on failure.
+ * @return ESP_OK on successful initialization, ESP_ERR_INVALID_STATE when storage is not initialized or the security
+ * layer is already initialized, or an appropriate error code on failure.
  */
 esp_err_t security_init();
 

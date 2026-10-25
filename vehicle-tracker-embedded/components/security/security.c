@@ -147,56 +147,76 @@ static esp_err_t ensure_state() {
 
 esp_err_t security_init() {
 
-    // 1. Allocate the security context
-    security_context = malloc(sizeof(security_context_t));
-    if (security_context == nullptr) {
-        ESP_LOGE(TAG, "Failed to allocate security context");
-        return ESP_ERR_NO_MEM;
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer was not initialized yet, otherwise the first context would be leaked
+    esp_err_t err = ESP_OK;
+    if (security_context != nullptr) {
+        ESP_LOGE(TAG, "Security layer is already initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
-    // 2. Make sure the device has an identity
-    esp_err_t err = ensure_identity();
+    // 2. Allocate the security context, zeroed so that no field is left uninitialized
+    security_context = calloc(1, sizeof(security_context_t));
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Failed to allocate security context");
+        err = ESP_ERR_NO_MEM;
+        goto unlock;
+    }
+
+    // 3. Make sure the device has an identity
+    err = ensure_identity();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to create identity context");
         free(security_context);
         security_context = nullptr;
-        return err;
+        goto unlock;
     }
 
-    // 3. Make sure the device has a lifecycle state
+    // 4. Make sure the device has a lifecycle state
     err = ensure_state();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to create state context");
         free(security_context);
         security_context = nullptr;
-        return err;
     }
 
-    return ESP_OK;
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
 }
 
 esp_err_t security_get_context(security_context_t *context) {
 
+    pthread_mutex_lock(&security_mutex);
+
     // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
     if (security_context == nullptr) {
         ESP_LOGE(TAG, "Security layer is not initialized");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
-    // 2. Copy the context to the provided pointer, while holding the mutex, so the caller gets a snapshot
-    pthread_mutex_lock(&security_mutex);
+    // 2. Copy the context to the provided pointer, so the caller gets a snapshot
     *context = *security_context;
-    pthread_mutex_unlock(&security_mutex);
 
-    return ESP_OK;
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
 }
 
 esp_err_t security_start_enrollment() {
 
+    pthread_mutex_lock(&security_mutex);
+
     // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
     if (security_context == nullptr) {
         ESP_LOGE(TAG, "Security layer is not initialized");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 2. Make sure the device is in a state that allows enrollment: UNPROVISIONED,
@@ -207,15 +227,16 @@ esp_err_t security_start_enrollment() {
         current_state != SECURITY_STATE_REVOKED
     ) {
         ESP_LOGE(TAG, "Device is not in the correct state for enrollment");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 3. Generate the private key, which replaces the old one, and that is harmless if a later step fails because
     // the old key is useless in these states
-    esp_err_t err = crypto_generate_private_key(PRIVATE_KEY_ID);
+    err = crypto_generate_private_key(PRIVATE_KEY_ID);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to generate private key");
-        return err;
+        goto unlock;
     }
 
     // 4. Get the device identity as a string, to use it as the common name in the CSR
@@ -223,7 +244,7 @@ esp_err_t security_start_enrollment() {
     err = uuid_to_str(&security_context->identity, identity, sizeof(identity));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to convert identity to string");
-        return err;
+        goto unlock;
     }
 
     // 5. Generate the CSR, signed with the private key
@@ -231,50 +252,57 @@ esp_err_t security_start_enrollment() {
     err = crypto_generate_csr(PRIVATE_KEY_ID, identity, csr, sizeof(csr));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to generate CSR");
-        return err;
+        goto unlock;
     }
 
     // 6. Save the CSR to storage
     err = storage_set_str(&CSR_CTX, csr);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save CSR");
-        return err;
+        goto unlock;
     }
 
     // 7. Transition to the ENROLLING state
     err = storage_set_u32(&STATE_CTX, SECURITY_STATE_ENROLLING);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save state");
-        return err;
+        goto unlock;
     }
 
     security_context->state = SECURITY_STATE_ENROLLING;
 
     // 8. Enrollment started successfully
-    return ESP_OK;
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
 }
 
 esp_err_t security_install_certificate(const char *cert_pem) {
 
+    pthread_mutex_lock(&security_mutex);
+
     // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
     if (security_context == nullptr) {
         ESP_LOGE(TAG, "Security layer is not initialized");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 2. Make sure the device is in the ENROLLING state
     const security_state_t current_state = security_context->state;
     if (current_state != SECURITY_STATE_ENROLLING) {
         ESP_LOGE(TAG, "Device is not in the correct state for certificate installation");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 3. Parse the certificate
     mbedtls_x509_crt cert;
-    esp_err_t err = crypto_parse_certificate(cert_pem, &cert);
+    err = crypto_parse_certificate(cert_pem, &cert);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to parse certificate");
-        return err;
+        goto unlock;
     }
 
     // 4. Make sure the certificate belongs to the device private key
@@ -330,88 +358,105 @@ esp_err_t security_install_certificate(const char *cert_pem) {
 
 cleanup:
     mbedtls_x509_crt_free(&cert);
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
     return err;
 }
 
 esp_err_t security_revoke() {
 
+    pthread_mutex_lock(&security_mutex);
+
     // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
     if (security_context == nullptr) {
         ESP_LOGE(TAG, "Security layer is not initialized");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 2. Make sure the device has a certificate to revoke, which is the case in the ACTIVE and RENEWING states
     const security_state_t current_state = security_context->state;
     if (current_state != SECURITY_STATE_ACTIVE && current_state != SECURITY_STATE_RENEWING) {
         ESP_LOGE(TAG, "Device is not in the correct state for revocation");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 3. Delete the private key
-    esp_err_t err = crypto_destroy_private_key(PRIVATE_KEY_ID);
+    err = crypto_destroy_private_key(PRIVATE_KEY_ID);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to delete private key");
-        return err;
+        goto unlock;
     }
 
     // 4. Delete the certificate, it is fine if there is none
     err = storage_erase(&CERT_CTX);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
         ESP_LOGE(TAG, "Failed to delete certificate");
-        return err;
+        goto unlock;
     }
 
     // 5. Delete the CSR, it is fine if there is none
     err = storage_erase(&CSR_CTX);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
         ESP_LOGE(TAG, "Failed to delete CSR");
-        return err;
+        goto unlock;
     }
 
     // 6. Transition to the REVOKED state, only after everything was deleted
     err = storage_set_u32(&STATE_CTX, SECURITY_STATE_REVOKED);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save state");
-        return err;
+        goto unlock;
     }
 
     security_context->state = SECURITY_STATE_REVOKED;
 
-    return ESP_OK;
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
 }
 
 esp_err_t security_get_certificate(char **out_pem) {
 
+    pthread_mutex_lock(&security_mutex);
+
     // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
     if (security_context == nullptr) {
         ESP_LOGE(TAG, "Security layer is not initialized");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     if (out_pem == nullptr) {
-        return ESP_ERR_INVALID_ARG;
+        err = ESP_ERR_INVALID_ARG;
+        goto unlock;
     }
 
     // 2. Make sure the device has a certificate, which is the case in the ACTIVE and RENEWING states
     const security_state_t current_state = security_context->state;
     if (current_state != SECURITY_STATE_ACTIVE && current_state != SECURITY_STATE_RENEWING) {
         ESP_LOGE(TAG, "Device is not in the correct state to have a certificate");
-        return ESP_ERR_INVALID_STATE;
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 3. Load the certificate from storage
     size_t size = 0;
-    esp_err_t err = storage_get_str_size(&CERT_CTX, &size);
+    err = storage_get_str_size(&CERT_CTX, &size);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get the certificate size");
-        return err;
+        goto unlock;
     }
 
     char *pem = malloc(size);
     if (pem == nullptr) {
         ESP_LOGE(TAG, "Failed to allocate certificate buffer");
-        return ESP_ERR_NO_MEM;
+        err = ESP_ERR_NO_MEM;
+        goto unlock;
     }
 
     err = storage_get_str(&CERT_CTX, pem, size);
@@ -450,10 +495,14 @@ esp_err_t security_get_certificate(char **out_pem) {
     }
 
     *out_pem = pem;
-    return ESP_OK;
+    err = ESP_OK;
+    goto unlock;
 
 fail:
     free(pem);
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
     return err;
 }
 
