@@ -53,6 +53,9 @@ esp_err_t security_init();
  *
  * @brief Gets the security context, which contains the device identity and lifecycle state.
  *
+ * The caller gets a snapshot, a copy of the context at the time of the call. It does not change if the state changes
+ * afterwards.
+ *
  * @param context the pointer to the security context to be filled. It must be allocated by the caller.
  * @return ESP_OK on success or ESP_ERR_INVALID_STATE when the security layer is not initialized.
  */

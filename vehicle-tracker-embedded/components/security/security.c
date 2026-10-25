@@ -1,6 +1,7 @@
 #include "security.h"
 
 #include <inttypes.h>
+#include <pthread.h>
 
 #include "crypto.h"
 #include "esp_log.h"
@@ -9,6 +10,11 @@
 #include "uuid.h"
 
 static security_context_t *security_context = nullptr;
+
+/**
+ * @brief Mutex that protects the access to the security context.
+ */
+static pthread_mutex_t security_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /**
  * @brief Storage context for the device identity.
@@ -177,8 +183,10 @@ esp_err_t security_get_context(security_context_t *context) {
         return ESP_ERR_INVALID_STATE;
     }
 
-    // 2. Copy the context to the provided pointer
+    // 2. Copy the context to the provided pointer, while holding the mutex, so the caller gets a snapshot
+    pthread_mutex_lock(&security_mutex);
     *context = *security_context;
+    pthread_mutex_unlock(&security_mutex);
 
     return ESP_OK;
 }
