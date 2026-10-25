@@ -342,9 +342,9 @@ esp_err_t security_install_certificate(const char *cert_pem) {
 
     // 7. Delete the CSR, it is not needed anymore, and it is fine if there is none. If this fails, the device can still
     // operate, so we log the error but continue to transition to ACTIVE
-    err = storage_erase(&CSR_CTX);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "Failed to delete CSR");
+    const esp_err_t csr_err = storage_erase(&CSR_CTX);
+    if (csr_err != ESP_OK && csr_err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "Failed to delete CSR: %s", esp_err_to_name(csr_err));
     }
 
     // 8. Transition to the ACTIVE state
@@ -506,3 +506,23 @@ unlock:
     return err;
 }
 
+esp_err_t security_destroy() {
+
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    // 2. Release the security context, what is saved in storage is kept
+    free(security_context);
+    security_context = nullptr;
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
+}

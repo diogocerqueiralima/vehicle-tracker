@@ -67,6 +67,10 @@ static bool device_key_exists() {
  * Saves the lifecycle state and loads it into the security context, like a boot of a device that was in that state.
  */
 static void boot_in_state(const security_state_t state) {
+    // A previous boot of the same test may have left the security layer initialized
+    const esp_err_t destroy_err = security_destroy();
+    TEST_ASSERT_TRUE(destroy_err == ESP_OK || destroy_err == ESP_ERR_INVALID_STATE);
+
     const storage_ctx_t ctx = STATE_CTX;
     TEST_ASSERT_EQUAL(ESP_OK, storage_set_u32(&ctx, state));
     TEST_ASSERT_EQUAL(ESP_OK, security_init());
@@ -118,6 +122,7 @@ TEST_CASE("identity stays the same across boots", TEST_TAG) {
     security_context_t first;
     TEST_ASSERT_EQUAL(ESP_OK, security_get_context(&first));
 
+    TEST_ASSERT_EQUAL(ESP_OK, security_destroy());
     TEST_ASSERT_EQUAL(ESP_OK, security_init());
     security_context_t second;
     TEST_ASSERT_EQUAL(ESP_OK, security_get_context(&second));
@@ -139,6 +144,67 @@ TEST_CASE("init rejects a saved state that is not a known one and stays not init
 
     security_context_t context;
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_context(&context));
+}
+
+TEST_CASE("init cannot be called twice and keeps the first context", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_ACTIVE);
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_init());
+
+    TEST_ASSERT_EQUAL(SECURITY_STATE_ACTIVE, context_state());
+}
+
+// --- Destruction ---
+
+TEST_CASE("destroy releases the context and the other functions are rejected", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_ACTIVE);
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_destroy());
+
+    security_context_t context;
+    char *pem = NULL;
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_context(&context));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_start_enrollment());
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_install_certificate(CERT_A_VALID));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_revoke());
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_certificate(&pem));
+}
+
+TEST_CASE("destroy is rejected when the security layer is not initialized", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_destroy());
+
+    boot_in_state(SECURITY_STATE_ACTIVE);
+    TEST_ASSERT_EQUAL(ESP_OK, security_destroy());
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_destroy());
+}
+
+TEST_CASE("init works again after destroy and loads what is saved", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_ACTIVE);
+    security_context_t before;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_context(&before));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_destroy());
+    TEST_ASSERT_EQUAL(ESP_OK, security_init());
+
+    security_context_t after;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_context(&after));
+    TEST_ASSERT_EQUAL(SECURITY_STATE_ACTIVE, after.state);
+    TEST_ASSERT_EQUAL_MEMORY(before.identity.bytes, after.identity.bytes, UUID_BYTES_SIZE);
+}
+
+TEST_CASE("destroy keeps the state, the certificate and the key saved", TEST_TAG) {
+    import_device_key(KEY_A_RAW, sizeof(KEY_A_RAW));
+    boot_in_state(SECURITY_STATE_ACTIVE);
+    const storage_ctx_t cert_ctx = CERT_CTX;
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&cert_ctx, CERT_A_VALID));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_destroy());
+
+    TEST_ASSERT_EQUAL(SECURITY_STATE_ACTIVE, stored_state());
+    TEST_ASSERT_TRUE(has_string(&cert_ctx));
+    TEST_ASSERT_TRUE(device_key_exists());
+
+    reset_key();
 }
 
 // --- Enrollment ---

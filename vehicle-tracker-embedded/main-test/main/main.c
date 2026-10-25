@@ -4,6 +4,7 @@
 
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "security.h"
 #include "storage.h"
 
 /**
@@ -20,6 +21,7 @@ void setUp() {
  * Runs after every test of every suite.
  */
 void tearDown() {
+    security_destroy();
     storage_destroy();
 }
 

@@ -59,6 +59,18 @@ esp_err_t security_init();
 
 /**
  *
+ * @brief Destroys the security layer, releasing the security context.
+ *
+ * Only the memory is released. The identity, the lifecycle state, the certificate and the private key are kept, so
+ * security_init() loads them again. After this function the other functions return ESP_ERR_INVALID_STATE until
+ * security_init() is called again.
+ *
+ * @return ESP_OK on success or ESP_ERR_INVALID_STATE when the security layer is not initialized.
+ */
+esp_err_t security_destroy();
+
+/**
+ *
  * @brief Gets the security context, which contains the device identity and lifecycle state.
  *
  * The caller gets a snapshot, a copy of the context at the time of the call. It does not change if the state changes
