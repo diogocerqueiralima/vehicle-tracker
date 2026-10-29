@@ -624,3 +624,57 @@ unlock:
     pthread_mutex_unlock(&security_mutex);
     return err;
 }
+
+esp_err_t security_get_csr(char **out_pem) {
+
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    if (out_pem == nullptr) {
+        err = ESP_ERR_INVALID_ARG;
+        goto unlock;
+    }
+
+    // 2. Make sure the device has a CSR, which is the case in the ENROLLING state
+    if (security_context->state != SECURITY_STATE_ENROLLING) {
+        ESP_LOGE(TAG, "Device is not in the correct state to have a CSR");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    // 3. Get the size of the CSR saved in storage
+    size_t size = 0;
+    err = storage_get_str_size(&CSR_CTX, &size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get the CSR size");
+        goto unlock;
+    }
+
+    // 4. Load it
+    char *pem = malloc(size);
+    if (pem == nullptr) {
+        ESP_LOGE(TAG, "Failed to allocate CSR buffer");
+        err = ESP_ERR_NO_MEM;
+        goto unlock;
+    }
+
+    err = storage_get_str(&CSR_CTX, pem, size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load CSR");
+        free(pem);
+        goto unlock;
+    }
+
+    *out_pem = pem;
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
+}

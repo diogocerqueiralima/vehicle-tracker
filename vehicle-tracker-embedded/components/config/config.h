@@ -40,4 +40,35 @@ typedef enum {
  */
 esp_err_t config_init();
 
+/**
+ *
+ * @brief Sets the value for a given configuration ID.
+ *
+ * The value is read according to the type of the property: a pointer to an int32_t for integers, a pointer to a bool
+ * for booleans and a null-terminated string for strings. Authentication values are handled by the security layer:
+ * writing the certificate or the certificate authority installs it, and writing true to revoke revokes the
+ * credentials, while writing false does nothing.
+ *
+ * @param id    the configuration ID to set.
+ * @param value the value to set for the configuration ID.
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG on an unknown ID or null value, ESP_ERR_NOT_SUPPORTED when the
+ * property is not writable, or an appropriate error code on failure.
+ */
+esp_err_t config_set(config_id_t id, const void *value);
+
+/**
+ *
+ * @brief Gets the value for a given configuration ID.
+ *
+ * The value is allocated according to the type of the property: an int32_t for integers, a bool for booleans and a
+ * null-terminated string for strings.
+ *
+ * @param id    the configuration ID to get.
+ * @param value the output parameter that will hold the value for the configuration ID, the caller is responsible for
+ *              freeing the memory allocated for the value.
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG on an unknown ID or null output, ESP_ERR_NOT_SUPPORTED when the
+ * property is not readable, ESP_ERR_NVS_NOT_FOUND when no value is stored, or an appropriate error code on failure.
+ */
+esp_err_t config_get(config_id_t id, void **value);
+
 #endif
