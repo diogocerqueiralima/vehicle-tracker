@@ -158,6 +158,50 @@ static storage_ctx_t config_storage_ctx(const config_t *config, storage_mode_t m
 
 /**
  *
+ * @brief Checks whether a value is already stored for the given configuration item.
+ *
+ * @param config the configuration item.
+ * @param is_set the output parameter set to true when a value is stored.
+ * @return ESP_OK on success, or an appropriate error code on failure.
+ */
+static esp_err_t config_is_set(const config_t *config, bool *is_set) {
+
+    const storage_ctx_t ctx = config_storage_ctx(config, STORAGE_MODE_READ_ONLY);
+    esp_err_t err = ESP_ERR_INVALID_ARG;
+
+    switch (config->type) {
+        case CONFIG_TYPE_INT: {
+            int32_t stored;
+            err = storage_get_i32(&ctx, &stored);
+            break;
+        }
+        case CONFIG_TYPE_BOOL: {
+            uint8_t stored;
+            err = storage_get_u8(&ctx, &stored);
+            break;
+        }
+        case CONFIG_TYPE_STRING: {
+            size_t size;
+            err = storage_get_str_size(&ctx, &size);
+            break;
+        }
+    }
+
+    // A value that was never set is not a failure
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        *is_set = false;
+        return ESP_OK;
+    }
+
+    if (err == ESP_OK) {
+        *is_set = true;
+    }
+
+    return err;
+}
+
+/**
+ *
  * @brief Reads a stored integer into a newly allocated int32_t.
  *
  * @param ctx   the storage context of the value.
@@ -276,12 +320,14 @@ static esp_err_t config_read_status(void **value) {
     security_context_t context;
 
     const esp_err_t err = security_get_context(&context);
-    if (err != ESP_OK)
+    if (err != ESP_OK) {
         return err;
+    }
 
     char *result = strdup(config_state_name(context.state));
-    if (result == NULL)
+    if (result == NULL) {
         return ESP_ERR_NO_MEM;
+    }
 
     *value = result;
     return ESP_OK;
@@ -311,57 +357,6 @@ static esp_err_t config_read_security(config_id_t id, void **value) {
     }
 }
 
-esp_err_t config_get(config_id_t id, void **value) {
-
-    // 1. Validate the output parameter
-    if (value == NULL) {
-        ESP_LOGE(TAG, "Output value is null");
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    // 2. Find the item and check that it can be read
-    const config_t *config = config_lookup(id);
-    if (config == nullptr) {
-        ESP_LOGE(TAG, "Unknown configuration id %d", id);
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    // 3. Check that the item is readable
-    if (!config->readable) {
-        ESP_LOGE(TAG, "Configuration id %d is not readable", id);
-        return ESP_ERR_NOT_SUPPORTED;
-    }
-
-    // 4. Authentication values come from the security layer, the others from storage according to their type
-    const storage_ctx_t ctx = config_storage_ctx(config, STORAGE_MODE_READ_ONLY);
-    esp_err_t err = ESP_ERR_INVALID_ARG;
-
-    if (config->category == CONFIG_CATEGORY_AUTHENTICATION) {
-        err = config_read_security(id, value);
-    } else {
-
-        switch (config->type) {
-            case CONFIG_TYPE_INT:
-                err = config_read_int(&ctx, value);
-                break;
-            case CONFIG_TYPE_BOOL:
-                err = config_read_bool(&ctx, value);
-                break;
-            case CONFIG_TYPE_STRING:
-                err = config_read_string(&ctx, value);
-                break;
-        }
-
-    }
-
-    // 5. A value that was never set is not an error worth logging
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-        ESP_LOGE(TAG, "Failed to read configuration id %d: %s", id, esp_err_to_name(err));
-    }
-
-    return err;
-}
-
 /**
  *
  * @brief Writes an authentication value, which is owned by the security layer and not stored by the configuration layer.
@@ -382,103 +377,6 @@ static esp_err_t config_write_security(config_id_t id, const void *value) {
         default:
             return ESP_ERR_NOT_SUPPORTED;
     }
-}
-
-esp_err_t config_set(config_id_t id, const void *value) {
-
-    // 1. Validate the input parameter
-    if (value == nullptr) {
-        ESP_LOGE(TAG, "Value is null");
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    // 2. Find the item and check that it can be written
-    const config_t *config = config_lookup(id);
-    if (config == nullptr) {
-        ESP_LOGE(TAG, "Unknown configuration id %d", id);
-        return ESP_ERR_INVALID_ARG;
-    }
-
-    // 3. Check that the item is writable
-    if (!config->writable) {
-        ESP_LOGE(TAG, "Configuration id %d is not writable", id);
-        return ESP_ERR_NOT_SUPPORTED;
-    }
-
-    // 4. Authentication values go to the security layer, the others to storage according to their type
-    const storage_ctx_t ctx = config_storage_ctx(config, STORAGE_MODE_READ_WRITE);
-    esp_err_t err = ESP_ERR_INVALID_ARG;
-
-    if (config->category == CONFIG_CATEGORY_AUTHENTICATION) {
-        err = config_write_security(id, value);
-    } else {
-
-        switch (config->type) {
-            case CONFIG_TYPE_INT:
-                err = storage_set_i32(&ctx, *(const int32_t *) value);
-                break;
-            case CONFIG_TYPE_BOOL:
-                err = storage_set_u8(&ctx, *(const bool *) value ? 1 : 0);
-                break;
-            case CONFIG_TYPE_STRING:
-                err = storage_set_str(&ctx, value);
-                break;
-        }
-
-    }
-
-    // 5. The value itself is not logged, it can be a credential
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to write configuration id %d: %s", id, esp_err_to_name(err));
-    } else {
-        ESP_LOGI(TAG, "Configuration id %d updated", id);
-    }
-
-    return err;
-}
-
-/**
- *
- * @brief Checks whether a value is already stored for the given configuration item.
- *
- * @param config the configuration item.
- * @param is_set the output parameter set to true when a value is stored.
- * @return ESP_OK on success, or an appropriate error code on failure.
- */
-static esp_err_t config_is_set(const config_t *config, bool *is_set) {
-
-    const storage_ctx_t ctx = config_storage_ctx(config, STORAGE_MODE_READ_ONLY);
-    esp_err_t err = ESP_ERR_INVALID_ARG;
-
-    switch (config->type) {
-        case CONFIG_TYPE_INT: {
-            int32_t stored;
-            err = storage_get_i32(&ctx, &stored);
-            break;
-        }
-        case CONFIG_TYPE_BOOL: {
-            uint8_t stored;
-            err = storage_get_u8(&ctx, &stored);
-            break;
-        }
-        case CONFIG_TYPE_STRING: {
-            size_t size;
-            err = storage_get_str_size(&ctx, &size);
-            break;
-        }
-    }
-
-    // A value that was never set is not a failure
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        *is_set = false;
-        return ESP_OK;
-    }
-
-    if (err == ESP_OK) {
-        *is_set = true;
-    }
-
-    return err;
 }
 
 esp_err_t config_init() {
@@ -515,4 +413,110 @@ esp_err_t config_init() {
     }
 
     return ESP_OK;
+}
+
+esp_err_t config_get(config_id_t id, void **value) {
+
+    // 1. Validate the output parameter
+    if (value == NULL) {
+        ESP_LOGE(TAG, "Output value is null");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Find the item and check that it can be read
+    const config_t *config = config_lookup(id);
+    if (config == nullptr) {
+        ESP_LOGE(TAG, "Unknown configuration id %d", id);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 3. Check that the item is readable
+    if (!config->readable) {
+        ESP_LOGE(TAG, "Configuration id %d is not readable", id);
+        return ESP_ERR_NOT_SUPPORTED;
+    }
+
+    // 4. Authentication values come from the security layer, the others from storage according to their type
+    esp_err_t err = ESP_ERR_INVALID_ARG;
+
+    if (config->category == CONFIG_CATEGORY_AUTHENTICATION) {
+        err = config_read_security(id, value);
+    } else {
+
+        const storage_ctx_t ctx = config_storage_ctx(config, STORAGE_MODE_READ_ONLY);
+
+        switch (config->type) {
+            case CONFIG_TYPE_INT:
+                err = config_read_int(&ctx, value);
+                break;
+            case CONFIG_TYPE_BOOL:
+                err = config_read_bool(&ctx, value);
+                break;
+            case CONFIG_TYPE_STRING:
+                err = config_read_string(&ctx, value);
+                break;
+        }
+
+    }
+
+    // 5. A value that was never set is not an error worth logging
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
+        ESP_LOGE(TAG, "Failed to read configuration id %d: %s", id, esp_err_to_name(err));
+    }
+
+    return err;
+}
+
+esp_err_t config_set(config_id_t id, const void *value) {
+
+    // 1. Validate the input parameter
+    if (value == nullptr) {
+        ESP_LOGE(TAG, "Value is null");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 2. Find the item and check that it can be written
+    const config_t *config = config_lookup(id);
+    if (config == nullptr) {
+        ESP_LOGE(TAG, "Unknown configuration id %d", id);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // 3. Check that the item is writable
+    if (!config->writable) {
+        ESP_LOGE(TAG, "Configuration id %d is not writable", id);
+        return ESP_ERR_NOT_SUPPORTED;
+    }
+
+    // 4. Authentication values go to the security layer, the others to storage according to their type
+    esp_err_t err = ESP_ERR_INVALID_ARG;
+
+    if (config->category == CONFIG_CATEGORY_AUTHENTICATION) {
+        err = config_write_security(id, value);
+    } else {
+
+        const storage_ctx_t ctx = config_storage_ctx(config, STORAGE_MODE_READ_WRITE);
+
+        switch (config->type) {
+            case CONFIG_TYPE_INT:
+                err = storage_set_i32(&ctx, *(const int32_t *) value);
+                break;
+            case CONFIG_TYPE_BOOL:
+                err = storage_set_u8(&ctx, *(const bool *) value ? 1 : 0);
+                break;
+            case CONFIG_TYPE_STRING:
+                err = storage_set_str(&ctx, value);
+                break;
+        }
+
+    }
+
+    // 5. The value itself is not logged, it can be a credential
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to write configuration id %d: %s", id, esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "Configuration id %d updated", id);
+    }
+
+    return err;
 }

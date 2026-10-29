@@ -45,9 +45,9 @@ esp_err_t config_init();
  * @brief Sets the value for a given configuration ID.
  *
  * The value is read according to the type of the property: a pointer to an int32_t for integers, a pointer to a bool
- * for booleans and a null-terminated string for strings. Authentication values are handled by the security layer:
- * writing the certificate or the certificate authority installs it, and writing true to revoke revokes the
- * credentials, while writing false does nothing.
+ * for booleans and a null-terminated string for strings.
+ *
+ * Authentication values are handled by the security layer.
  *
  * @param id    the configuration ID to set.
  * @param value the value to set for the configuration ID.
@@ -63,8 +63,7 @@ esp_err_t config_set(config_id_t id, const void *value);
  * The value is allocated according to the type of the property: an int32_t for integers, a bool for booleans and a
  * null-terminated string for strings.
  *
- * Authentication values are provided by the security layer. Reading the CSR of a device that has none (UNPROVISIONED,
- * EXPIRED or REVOKED) starts its enrollment, so it generates a new private key and transitions to ENROLLING.
+ * Authentication values are provided by the security layer.
  *
  * @param id    the configuration ID to get.
  * @param value the output parameter that will hold the value for the configuration ID, the caller is responsible for
