@@ -542,6 +542,99 @@ TEST_CASE("get certificate fails when the saved certificate is corrupted", TEST_
     TEST_ASSERT_EQUAL(SECURITY_STATE_ACTIVE, context_state());
 }
 
+// --- CSR ---
+
+TEST_CASE("get csr returns the csr created by the enrollment and keeps the enrolling state", TEST_TAG) {
+    reset_key();
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+    TEST_ASSERT_EQUAL(ESP_OK, security_start_enrollment());
+
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&pem));
+    TEST_ASSERT_NOT_NULL(pem);
+    TEST_ASSERT_EQUAL_STRING_LEN("-----BEGIN CERTIFICATE REQUEST-----", pem, 35);
+
+    const storage_ctx_t csr_ctx = CSR_CTX;
+    char stored[512];
+    TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&csr_ctx, stored, sizeof(stored)));
+    TEST_ASSERT_EQUAL_STRING(stored, pem);
+    TEST_ASSERT_EQUAL(SECURITY_STATE_ENROLLING, context_state());
+    TEST_ASSERT_EQUAL(SECURITY_STATE_ENROLLING, stored_state());
+
+    free(pem);
+    reset_key();
+}
+
+TEST_CASE("get csr returns the same csr on every call", TEST_TAG) {
+    reset_key();
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+    TEST_ASSERT_EQUAL(ESP_OK, security_start_enrollment());
+
+    char *first = nullptr;
+    char *second = nullptr;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&first));
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&second));
+    TEST_ASSERT_EQUAL_STRING(first, second);
+
+    free(first);
+    free(second);
+    reset_key();
+}
+
+TEST_CASE("get csr is rejected outside the enrolling state", TEST_TAG) {
+    const security_state_t states[] = {SECURITY_STATE_UNPROVISIONED, SECURITY_STATE_ACTIVE, SECURITY_STATE_RENEWING,
+                                       SECURITY_STATE_EXPIRED, SECURITY_STATE_REVOKED};
+
+    for (size_t i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
+        boot_in_state(states[i]);
+
+        char *pem = nullptr;
+        TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_csr(&pem));
+        TEST_ASSERT_NULL(pem);
+        TEST_ASSERT_EQUAL(states[i], context_state());
+    }
+}
+
+TEST_CASE("get csr rejects a null output", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_ENROLLING);
+
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, security_get_csr(nullptr));
+}
+
+TEST_CASE("get csr fails when no csr is saved", TEST_TAG) {
+    boot_in_state(SECURITY_STATE_ENROLLING);
+    const storage_ctx_t csr_ctx = CSR_CTX;
+    const esp_err_t erase_err = storage_erase(&csr_ctx);
+    TEST_ASSERT_TRUE(erase_err == ESP_OK || erase_err == ESP_ERR_NVS_NOT_FOUND);
+
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_ERR_NVS_NOT_FOUND, security_get_csr(&pem));
+    TEST_ASSERT_NULL(pem);
+}
+
+TEST_CASE("get csr is rejected after the certificate is installed", TEST_TAG) {
+    import_device_key(KEY_A_RAW, sizeof(KEY_A_RAW));
+    boot_in_state(SECURITY_STATE_ENROLLING);
+    const storage_ctx_t csr_ctx = CSR_CTX;
+    TEST_ASSERT_EQUAL(ESP_OK, storage_set_str(&csr_ctx, "csr"));
+    TEST_ASSERT_EQUAL(ESP_OK, security_install_certificate(CERT_A_VALID));
+
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_csr(&pem));
+    TEST_ASSERT_NULL(pem);
+
+    reset_key();
+}
+
+TEST_CASE("get csr is rejected when the security layer is not initialized", TEST_TAG) {
+    const esp_err_t destroy_err = security_destroy();
+    TEST_ASSERT_TRUE(destroy_err == ESP_OK || destroy_err == ESP_ERR_INVALID_STATE);
+
+    char *pem = nullptr;
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_csr(&pem));
+    TEST_ASSERT_NULL(pem);
+}
+
 // --- Certificate authority ---
 
 TEST_CASE("install certificate authority saves it and does not change the state", TEST_TAG) {
