@@ -63,6 +63,9 @@ esp_err_t config_set(config_id_t id, const void *value);
  * The value is allocated according to the type of the property: an int32_t for integers, a bool for booleans and a
  * null-terminated string for strings.
  *
+ * Authentication values are provided by the security layer. Reading the CSR of a device that has none (UNPROVISIONED,
+ * EXPIRED or REVOKED) starts its enrollment, so it generates a new private key and transitions to ENROLLING.
+ *
  * @param id    the configuration ID to get.
  * @param value the output parameter that will hold the value for the configuration ID, the caller is responsible for
  *              freeing the memory allocated for the value.

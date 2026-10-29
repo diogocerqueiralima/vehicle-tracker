@@ -2,7 +2,7 @@
 
 #include "internal/crypto.h"
 
-#include "crypto_fixtures.h"
+#include "../utils/crypto_fixtures.h"
 #include "esp_err.h"
 #include "mbedtls/x509_csr.h"
 #include "unity.h"
