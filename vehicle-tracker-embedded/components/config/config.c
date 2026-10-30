@@ -125,6 +125,10 @@ static const config_t configs[] = {
 
     [CONFIG_REVOKE] = {
         .category = CONFIG_CATEGORY_AUTHENTICATION, .type = CONFIG_TYPE_BOOL, .writable = true, .readable = false
+    },
+
+    [CONFIG_ENROLL] = {
+        .category = CONFIG_CATEGORY_AUTHENTICATION, .type = CONFIG_TYPE_BOOL, .writable = true, .readable = false
     }
 
 };
@@ -139,7 +143,7 @@ static const config_t configs[] = {
 static const config_t *config_lookup(config_id_t id) {
 
     if (id < 0 || id >= sizeof(configs) / sizeof(configs[0]))
-        return NULL;
+        return nullptr;
 
     return &configs[id];
 }
@@ -374,6 +378,8 @@ static esp_err_t config_write_security(config_id_t id, const void *value) {
             return security_install_certificate_authority(value);
         case CONFIG_REVOKE:
             return *(const bool *) value ? security_revoke() : ESP_OK;
+        case CONFIG_ENROLL:
+            return *(const bool *) value ? security_start_enrollment() : ESP_OK;
         default:
             return ESP_ERR_NOT_SUPPORTED;
     }

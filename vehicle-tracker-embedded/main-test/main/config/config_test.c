@@ -186,9 +186,53 @@ TEST_CASE("get returns the csr of the security layer", TEST_TAG) {
     free(csr);
 }
 
-TEST_CASE("get csr starts the enrollment of an unprovisioned device", TEST_TAG) {
+TEST_CASE("get csr does not start the enrollment", TEST_TAG) {
+    const security_state_t states[] = {SECURITY_STATE_UNPROVISIONED, SECURITY_STATE_EXPIRED, SECURITY_STATE_REVOKED};
+    const char *config_state_names[] = {"UNPROVISIONED", "EXPIRED", "REVOKED"};
+
+    for (size_t i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
+        boot_security(states[i]);
+
+        void *value = nullptr;
+        TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, config_get(CONFIG_CSR, &value));
+        TEST_ASSERT_NULL(value);
+
+        char *status = get_string(CONFIG_STATUS);
+        TEST_ASSERT_EQUAL_STRING(config_state_names[i], status);
+        free(status);
+    }
+}
+
+TEST_CASE("set enroll false does nothing", TEST_TAG) {
+    boot_security(SECURITY_STATE_UNPROVISIONED);
+
+    const bool enroll = false;
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_ENROLL, &enroll));
+
+    char *status = get_string(CONFIG_STATUS);
+    TEST_ASSERT_EQUAL_STRING("UNPROVISIONED", status);
+    free(status);
+}
+
+TEST_CASE("set enroll is passed the error of the security layer", TEST_TAG) {
+    boot_security(SECURITY_STATE_ACTIVE);
+
+    const bool enroll = true;
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, config_set(CONFIG_ENROLL, &enroll));
+}
+
+TEST_CASE("get rejects the enroll command because it is not readable", TEST_TAG) {
+    void *value = nullptr;
+    TEST_ASSERT_EQUAL(ESP_ERR_NOT_SUPPORTED, config_get(CONFIG_ENROLL, &value));
+    TEST_ASSERT_NULL(value);
+}
+
+TEST_CASE("set enroll starts the enrollment and the csr becomes readable", TEST_TAG) {
     TEST_ASSERT_EQUAL(PSA_SUCCESS, psa_crypto_init());
     boot_security(SECURITY_STATE_UNPROVISIONED);
+
+    const bool enroll = true;
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_ENROLL, &enroll));
 
     char *csr = get_string(CONFIG_CSR);
     TEST_ASSERT_EQUAL_STRING_LEN("-----BEGIN CERTIFICATE REQUEST-----", csr, 35);

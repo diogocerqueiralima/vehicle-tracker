@@ -608,6 +608,39 @@ unlock:
     return err;
 }
 
+esp_err_t security_start_enrollment() {
+
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    // 2. Enroll from the states that have no request. ENROLLING keeps the key and the request it already has, and the
+    // other states refuse because a new key would replace the one the installed certificate depends on
+    switch (security_context->state) {
+        case SECURITY_STATE_UNPROVISIONED:
+        case SECURITY_STATE_EXPIRED:
+        case SECURITY_STATE_REVOKED:
+            err = enroll();
+            break;
+        case SECURITY_STATE_ENROLLING:
+            break;
+        default:
+            ESP_LOGE(TAG, "Device is not in the correct state to start the enrollment");
+            err = ESP_ERR_INVALID_STATE;
+            break;
+    }
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
+}
+
 esp_err_t security_get_csr(char **out_pem) {
 
     pthread_mutex_lock(&security_mutex);
@@ -625,24 +658,12 @@ esp_err_t security_get_csr(char **out_pem) {
         goto unlock;
     }
 
-    // 2. The request is created when the device has none: UNPROVISIONED, or EXPIRED and REVOKED to enroll again.
-    // In the ENROLLING state the stored request is returned, and the other states refuse it because a new request
-    // would replace the key the installed certificate depends on
-    switch (security_context->state) {
-        case SECURITY_STATE_UNPROVISIONED:
-        case SECURITY_STATE_EXPIRED:
-        case SECURITY_STATE_REVOKED:
-            err = enroll();
-            if (err != ESP_OK) {
-                goto unlock;
-            }
-            break;
-        case SECURITY_STATE_ENROLLING:
-            break;
-        default:
-            ESP_LOGE(TAG, "Device is not in the correct state to get a CSR");
-            err = ESP_ERR_INVALID_STATE;
-            goto unlock;
+    // 2. Only the ENROLLING state has a request to return. Reading never starts an enrollment, that is done
+    // explicitly by security_start_enrollment()
+    if (security_context->state != SECURITY_STATE_ENROLLING) {
+        ESP_LOGE(TAG, "Device is not in the correct state to get a CSR");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
     }
 
     // 3. Get the size of the CSR saved in storage

@@ -22,9 +22,10 @@ typedef enum {
 
     CONFIG_CERTIFICATE,             // Client certificate for secure connections
     CONFIG_CERTIFICATE_AUTHORITY,   // Certificate authority for validating server certificates
-    CONFIG_CSR,                     // Certificate signing request for obtaining a certificate
+    CONFIG_CSR,                     // Certificate signing request, read-only and only available while ENROLLING
     CONFIG_STATUS,                  // Status of the authentication process
-    CONFIG_REVOKE                   // Flag indicating whether the certificate should be revoked
+    CONFIG_REVOKE,                  // Flag indicating whether the certificate should be revoked
+    CONFIG_ENROLL                   // Flag indicating whether the enrollment should be started, write-only
 
 } config_id_t;
 

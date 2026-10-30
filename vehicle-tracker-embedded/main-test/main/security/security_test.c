@@ -107,12 +107,10 @@ static bool has_string(const storage_ctx_t *ctx) {
 }
 
 /**
- * Starts the enrollment of a device that has no CSR, which is what reading its CSR does.
+ * Starts the enrollment of a device that has no CSR.
  */
 static void start_enrollment() {
-    char *pem = nullptr;
-    TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&pem));
-    free(pem);
+    TEST_ASSERT_EQUAL(ESP_OK, security_start_enrollment());
 }
 
 // --- Initialization ---
@@ -175,6 +173,7 @@ TEST_CASE("destroy releases the context and the other functions are rejected", T
     char *pem = nullptr;
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_context(&context));
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_csr(&pem));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_start_enrollment());
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_install_certificate(CERT_A_VALID));
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_revoke());
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_certificate(&pem));
@@ -561,37 +560,93 @@ TEST_CASE("get csr returns the same csr on every call", TEST_TAG) {
     reset_key();
 }
 
-TEST_CASE("get csr starts the enrollment when the device has no csr", TEST_TAG) {
+TEST_CASE("get csr does not start the enrollment and keeps the key", TEST_TAG) {
+    const security_state_t states[] = {SECURITY_STATE_UNPROVISIONED, SECURITY_STATE_EXPIRED, SECURITY_STATE_REVOKED};
+
+    for (size_t i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
+        import_device_key(KEY_A_RAW, sizeof(KEY_A_RAW));
+        boot_in_state(states[i]);
+
+        char *pem = nullptr;
+        TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_get_csr(&pem));
+        TEST_ASSERT_NULL(pem);
+
+        TEST_ASSERT_EQUAL(states[i], context_state());
+        TEST_ASSERT_EQUAL(states[i], stored_state());
+        TEST_ASSERT_TRUE(device_key_exists());
+
+        const storage_ctx_t csr_ctx = CSR_CTX;
+        const esp_err_t erase_err = storage_erase(&csr_ctx);
+        TEST_ASSERT_TRUE(erase_err == ESP_OK || erase_err == ESP_ERR_NVS_NOT_FOUND);
+        TEST_ASSERT_FALSE(has_string(&csr_ctx));
+    }
+
+    reset_key();
+}
+
+TEST_CASE("start enrollment creates the key and the csr in the states that allow it", TEST_TAG) {
     const security_state_t states[] = {SECURITY_STATE_UNPROVISIONED, SECURITY_STATE_EXPIRED, SECURITY_STATE_REVOKED};
 
     for (size_t i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
         reset_key();
         boot_in_state(states[i]);
 
-        char *pem = nullptr;
-        TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&pem));
-        TEST_ASSERT_NOT_NULL(pem);
-        TEST_ASSERT_EQUAL_STRING_LEN("-----BEGIN CERTIFICATE REQUEST-----", pem, 35);
+        TEST_ASSERT_EQUAL(ESP_OK, security_start_enrollment());
 
         TEST_ASSERT_EQUAL(SECURITY_STATE_ENROLLING, context_state());
         TEST_ASSERT_EQUAL(SECURITY_STATE_ENROLLING, stored_state());
         TEST_ASSERT_TRUE(device_key_exists());
+
+        char *pem = nullptr;
+        TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&pem));
+        TEST_ASSERT_EQUAL_STRING_LEN("-----BEGIN CERTIFICATE REQUEST-----", pem, 35);
 
         const storage_ctx_t csr_ctx = CSR_CTX;
         char stored[512];
         TEST_ASSERT_EQUAL(ESP_OK, storage_get_str(&csr_ctx, stored, sizeof(stored)));
         TEST_ASSERT_EQUAL_STRING(stored, pem);
 
-        // A second call returns the same csr and does not create another one
-        char *again = nullptr;
-        TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&again));
-        TEST_ASSERT_EQUAL_STRING(pem, again);
-
         free(pem);
-        free(again);
     }
 
     reset_key();
+}
+
+TEST_CASE("start enrollment while enrolling keeps the key and the csr", TEST_TAG) {
+    reset_key();
+    boot_in_state(SECURITY_STATE_UNPROVISIONED);
+    start_enrollment();
+
+    char *first = nullptr;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&first));
+
+    TEST_ASSERT_EQUAL(ESP_OK, security_start_enrollment());
+
+    char *second = nullptr;
+    TEST_ASSERT_EQUAL(ESP_OK, security_get_csr(&second));
+    TEST_ASSERT_EQUAL_STRING(first, second);
+    TEST_ASSERT_EQUAL(SECURITY_STATE_ENROLLING, stored_state());
+
+    free(first);
+    free(second);
+    reset_key();
+}
+
+TEST_CASE("start enrollment is rejected in the states that have a certificate and creates nothing", TEST_TAG) {
+    const security_state_t states[] = {SECURITY_STATE_ACTIVE, SECURITY_STATE_RENEWING};
+
+    for (size_t i = 0; i < sizeof(states) / sizeof(states[0]); i++) {
+        reset_key();
+        boot_in_state(states[i]);
+
+        TEST_ASSERT_EQUAL(ESP_ERR_INVALID_STATE, security_start_enrollment());
+        TEST_ASSERT_EQUAL(states[i], context_state());
+        TEST_ASSERT_EQUAL(states[i], stored_state());
+        TEST_ASSERT_FALSE(device_key_exists());
+
+        const storage_ctx_t csr_ctx = CSR_CTX;
+        TEST_ASSERT_FALSE(has_string(&csr_ctx));
+    }
 }
 
 TEST_CASE("get csr is rejected in the states that have a certificate and creates nothing", TEST_TAG) {

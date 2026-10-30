@@ -168,22 +168,35 @@ esp_err_t security_get_certificate_authority(char **out_pem);
 
 /**
  *
- * @brief Retrieves the CSR of the device, creating it when the device has none.
+ * @brief Starts the enrollment of the device.
  *
  * What happens depends on the state of the device:
- * - UNPROVISIONED, EXPIRED or REVOKED: starts the enrollment. It generates a new private key and a CSR signed with it,
- *   saves the CSR in flash and transitions to ENROLLING, and then returns the CSR. The private key is kept in the PSA
- *   key store and never leaves it, it is only used through its id. If the device already had a private key, it is
- *   replaced. The device then waits for the certificate issued from the CSR to be installed with
- *   security_install_certificate();
- * - ENROLLING: returns the stored CSR, so every call returns the same one until the certificate is installed;
- * - ACTIVE or RENEWING: refused, because a new CSR would replace the key the installed certificate depends on.
+ * - UNPROVISIONED, EXPIRED or REVOKED: generates a new private key and a CSR signed with it, saves the CSR in flash
+ *   and transitions to ENROLLING. The private key is kept in the PSA key store and never leaves it, it is only used
+ *   through its id. If the device already had a private key, it is replaced. The device then waits for the
+ *   certificate issued from the CSR to be installed with security_install_certificate();
+ * - ENROLLING: nothing happens and ESP_OK is returned, the key and the CSR it already has are kept;
+ * - ACTIVE or RENEWING: refused, because a new key would replace the one the installed certificate depends on.
+ *
+ * The CSR is read with security_get_csr().
+ *
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized or the device is in the
+ * ACTIVE or RENEWING state, or an appropriate error code on failure.
+ */
+esp_err_t security_start_enrollment();
+
+/**
+ *
+ * @brief Retrieves the CSR created by security_start_enrollment().
+ *
+ * This function only reads, it never changes the state of the device nor its keys. The device must be in the ENROLLING
+ * state, and every call returns the same CSR until the certificate is installed.
  *
  * The memory for the CSR is allocated by this function, the caller must release it with free().
  *
  * @param out_pem the pointer to be set to the allocated CSR in PEM format, null terminated. It is only set on success.
- * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized or the device is in the
- * ACTIVE or RENEWING state, ESP_ERR_INVALID_ARG when @p out_pem is null, or an appropriate error code on failure.
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE when the security layer is not initialized or the device is not in
+ * the ENROLLING state, ESP_ERR_INVALID_ARG when @p out_pem is null, or an appropriate error code on failure.
  */
 esp_err_t security_get_csr(char **out_pem);
 
