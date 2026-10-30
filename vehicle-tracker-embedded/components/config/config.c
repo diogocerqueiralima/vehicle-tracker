@@ -42,8 +42,8 @@ typedef struct {
     config_category_t category;
 
     /** Where the value is stored. Both are NULL when the value is owned by the security layer. **/
-    char *namespace;
-    char *key;
+    const char *namespace;
+    const char *key;
 
     config_type_t type;
 
@@ -53,9 +53,10 @@ typedef struct {
     /** Whether the property has a default value, which is needed because an integer default can be zero. **/
     bool has_default;
 
-    /** Only used by CONFIG_TYPE_INT and CONFIG_TYPE_STRING, and only when has_default is true. **/
+    /** Only used when has_default is true, the member read depends on the type of the property. **/
     union {
         int32_t i;
+        bool b;
         const char *s;
     } default_value;
 
@@ -366,7 +367,7 @@ static esp_err_t config_read_security(config_id_t id, void **value) {
  * @brief Writes an authentication value, which is owned by the security layer and not stored by the configuration layer.
  *
  * @param id    the configuration ID to write.
- * @param value the value to write, according to the type of the property.
+ * @param value the value to write, according to the type of the property. A command flag is only passed when it is true.
  * @return ESP_OK on success, or an appropriate error code on failure.
  */
 static esp_err_t config_write_security(config_id_t id, const void *value) {
@@ -377,9 +378,9 @@ static esp_err_t config_write_security(config_id_t id, const void *value) {
         case CONFIG_CERTIFICATE_AUTHORITY:
             return security_install_certificate_authority(value);
         case CONFIG_REVOKE:
-            return *(const bool *) value ? security_revoke() : ESP_OK;
+            return security_revoke();
         case CONFIG_ENROLL:
-            return *(const bool *) value ? security_start_enrollment() : ESP_OK;
+            return security_start_enrollment();
         default:
             return ESP_ERR_NOT_SUPPORTED;
     }
@@ -408,9 +409,19 @@ esp_err_t config_init() {
         }
 
         // 3. Write the default value
-        const void *value = config->type == CONFIG_TYPE_STRING
-            ? (const void *) config->default_value.s
-            : (const void *) &config->default_value.i;
+        // The member must match the type, config_set reads the value through a pointer to that type
+        const void *value = nullptr;
+        switch (config->type) {
+            case CONFIG_TYPE_INT:
+                value = &config->default_value.i;
+                break;
+            case CONFIG_TYPE_BOOL:
+                value = &config->default_value.b;
+                break;
+            case CONFIG_TYPE_STRING:
+                value = config->default_value.s;
+                break;
+        }
 
         err = config_set((config_id_t) i, value);
         if (err != ESP_OK) {
@@ -498,6 +509,12 @@ esp_err_t config_set(config_id_t id, const void *value) {
     esp_err_t err = ESP_ERR_INVALID_ARG;
 
     if (config->category == CONFIG_CATEGORY_AUTHENTICATION) {
+
+        // 5. The authentication flags are commands, and writing false does nothing, so it is not an update
+        if (config->type == CONFIG_TYPE_BOOL && !*(const bool *) value) {
+            return ESP_OK;
+        }
+
         err = config_write_security(id, value);
     } else {
 
@@ -517,7 +534,7 @@ esp_err_t config_set(config_id_t id, const void *value) {
 
     }
 
-    // 5. The value itself is not logged, it can be a credential
+    // 6. The value itself is not logged, it can be a credential
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to write configuration id %d: %s", id, esp_err_to_name(err));
     } else {
