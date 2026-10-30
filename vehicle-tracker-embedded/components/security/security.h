@@ -83,7 +83,7 @@ esp_err_t security_get_context(security_context_t *context);
 
 /**
  *
- * @brief Installs the certificate issued from the CSR created by security_get_csr().
+ * @brief Installs the certificate issued from the CSR created by security_start_enrollment().
  *
  * The device must be in the ENROLLING state. The certificate is only accepted when all of the following are true:
  * - it is a well formed PEM encoded X.509 certificate;
