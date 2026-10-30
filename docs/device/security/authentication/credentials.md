@@ -8,20 +8,20 @@ This document covers how the device handles its credentials: the key pair, the C
 
 The device creates its own key pair. The private key proves that the device owns its certificate, so it is the part that must never leave the device.
 
-- **Creating a request** for an enrollment generates a new NIST P-256 key pair in the device's key store, replacing any key that is there, and signs the request with it. A request for a renewal is described in [Renewing a certificate](#renewing-a-certificate). The common name is the device identifier (see [Security](../overview.md#identity)).
+- **Creating a request** happens only when the user starts the enrollment explicitly, never as a side effect of reading. Starting an enrollment generates a new NIST P-256 key pair in the device's key store, replacing any key that is there, and signs the request with it. A request for a renewal is described in [Renewing a certificate](#renewing-a-certificate). The common name is the device identifier (see [Security](../overview.md#identity)).
 - **The private key** is created without export permission and never leaves the key store. Only the request can be read.
-- **The request is stored**, so every read returns the same one. A PEM-encoded P-256 CSR is around 480 bytes, larger than a single BLE packet, so the client reads it in several chunks, and all of them must come from the same request.
-- **The request is kept** only until a certificate is installed. While the device is `ACTIVE` or `RENEWING`, reading the request is refused, because a new request would replace the key the certificate depends on.
+- **The request is stored**, so every read returns the same one, and reading never changes the state of the device or its keys. A PEM-encoded P-256 CSR is around 480 bytes, larger than a single BLE packet, so the client reads it in several chunks, and all of them must come from the same request.
+- **The request is kept** only until a certificate is installed. While the device is `ACTIVE` or `RENEWING`, starting an enrollment is refused, because a new request would replace the key the certificate depends on.
 
 ## Operations by state
 
 The security layer decides what the device allows, based on its [Lifecycle](../lifecycle.md) state, which it keeps in flash.
 
-| State | Reading the request | Writing a certificate |
-|---|---|---|
-| `UNPROVISIONED`, `EXPIRED`, `REVOKED` | Creates a new request and moves to `ENROLLING`. | Refused. |
-| `ENROLLING` | Returns the stored request. | Stores a valid certificate and moves to `ACTIVE`. An invalid certificate is refused, the request and its key are discarded, and the device moves to `UNPROVISIONED`. |
-| `ACTIVE`, `RENEWING` | Refused, because a new request would replace the key the installed certificate depends on. | Refused. |
+| State | Starting the enrollment | Reading the request | Writing a certificate |
+|---|---|---|---|
+| `UNPROVISIONED`, `EXPIRED`, `REVOKED` | Creates a new key and request and moves to `ENROLLING`. | Refused. | Refused. |
+| `ENROLLING` | Does nothing, the stored key and request are kept. | Returns the stored request. | Stores a valid certificate and moves to `ACTIVE`. An invalid certificate is refused, the request and its key are discarded, and the device moves to `UNPROVISIONED`. |
+| `ACTIVE`, `RENEWING` | Refused, because a new request would replace the key the installed certificate depends on. | Refused. | Refused. |
 
 Revoking is only accepted in `ACTIVE` and `RENEWING`, as in the lifecycle. An `EXPIRED` device does not need to be revoked, it only needs to be enrolled again.
 

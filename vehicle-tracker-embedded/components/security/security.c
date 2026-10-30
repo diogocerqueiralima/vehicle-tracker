@@ -212,74 +212,57 @@ unlock:
     return err;
 }
 
-esp_err_t security_start_enrollment() {
+/**
+ * @brief Starts the enrollment: generates the private key and the CSR, saves the CSR and transitions to ENROLLING.
+ *
+ * The caller must hold the security mutex, must have checked that the security layer is initialized and that the
+ * device is in a state that allows enrollment (UNPROVISIONED, EXPIRED or REVOKED).
+ *
+ * @return ESP_OK on success, or an appropriate error code on failure.
+ */
+static esp_err_t enroll() {
 
-    pthread_mutex_lock(&security_mutex);
-
-    // 1. Make sure the security layer is initialized
-    esp_err_t err = ESP_OK;
-    if (security_context == nullptr) {
-        ESP_LOGE(TAG, "Security layer is not initialized");
-        err = ESP_ERR_INVALID_STATE;
-        goto unlock;
-    }
-
-    // 2. Make sure the device is in a state that allows enrollment: UNPROVISIONED,
-    // or EXPIRED and REVOKED to enroll again
-    const security_state_t current_state = security_context->state;
-    if (
-        current_state != SECURITY_STATE_UNPROVISIONED && current_state != SECURITY_STATE_EXPIRED &&
-        current_state != SECURITY_STATE_REVOKED
-    ) {
-        ESP_LOGE(TAG, "Device is not in the correct state for enrollment");
-        err = ESP_ERR_INVALID_STATE;
-        goto unlock;
-    }
-
-    // 3. Generate the private key, which replaces the old one, and that is harmless if a later step fails because
+    // 1. Generate the private key, which replaces the old one, and that is harmless if a later step fails because
     // the old key is useless in these states
-    err = crypto_generate_private_key(PRIVATE_KEY_ID);
+    esp_err_t err = crypto_generate_private_key(PRIVATE_KEY_ID);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to generate private key");
-        goto unlock;
+        return err;
     }
 
-    // 4. Get the device identity as a string, to use it as the common name in the CSR
+    // 2. Get the device identity as a string, to use it as the common name in the CSR
     char identity[UUID_STR_SIZE];
     err = uuid_to_str(&security_context->identity, identity, sizeof(identity));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to convert identity to string");
-        goto unlock;
+        return err;
     }
 
-    // 5. Generate the CSR, signed with the private key
+    // 3. Generate the CSR, signed with the private key
     char csr[CSR_MAX_SIZE];
     err = crypto_generate_csr(PRIVATE_KEY_ID, identity, csr, sizeof(csr));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to generate CSR");
-        goto unlock;
+        return err;
     }
 
-    // 6. Save the CSR to storage
+    // 4. Save the CSR to storage
     err = storage_set_str(&CSR_CTX, csr);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save CSR");
-        goto unlock;
+        return err;
     }
 
-    // 7. Transition to the ENROLLING state
+    // 5. Transition to the ENROLLING state
     err = storage_set_u32(&STATE_CTX, SECURITY_STATE_ENROLLING);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to save state");
-        goto unlock;
+        return err;
     }
 
     security_context->state = SECURITY_STATE_ENROLLING;
 
-    // 8. Enrollment started successfully
-unlock:
-    pthread_mutex_unlock(&security_mutex);
-    return err;
+    return ESP_OK;
 }
 
 esp_err_t security_install_certificate(const char *cert_pem) {
@@ -614,6 +597,94 @@ esp_err_t security_get_certificate_authority(char **out_pem) {
     err = storage_get_str(&CA_CTX, pem, size);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to load certificate authority");
+        free(pem);
+        goto unlock;
+    }
+
+    *out_pem = pem;
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
+}
+
+esp_err_t security_start_enrollment() {
+
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    // 2. Enroll from the states that have no request. ENROLLING keeps the key and the request it already has, and the
+    // other states refuse because a new key would replace the one the installed certificate depends on
+    switch (security_context->state) {
+        case SECURITY_STATE_UNPROVISIONED:
+        case SECURITY_STATE_EXPIRED:
+        case SECURITY_STATE_REVOKED:
+            err = enroll();
+            break;
+        case SECURITY_STATE_ENROLLING:
+            break;
+        default:
+            ESP_LOGE(TAG, "Device is not in the correct state to start the enrollment");
+            err = ESP_ERR_INVALID_STATE;
+            break;
+    }
+
+unlock:
+    pthread_mutex_unlock(&security_mutex);
+    return err;
+}
+
+esp_err_t security_get_csr(char **out_pem) {
+
+    pthread_mutex_lock(&security_mutex);
+
+    // 1. Make sure the security layer is initialized
+    esp_err_t err = ESP_OK;
+    if (security_context == nullptr) {
+        ESP_LOGE(TAG, "Security layer is not initialized");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    if (out_pem == nullptr) {
+        err = ESP_ERR_INVALID_ARG;
+        goto unlock;
+    }
+
+    // 2. Only the ENROLLING state has a request to return. Reading never starts an enrollment, that is done
+    // explicitly by security_start_enrollment()
+    if (security_context->state != SECURITY_STATE_ENROLLING) {
+        ESP_LOGE(TAG, "Device is not in the correct state to get a CSR");
+        err = ESP_ERR_INVALID_STATE;
+        goto unlock;
+    }
+
+    // 3. Get the size of the CSR saved in storage
+    size_t size = 0;
+    err = storage_get_str_size(&CSR_CTX, &size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get the CSR size");
+        goto unlock;
+    }
+
+    // 4. Load it
+    char *pem = malloc(size);
+    if (pem == nullptr) {
+        ESP_LOGE(TAG, "Failed to allocate CSR buffer");
+        err = ESP_ERR_NO_MEM;
+        goto unlock;
+    }
+
+    err = storage_get_str(&CSR_CTX, pem, size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load CSR");
         free(pem);
         goto unlock;
     }
