@@ -30,8 +30,17 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+      # The linux target builds with the host compiler, and IDF only picks -std=gnu23 (needed for
+      # nullptr) when that compiler is GCC 14 or newer
+      - name: Install GCC 14
+        run: |
+          apt-get update
+          apt-get install -y gcc-14 g++-14
       - name: Build host unit tests
         working-directory: vehicle-tracker-embedded/main-test
+        env:
+          CC: gcc-14
+          CXX: g++-14
         run: |
           . "$IDF_PATH/export.sh"
           idf.py --preview set-target linux
