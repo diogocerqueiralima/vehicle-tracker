@@ -43,8 +43,7 @@ jobs:
           CXX: g++-14
         run: |
           . "$IDF_PATH/export.sh"
-          idf.py --preview set-target linux
-          idf.py build
+          idf.py --preview build
       - name: Run host unit tests
         working-directory: vehicle-tracker-embedded/main-test
         run: ./build/vehicle-tracker-embedded-test.elf
