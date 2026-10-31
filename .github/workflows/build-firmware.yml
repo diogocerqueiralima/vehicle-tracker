@@ -1,0 +1,82 @@
+name: Firmware Build
+
+on:
+  push:
+    branches-ignore: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      firmware: ${{ steps.filter.outputs.firmware }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            firmware:
+              - 'vehicle-tracker-embedded/**'
+              - '.github/workflows/build-firmware.yml'
+
+  test:
+    needs: changes
+    if: needs.changes.outputs.firmware == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build host unit tests
+        working-directory: vehicle-tracker-embedded/main-test
+        run: |
+          . "$IDF_PATH/export.sh"
+          idf.py --preview set-target linux
+          idf.py build
+      - name: Run host unit tests
+        working-directory: vehicle-tracker-embedded/main-test
+        run: ./build/vehicle-tracker-embedded-test.elf
+
+  build:
+    needs: changes
+    if: needs.changes.outputs.firmware == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container: espressif/idf:v6.1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ESP32 firmware
+        working-directory: vehicle-tracker-embedded
+        run: |
+          . "$IDF_PATH/export.sh"
+          idf.py build
+
+  build-status:
+    name: build-firmware
+    needs: [changes, test, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check build result
+        run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            echo "Change detection failed"
+            exit 1
+          fi
+          if [ "${{ needs.changes.outputs.firmware }}" != "true" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "No firmware changes, skipping"
+            exit 0
+          fi
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Host unit tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.build.result }}" != "success" ]; then
+            echo "Firmware build failed"
+            exit 1
+          fi
