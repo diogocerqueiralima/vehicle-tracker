@@ -14,11 +14,28 @@ The following attributes are included in the reported location data:
 - `satellite_count`: The number of satellites used to determine the device's location.
 - `hdop`: The horizontal dilution of precision (HDOP) value, which indicates the accuracy of the reported location data. A lower HDOP value indicates better accuracy.
 - `vdop`: The vertical dilution of precision (VDOP) value, which indicates the accuracy of the reported altitude data. A lower VDOP value indicates better accuracy.
-- `fix_type`: The type of fix obtained from the satellite system, which can be one of the following values:
-  - `0`: No fix
-  - `1`: 2D fix
-  - `2`: 3D fix
+- `pdop`: The position dilution of precision (PDOP) value, which indicates the accuracy of the reported 3D position (latitude, longitude and altitude combined). A lower PDOP value indicates better accuracy.
+- `fix_type`: The type of fix obtained from the satellite system, as an enum: `NO_FIX`, `FIX_2D` or `FIX_3D`.
 - `timestamp`: The timestamp of the reported location data from the satellite system, in milliseconds since the epoch (January 1, 1970).
+
+## NMEA Sentences Used
+
+The location data is built from the NMEA sentences output by the GNSS module. The device needs only the following combination, so the other sentences can be disabled on the module:
+
+| Attribute | Sentence | Field |
+|---|---|---|
+| `latitude`, `longitude` | GGA | 2 to 5 |
+| `altitude` | GGA | 9 |
+| `satellite_count` | GGA | 7 |
+| `hdop` | GSA | 16 |
+| `vdop` | GSA | 17 |
+| `pdop` | GSA | 15 |
+| `fix_type` | GSA | 2 (GSA `1`, `2`, `3` maps to `NO_FIX`, `FIX_2D`, `FIX_3D`) |
+| `speed` | RMC | 7 |
+| `heading` | RMC | 8 |
+| `timestamp` | RMC | 1 and 9 (time and date) |
+
+See [NMEA Sentences](../nmea/sentences.md) for the full field layout of each sentence.
 
 ## Location Data Reporting Frequency
 
