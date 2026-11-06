@@ -49,12 +49,14 @@ esp_err_t config_init();
  * The value is read according to the type of the property: a pointer to an int32_t for integers, a pointer to a bool
  * for booleans and a null-terminated string for strings.
  *
- * Authentication values are handled by the security layer.
+ * Authentication values are handled by the security layer. The other values are checked before being stored: the
+ * broker URL must start with mqtt:// or mqtts://, the keep alive is 1 to 65535 seconds, the QoS is 0 to 2, the
+ * intervals and timeouts are 1 to 86400 seconds and the GPS mode is one of standalone, ue-based or ue-assisted.
  *
  * @param id    the configuration ID to set.
  * @param value the value to set for the configuration ID.
- * @return ESP_OK on success, ESP_ERR_INVALID_ARG on an unknown ID or null value, ESP_ERR_NOT_SUPPORTED when the
- * property is not writable, or an appropriate error code on failure.
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG on an unknown ID, a null value or a value that is not accepted,
+ * ESP_ERR_NOT_SUPPORTED when the property is not writable, or an appropriate error code on failure.
  */
 esp_err_t config_set(config_id_t id, const void *value);
 

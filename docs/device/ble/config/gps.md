@@ -11,3 +11,7 @@ The GPS Service exposes the device's GPS configuration over BLE. This document l
 | gps_update | a7586118-a223-8f13-930b-215917f29126 | integer | read, write |
 | gps_timeout | ca561647-1ef5-4213-190f-daf6f42c83d1 | integer | read, write |
 | gps_mode | d67ed5fc-a8db-c68c-2544-e5ed59f356c6 | string | read, write |
+
+## Error codes
+
+A write with a value outside the limits in the [GPS Configuration](../../config/gps.md) is rejected with `0x13` (Value Not Allowed) and the stored value does not change. For the other codes, refer to [Error Handling](../error-handling.md).
