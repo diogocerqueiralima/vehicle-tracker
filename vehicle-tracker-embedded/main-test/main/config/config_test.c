@@ -296,6 +296,105 @@ TEST_CASE("set replaces the previous value", TEST_TAG) {
     TEST_ASSERT_EQUAL_INT32(90, get_int(CONFIG_GPS_TIMEOUT));
 }
 
+/**
+ * Checks that a rejected integer is not stored, so the previous value is still returned.
+ */
+static void assert_int_rejected(const config_id_t id, const int32_t previous, const int32_t rejected) {
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(id, &previous));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, config_set(id, &rejected));
+    TEST_ASSERT_EQUAL_INT32(previous, get_int(id));
+}
+
+/**
+ * Checks that a rejected string is not stored, so the previous value is still returned.
+ */
+static void assert_string_rejected(const config_id_t id, const char *previous, const char *rejected) {
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(id, previous));
+    TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, config_set(id, rejected));
+
+    char *stored = get_string(id);
+    TEST_ASSERT_EQUAL_STRING(previous, stored);
+    free(stored);
+}
+
+TEST_CASE("set accepts the bounds of the integer properties", TEST_TAG) {
+    int32_t value = 1;
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_KEEP_ALIVE, &value));
+    value = 65535;
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_KEEP_ALIVE, &value));
+
+    const config_id_t intervals[] = {CONFIG_RECONNECT_INTERVAL, CONFIG_GPS_UPDATE_INTERVAL, CONFIG_GPS_TIMEOUT};
+    for (size_t i = 0; i < sizeof(intervals) / sizeof(intervals[0]); i++) {
+        value = 1;
+        TEST_ASSERT_EQUAL(ESP_OK, config_set(intervals[i], &value));
+        value = 86400;
+        TEST_ASSERT_EQUAL(ESP_OK, config_set(intervals[i], &value));
+    }
+
+    for (value = 0; value <= 2; value++) {
+        TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_QOS, &value));
+    }
+}
+
+TEST_CASE("set rejects a keep alive out of range and keeps the previous value", TEST_TAG) {
+    assert_int_rejected(CONFIG_KEEP_ALIVE, 120, 0);
+    assert_int_rejected(CONFIG_KEEP_ALIVE, 120, -1);
+    assert_int_rejected(CONFIG_KEEP_ALIVE, 120, 65536);
+}
+
+TEST_CASE("set rejects a qos out of range and keeps the previous value", TEST_TAG) {
+    assert_int_rejected(CONFIG_QOS, 1, -1);
+    assert_int_rejected(CONFIG_QOS, 1, 3);
+    assert_int_rejected(CONFIG_QOS, 1, 7);
+}
+
+TEST_CASE("set rejects an interval or timeout out of range", TEST_TAG) {
+    const config_id_t ids[] = {CONFIG_RECONNECT_INTERVAL, CONFIG_GPS_UPDATE_INTERVAL, CONFIG_GPS_TIMEOUT};
+
+    for (size_t i = 0; i < sizeof(ids) / sizeof(ids[0]); i++) {
+        assert_int_rejected(ids[i], 30, 0);
+        assert_int_rejected(ids[i], 30, -1);
+        assert_int_rejected(ids[i], 30, 86401);
+    }
+}
+
+TEST_CASE("set accepts both schemes of the broker url", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_BROKER_URL, "mqtt://broker.example.com:1883"));
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_BROKER_URL, "mqtts://broker.example.com:8883"));
+}
+
+TEST_CASE("set rejects a broker url that is blank, has another scheme or is too long", TEST_TAG) {
+    const char *valid = "mqtts://broker.example.com:8883";
+
+    // Longer than 255 bytes, with a valid scheme
+    char too_long[300] = "mqtts://";
+    memset(too_long + strlen(too_long), 'a', 250);
+
+    assert_string_rejected(CONFIG_BROKER_URL, valid, "");
+    assert_string_rejected(CONFIG_BROKER_URL, valid, "   ");
+    assert_string_rejected(CONFIG_BROKER_URL, valid, "broker.example.com");
+    assert_string_rejected(CONFIG_BROKER_URL, valid, "http://broker.example.com");
+    assert_string_rejected(CONFIG_BROKER_URL, valid, " mqtt://broker.example.com");
+    assert_string_rejected(CONFIG_BROKER_URL, valid, too_long);
+}
+
+TEST_CASE("set accepts every gps mode", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_GPS_MODE, "standalone"));
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_GPS_MODE, "ue-based"));
+    TEST_ASSERT_EQUAL(ESP_OK, config_set(CONFIG_GPS_MODE, "ue-assisted"));
+}
+
+TEST_CASE("set rejects an unknown gps mode and keeps the previous value", TEST_TAG) {
+    assert_string_rejected(CONFIG_GPS_MODE, "standalone", "");
+    assert_string_rejected(CONFIG_GPS_MODE, "standalone", "UE-BASED");
+    assert_string_rejected(CONFIG_GPS_MODE, "standalone", "ue-based ");
+    assert_string_rejected(CONFIG_GPS_MODE, "standalone", "unknown");
+}
+
+TEST_CASE("init applies defaults that pass validation", TEST_TAG) {
+    TEST_ASSERT_EQUAL(ESP_OK, config_init());
+}
+
 TEST_CASE("set rejects a null value", TEST_TAG) {
     TEST_ASSERT_EQUAL(ESP_ERR_INVALID_ARG, config_set(CONFIG_KEEP_ALIVE, nullptr));
 }

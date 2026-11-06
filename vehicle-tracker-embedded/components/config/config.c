@@ -6,11 +6,17 @@
 #include "nvs.h"
 #include "security.h"
 #include "storage.h"
+#include "validation.h"
 
 #define CONFIG_NAMESPACE_CONNECTION "connection"
 #define CONFIG_NAMESPACE_GPS "gps"
 
 #define TAG "config"
+
+#define ARRAY_LEN(a) (sizeof(a) / sizeof((a)[0]))
+
+/** Longest interval accepted by the properties measured in seconds, one day. **/
+#define CONFIG_MAX_INTERVAL_SECONDS 86400
 
 /**
  * Represents the category a configuration item belongs to, which decides where its value comes from.
@@ -50,6 +56,9 @@ typedef struct {
     bool writable;
     bool readable;
 
+    /** Rule a value must satisfy to be stored, or NULL when the value is not checked by the configuration layer. **/
+    const validation_rule_t *rule;
+
     /** Whether the property has a default value, which is needed because an integer default can be zero. **/
     bool has_default;
 
@@ -63,6 +72,58 @@ typedef struct {
 } config_t;
 
 /**
+ * Validation rules of the properties stored by the configuration layer. The authentication values are checked by the
+ * security layer.
+ */
+
+static const char *const BROKER_URL_PREFIXES[] = {"mqtt://", "mqtts://"};
+static const validation_string_prefix_one_of_params_t BROKER_URL_PREFIX = {
+    .prefixes = BROKER_URL_PREFIXES, .count = ARRAY_LEN(BROKER_URL_PREFIXES)
+};
+static const validation_string_length_params_t BROKER_URL_LENGTH = {.min = 1, .max = 255};
+static const validation_constraint_t BROKER_URL_CONSTRAINTS[] = {
+    {.fn = validation_string_not_blank, .name = "not_blank"},
+    {.fn = validation_string_length, .params = &BROKER_URL_LENGTH, .name = "length"},
+    {.fn = validation_string_prefix_one_of, .params = &BROKER_URL_PREFIX, .name = "scheme"}
+};
+static const validation_rule_t BROKER_URL_RULE = {
+    .constraints = BROKER_URL_CONSTRAINTS, .count = ARRAY_LEN(BROKER_URL_CONSTRAINTS)
+};
+
+/** The keep alive of MQTT is sent in 16 bits. **/
+static const validation_int_range_params_t KEEP_ALIVE_RANGE = {.min = 1, .max = UINT16_MAX};
+static const validation_constraint_t KEEP_ALIVE_CONSTRAINTS[] = {
+    {.fn = validation_int_range, .params = &KEEP_ALIVE_RANGE, .name = "range"}
+};
+static const validation_rule_t KEEP_ALIVE_RULE = {
+    .constraints = KEEP_ALIVE_CONSTRAINTS, .count = ARRAY_LEN(KEEP_ALIVE_CONSTRAINTS)
+};
+
+static const validation_int_range_params_t QOS_RANGE = {.min = 0, .max = 2};
+static const validation_constraint_t QOS_CONSTRAINTS[] = {
+    {.fn = validation_int_range, .params = &QOS_RANGE, .name = "range"}
+};
+static const validation_rule_t QOS_RULE = {.constraints = QOS_CONSTRAINTS, .count = ARRAY_LEN(QOS_CONSTRAINTS)};
+
+/** Shared by the properties that are an interval or a timeout in seconds. **/
+static const validation_int_range_params_t INTERVAL_RANGE = {.min = 1, .max = CONFIG_MAX_INTERVAL_SECONDS};
+static const validation_constraint_t INTERVAL_CONSTRAINTS[] = {
+    {.fn = validation_int_range, .params = &INTERVAL_RANGE, .name = "range"}
+};
+static const validation_rule_t INTERVAL_RULE = {
+    .constraints = INTERVAL_CONSTRAINTS, .count = ARRAY_LEN(INTERVAL_CONSTRAINTS)
+};
+
+static const char *const GPS_MODES[] = {"standalone", "ue-based", "ue-assisted"};
+static const validation_string_one_of_params_t GPS_MODE_SET = {.values = GPS_MODES, .count = ARRAY_LEN(GPS_MODES)};
+static const validation_constraint_t GPS_MODE_CONSTRAINTS[] = {
+    {.fn = validation_string_one_of, .params = &GPS_MODE_SET, .name = "one_of"}
+};
+static const validation_rule_t GPS_MODE_RULE = {
+    .constraints = GPS_MODE_CONSTRAINTS, .count = ARRAY_LEN(GPS_MODE_CONSTRAINTS)
+};
+
+/**
  * All the configuration properties, indexed by their config_id_t.
  */
 static const config_t configs[] = {
@@ -71,39 +132,45 @@ static const config_t configs[] = {
 
     [CONFIG_BROKER_URL] = {
         .category = CONFIG_CATEGORY_CONNECTION, .namespace = CONFIG_NAMESPACE_CONNECTION, .key = "broker_url",
-        .type = CONFIG_TYPE_STRING, .writable = true, .readable = true
+        .type = CONFIG_TYPE_STRING, .writable = true, .readable = true, .rule = &BROKER_URL_RULE
     },
 
     [CONFIG_KEEP_ALIVE] = {
         .category = CONFIG_CATEGORY_CONNECTION, .namespace = CONFIG_NAMESPACE_CONNECTION, .key = "keep_alive",
-        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .has_default = true, .default_value.i = 60
+        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .rule = &KEEP_ALIVE_RULE,
+        .has_default = true, .default_value.i = 60
     },
 
     [CONFIG_QOS] = {
         .category = CONFIG_CATEGORY_CONNECTION, .namespace = CONFIG_NAMESPACE_CONNECTION, .key = "qos",
-        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .has_default = true, .default_value.i = 0
+        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .rule = &QOS_RULE,
+        .has_default = true, .default_value.i = 0
     },
 
     [CONFIG_RECONNECT_INTERVAL] = {
         .category = CONFIG_CATEGORY_CONNECTION, .namespace = CONFIG_NAMESPACE_CONNECTION, .key = "recon_interval",
-        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .has_default = true, .default_value.i = 30
+        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .rule = &INTERVAL_RULE,
+        .has_default = true, .default_value.i = 30
     },
 
     /** GPS **/
 
     [CONFIG_GPS_UPDATE_INTERVAL] = {
         .category = CONFIG_CATEGORY_GPS, .namespace = CONFIG_NAMESPACE_GPS, .key = "gps_update",
-        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .has_default = true, .default_value.i = 60
+        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .rule = &INTERVAL_RULE,
+        .has_default = true, .default_value.i = 60
     },
 
     [CONFIG_GPS_TIMEOUT] = {
         .category = CONFIG_CATEGORY_GPS, .namespace = CONFIG_NAMESPACE_GPS, .key = "gps_timeout",
-        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .has_default = true, .default_value.i = 60
+        .type = CONFIG_TYPE_INT, .writable = true, .readable = true, .rule = &INTERVAL_RULE,
+        .has_default = true, .default_value.i = 60
     },
 
     [CONFIG_GPS_MODE] = {
         .category = CONFIG_CATEGORY_GPS, .namespace = CONFIG_NAMESPACE_GPS, .key = "gps_mode",
-        .type = CONFIG_TYPE_STRING, .writable = true, .readable = true, .has_default = true, .default_value.s = "ue-based"
+        .type = CONFIG_TYPE_STRING, .writable = true, .readable = true, .rule = &GPS_MODE_RULE,
+        .has_default = true, .default_value.s = "ue-based"
     },
 
     /** Authentication **/
@@ -386,6 +453,45 @@ static esp_err_t config_write_security(config_id_t id, const void *value) {
     }
 }
 
+/**
+ *
+ * @brief Checks a value against the validation rule of the property, when it has one.
+ *
+ * Only the name of the violated constraint is logged, the value itself can be sensitive.
+ *
+ * @param config the configuration item.
+ * @param id     the configuration ID, used for logging.
+ * @param value  the value about to be stored, according to the type of the property.
+ * @return ESP_OK when the value is accepted, or ESP_ERR_INVALID_ARG when it violates the rule.
+ */
+static esp_err_t config_validate(const config_t *config, config_id_t id, const void *value) {
+
+    if (config->rule == nullptr) {
+        return ESP_OK;
+    }
+
+    validation_value_t checked;
+    switch (config->type) {
+        case CONFIG_TYPE_INT:
+            checked = validation_int(*(const int32_t *) value);
+            break;
+        case CONFIG_TYPE_STRING:
+            checked = validation_string(value);
+            break;
+        default:
+            return ESP_OK;
+    }
+
+    const validation_result_t result = validation_check(config->rule, &checked);
+    if (!result.valid) {
+        ESP_LOGE(TAG, "Value of configuration id %d rejected by constraint '%s'", id,
+                 result.violated != nullptr ? result.violated->name : "input");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    return ESP_OK;
+}
+
 esp_err_t config_init() {
 
     // 1. Go through the properties that have a default value
@@ -518,6 +624,12 @@ esp_err_t config_set(config_id_t id, const void *value) {
         err = config_write_security(id, value);
     } else {
 
+        // 6. Reject a value that breaks the rule of the property before it reaches storage
+        err = config_validate(config, id, value);
+        if (err != ESP_OK) {
+            return err;
+        }
+
         const storage_ctx_t ctx = config_storage_ctx(config, STORAGE_MODE_READ_WRITE);
 
         switch (config->type) {
@@ -534,7 +646,7 @@ esp_err_t config_set(config_id_t id, const void *value) {
 
     }
 
-    // 6. The value itself is not logged, it can be a credential
+    // 7. The value itself is not logged, it can be a credential
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to write configuration id %d: %s", id, esp_err_to_name(err));
     } else {

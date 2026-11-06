@@ -12,3 +12,7 @@ The Connection Service exposes the device's connection configuration over BLE. T
 | keep_alive | 8f97f131-bce8-6f20-d10b-363ff3db3b19 | integer | read, write |
 | qos | 8611d086-a805-7f20-840d-5202ba787349 | integer | read, write |
 | recon_interval | 7caaecb0-677f-9131-4b0c-0ba295f27214 | integer | read, write |
+
+## Error codes
+
+A write with a value outside the limits in the [Connection Configuration](../../config/connection.md) is rejected with `0x13` (Value Not Allowed) and the stored value does not change. For the other codes, refer to [Error Handling](../error-handling.md).
