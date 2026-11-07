@@ -1,0 +1,51 @@
+{
+  "waypoints": [
+    {
+      "latitude": 38.7075,
+      "longitude": -9.1364,
+      "altitude": 12.0
+    },
+    {
+      "latitude": 38.7253,
+      "longitude": -9.1500,
+      "altitude": 95.0,
+      "speed_knots": 18.0
+    },
+    {
+      "latitude": 38.7600,
+      "longitude": -9.1569,
+      "altitude": 110.0,
+      "speed_knots": 25.0
+    },
+    {
+      "latitude": 38.7742,
+      "longitude": -9.1342,
+      "altitude": 105.0,
+      "speed_knots": 30.0
+    },
+    {
+      "latitude": 38.7813,
+      "longitude": -9.1359,
+      "altitude": 100.0,
+      "speed_knots": 20.0
+    }
+  ],
+  "events": [
+    {
+      "type": "no_fix",
+      "waypoint": 1,
+      "duration_seconds": 60
+    },
+    {
+      "type": "stop",
+      "waypoint": 2,
+      "duration_seconds": 600,
+      "report_interval_seconds": 300
+    },
+    {
+      "type": "silence",
+      "waypoint": 3,
+      "duration_seconds": 120
+    }
+  ]
+}
