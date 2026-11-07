@@ -17,7 +17,6 @@ Each section provides a comprehensive overview of the reported data, including t
 Each reported data object includes metadata that provides additional context about the data being reported. The metadata includes the following attributes:
 
 - `timestamp`: The time at which the data was reported in milliseconds since the epoch (January 1, 1970).
-- `sequence_number`: A number that increments with each reported data object, allowing for tracking the order of data reporting.
 - `schema_version`: The version of the data schema being used, which helps ensure compatibility between the device and the data processing system.
 
 ## How the device reports data
@@ -35,6 +34,10 @@ Only the device with the specified `{device_id}` can publish data to this topic.
 The device publishes data to the MQTT topic using Protocol Buffers (protobuf) format, which is a language-neutral, platform-neutral, extensible mechanism for serializing structured data. This allows for efficient data transmission and ensures compatibility across different platforms and programming languages.
 
 In this project, we use the [NanoPB](https://github.com/nanopb/nanopb) library to serialize and deserialize the data in protobuf format. The library provides a lightweight implementation of Protocol Buffers, making it suitable for resource-constrained devices.
+
+## Simulating devices
+
+For development and testing, devices can be simulated with the [Fake Position Ingestion](../../fake-position-ingestion/overview.md) module. It must never run in production.
 
 ## Data Reporting Frequency
 
