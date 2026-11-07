@@ -14,23 +14,23 @@ The locations have no relation to each other, so this mode is not for tracking a
 
 See [replay-locations.json](examples/replay-locations.json) for an example. It has a normal location, a moving one, a weak 2D fix and a `NO_FIX` location. The `timestamp` is not in the file, because the module sets it.
 
-## Journey
+## Route
 
-The module simulates one complete journey along a route.
+The module simulates a vehicle moving once along a complete route.
 
 - The route is an ordered list of waypoints, loaded from a file. See [Configuration](configuration.md).
 - Every waypoint except the first has a `speed_knots`, which is the speed of the vehicle on the segment from the previous waypoint to that one. For example, the speed on the segment from waypoint A to waypoint B is defined on B.
 - The simulated vehicle starts at the first waypoint and moves along each segment at the speed of that segment.
 - Each position is calculated from the distance travelled since the previous report. It lies on the line between two waypoints.
 - `heading` is the bearing of the current segment, and `speed` is the speed of the current segment.
-- The vehicle is stationary at the start and at the end of the journey.
-- When it reaches the last waypoint, the journey ends. It can then stop, or start again from the first waypoint, depending on the configuration.
+- The vehicle is stationary at the start and at the end of the route.
+- When it reaches the last waypoint, the route ends. It can then stop, or start again from the first waypoint, depending on the configuration.
 
-The timestamp advances by the reporting interval on every report, so a journey does not have to run in real time. See [Publishing](publishing.md).
+The timestamp advances by the reporting interval on every report, so a route does not have to run in real time. See [Publishing](publishing.md).
 
-### Journey events
+### Route events
 
-A real device does not report at every interval during a whole journey. To simulate this, the route file can contain optional events. Each event is tied to a waypoint and has a duration in seconds. A journey without events reports at every interval from start to end.
+A real device does not report at every interval during a whole route. To simulate this, the route file can contain optional events. Each event is tied to a waypoint and has a duration in seconds. A route without events reports at every interval from start to end.
 
 | Event | What the module does |
 |---|---|
@@ -42,7 +42,7 @@ During a `silence` event the simulated `timestamp` keeps advancing and the repor
 
 The events are for testing how the backend handles missing data, gaps between timestamps and devices that go offline. See [Configuration](configuration.md).
 
-An event starts after the module publishes the report of its waypoint, so that report is always sent. The `waypoint` is the index of the waypoint in the list, starting at 0. An event on the last waypoint has no effect, because the journey ends there, so it should be placed on an earlier waypoint.
+An event starts after the module publishes the report of its waypoint, so that report is always sent. The `waypoint` is the index of the waypoint in the list, starting at 0. An event on the last waypoint has no effect, because the route ends there, so it should be placed on an earlier waypoint.
 
 #### Event fields
 
@@ -59,7 +59,7 @@ Only one event can start at the same waypoint.
 
 ### Example
 
-See [journey-route.json](examples/journey-route.json) for an example. It is a short journey in Lisbon with five waypoints:
+See [route.json](examples/route.json) for an example. It is a short route in Lisbon with five waypoints:
 
 - The vehicle goes from waypoint 0 to waypoint 1 at 18 knots, then to waypoint 2 at 25 knots, to waypoint 3 at 30 knots and to waypoint 4 at 20 knots.
 - After the report of waypoint 1 it has no fix for 60 seconds, like in a tunnel.

@@ -10,7 +10,7 @@ The configuration is validated when the module starts. If a value is missing or 
 - If the connection is lost while running, the module logs the error and tries to reconnect. Reports are not queued during the outage.
 - If publishing a report fails, the module logs the device id and the `timestamp` of that report and continues with the next one.
 
-## Journey events
+## Route events
 
 A `silence` event is intentional, so it is not an error. The module logs the start and the end of the event, with the device id, as information.
 

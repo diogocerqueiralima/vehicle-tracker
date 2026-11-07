@@ -22,7 +22,7 @@ The module simulates a single device.
 
 | Variable | Description | Default |
 |---|---|---|
-| `FAKE_MODE` | `replay` or `journey`. See [Modes](modes.md). | `replay` |
+| `FAKE_MODE` | `replay` or `route`. See [Modes](modes.md). | `replay` |
 | `FAKE_REPORT_INTERVAL_SECONDS` | Interval between two reports. | `30` |
 | `FAKE_MAX_REPORTS` | Number of reports before the module stops. Empty means no limit. | empty |
 
@@ -35,16 +35,16 @@ The default interval matches the default reporting interval of a moving device. 
 | `FAKE_LOCATIONS_FILE` | Path to the file with the locations to publish. See [Modes](modes.md). | none |
 | `FAKE_LOOP` | `true` to start again after the last location, `false` to stop. | `false` |
 
-## Journey mode
+## Route mode
 
 | Variable | Description | Default |
 |---|---|---|
 | `FAKE_ROUTE_FILE` | Path to the file with the ordered waypoints. | none |
 | `FAKE_LOOP` | `true` to start again after the last waypoint, `false` to stop. Same variable as in replay mode. | `false` |
 
-The speed and the events are not environment variables. They are defined in the route file, so each part of the journey can be different:
+The speed and the events are not environment variables. They are defined in the route file, so each part of the route can be different:
 
 - **Speed**: every waypoint except the first has a `speed_knots`, which is the speed on the segment from the previous waypoint to that one. It is required.
 - **Events**: the route file can contain the events `stop`, `no_fix` and `silence`. The fields of an event are listed in [Event fields](modes.md#event-fields).
 
-See [Modes](modes.md#journey-events).
+See [Modes](modes.md#route-events).
