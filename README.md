@@ -17,7 +17,7 @@ The backend services are responsible for data ingestion, processing, and storage
 
 All requests from the mobile application pass through the reverse proxy, which acts as a single entry point and routes traffic to the appropriate backend service.
 
-Vehicle devices installed in vehicles send their data to the reverse proxy. This data is forwarded to Mosquitto and is ingested into Kafka and then processed asynchronously by the backend services.
+Vehicle devices installed in vehicles send their data to the reverse proxy. This data is forwarded to Mosquitto. The ingestion service subscribes to it, decodes and validates each message, and publishes it to Kafka as an event. The domain services then process these events asynchronously.
 
 The following diagram illustrates the high-level architecture of the Vehicle Tracker system:
 
@@ -33,29 +33,32 @@ flowchart LR
     RP[Reverse Proxy]
 
     subgraph Vehicle Tracker System
-        D[Domain Services]
-        I[Ingestion Service]
-        IDP[Keycloak]
         M[Mosquitto]
         K[Kafka]
+        IDP[Keycloak]
         DB[(PostgreSQL<br/>TimescaleDB + PostGIS)]
+
+        subgraph Backend Services
+            I[Ingestion Service]
+            D[Domain Services]
+        end
     end
 
-    D1 -->|data | RP
-    D2 -->|data | RP
-    DN -->|data | RP
+    D1 -->|MQTT over TLS| RP
+    D2 -->|MQTT over TLS| RP
+    DN -->|MQTT over TLS| RP
 
-    APP -->|HTTP requests | RP
+    APP -->|HTTP requests| RP
+    RP -->|HTTP response| APP
 
-    RP -->|HTTP response | APP
+    RP -->|API requests| D
+    RP -->|Auth requests| IDP
+    RP -->|MQTT| M
 
-    RP -->|API requests | D
-    RP -->|Auth requests | IDP
-    RP -->|data | M
-    M -->|data | I
-    I -->|data | K
+    M -->|Protobuf messages| I
+    I -->|location events| K
+    K -->|events| D
 
-    K -->|events | D
     D --> DB
     D <--> IDP
 ```
