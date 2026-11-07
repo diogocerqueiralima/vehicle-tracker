@@ -12,7 +12,7 @@ The module does not generate positions. It publishes the locations listed in a f
 
 The locations have no relation to each other, so this mode is not for tracking a vehicle. It is for publishing known values, for example to test one specific location, the edges of the valid ranges, or a large number of reports. Because the file is fixed, every run publishes the same data.
 
-See [replay-locations.json](examples/replay-locations.json) for an example. It has a normal location, a moving one, a weak 2D fix and a `NO_FIX` location. The `timestamp` is not in the file, because the module sets it.
+See [replay.json](examples/replay.json) for an example. It has a normal location, a moving one, a weak 2D fix and a `NO_FIX` location. The `timestamp` is not in the file, because the module sets it.
 
 ## Route
 
