@@ -15,7 +15,7 @@ Purpose: collect vehicle telemetry from hardware devices, expose to users via mo
 
 Independent directories:
 
-- '/vehicle-tracker-backend': all backend services (Asset Service, Identity Service, others). Java + Spring Boot.
+- '/vehicle-tracker-backend': all backend services (Asset Service, Identity Service, others). Kotlin + Spring Boot.
 - '/vehicle-tracker-mobile': mobile app. Kotlin + Jetpack Compose.
 - '/vehicle-tracker-embedded': embedded software for hardware devices. C + esp-idf.
 
@@ -109,7 +109,7 @@ When modifying code, agents should:
 
 1. Follow existing coding conventions and styles.
 2. Do not break existing functionality.
-3. Add comments and docs where needed to explain change purpose. Javadoc for public methods and classes, inline comments for complex logic inside methods.
+3. Add comments and docs where needed to explain change purpose. Javadoc (KDoc for Kotlin) for public methods and classes, inline comments for complex logic inside methods.
 4. Inline comments use numbered enumerations — "1.", "1.1", "2.", etc. — to mark steps or logic explained. Helps readability, especially complex sections.
 
 # Goal for AI Agents
