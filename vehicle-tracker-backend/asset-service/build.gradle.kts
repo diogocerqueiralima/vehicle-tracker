@@ -30,6 +30,7 @@ dependencies {
     implementation(platform(libs.spring.grpc.dependencies))
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
 // JPA entities must stay non-final so Hibernate can proxy them

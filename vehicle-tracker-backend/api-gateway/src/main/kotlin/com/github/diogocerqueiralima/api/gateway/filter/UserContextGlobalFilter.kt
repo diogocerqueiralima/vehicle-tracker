@@ -36,43 +36,44 @@ class UserContextGlobalFilter : GlobalFilter, Ordered {
             .request(strippedRequest)
             .build()
 
-        // 2. Re-inject them from the validated JWT, if there is one
+        // 2. Build the exchange to forward: enriched when there is a JWT, stripped otherwise
         return ReactiveSecurityContextHolder.getContext()
-            .flatMap { Mono.justOrEmpty(it.authentication) }
-            .flatMap { authentication ->
-
-                if (authentication !is JwtAuthenticationToken) {
-                    return@flatMap chain.filter(strippedExchange)
-                }
-
-                val jwt = authentication.token
-                val roles = authentication.authorities
-                    .mapNotNull { it.authority }
-                    .joinToString(",") { it.replaceFirst(ROLE_PREFIX, "") }
-
-                log.info(
-                    "Injecting user context for {} {} -> userId={}, roles=[{}]",
-                    exchange.request.method, exchange.request.path, jwt.subject, roles
-                )
-
-                val enrichedRequest = strippedExchange.request.mutate()
-                    .header(ReservedHeaders.USER_ID, jwt.subject)
-                    .header(ReservedHeaders.USER_USERNAME, jwt.getClaimAsString("preferred_username") ?: "")
-                    .header(ReservedHeaders.USER_ROLES, roles)
-                    .build()
-
-                chain.filter(strippedExchange.mutate().request(enrichedRequest).build())
-            }
-            .switchIfEmpty(Mono.defer {
+            .flatMap { Mono.justOrEmpty(it.authentication as? JwtAuthenticationToken) }
+            .map { withUserContext(strippedExchange, it) }
+            .switchIfEmpty(Mono.fromSupplier {
                 log.warn(
                     "No JwtAuthenticationToken in security context for {} {} -> forwarding without user context headers",
                     exchange.request.method, exchange.request.path
                 )
-                chain.filter(strippedExchange)
+                strippedExchange
             })
+            // 3. Single call to the chain, so it is invoked exactly once on every path
+            .flatMap { chain.filter(it) }
     }
 
     override fun getOrder(): Int = Ordered.LOWEST_PRECEDENCE
+
+    /** Re-injects the user context headers from the validated [authentication] token. */
+    private fun withUserContext(exchange: ServerWebExchange, authentication: JwtAuthenticationToken): ServerWebExchange {
+
+        val jwt = authentication.token
+        val roles = authentication.authorities
+            .mapNotNull { it.authority }
+            .joinToString(",") { it.replaceFirst(ROLE_PREFIX, "") }
+
+        log.info(
+            "Injecting user context for {} {} -> userId={}, roles=[{}]",
+            exchange.request.method, exchange.request.path, jwt.subject, roles
+        )
+
+        val enrichedRequest = exchange.request.mutate()
+            .header(ReservedHeaders.USER_ID, jwt.subject)
+            .header(ReservedHeaders.USER_USERNAME, jwt.getClaimAsString("preferred_username") ?: "")
+            .header(ReservedHeaders.USER_ROLES, roles)
+            .build()
+
+        return exchange.mutate().request(enrichedRequest).build()
+    }
 
     private companion object {
         val ROLE_PREFIX = Regex("^ROLE_")
