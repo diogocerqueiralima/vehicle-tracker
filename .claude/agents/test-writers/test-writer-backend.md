@@ -32,6 +32,16 @@ Before changing anything:
 
 Run the test suite of the affected service with the Gradle wrapper from `vehicle-tracker-backend` (for example `./gradlew :asset-service:test`) and report the result. If tests fail, say so with the failing output; never claim a pass you did not see.
 
+### If a test fails
+
+Read the failure output and decide which side is wrong before touching anything:
+
+1. **The test is wrong** (bad setup, wrong expectation, stale assumption, mock misconfiguration): rewrite the test and run it again. Repeat until it passes.
+2. **The production code is wrong** (the test correctly describes the intended behavior and the code violates it, for example a collaborator invoked twice when the use case requires once): do not bend the test to match the bug and do not edit production code. Keep the test as the specification, and report the suspected defect with the failing output, the `path:line` in the production code, and your reasoning.
+3. If you cannot tell which side is wrong, say so and explain what you checked instead of guessing.
+
+Never delete, skip or weaken a test just to make the run green.
+
 ## Reporting
 
-Summarize in a few lines: which tests you added or updated (with `path:line` references), the result of the run, and any behavior you could not cover or any production bug you found.
+Summarize in a few lines: which tests you added or updated (with `path:line` references), the final result of the run, any tests you rewrote after a failure and why, and any suspected production bug (with the failing output) or behavior you could not cover.
