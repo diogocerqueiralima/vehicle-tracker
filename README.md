@@ -13,7 +13,7 @@ and modern system architecture design.
 
 The Vehicle Tracker system consists of a reverse proxy, multiple backend services, Kafka for messaging and a mobile application.
 
-The backend services are responsible for data ingestion, processing, and storage, and expose APIs consumed by the mobile application. More details about each service can be found in `docs/`.
+The backend services are responsible for data ingestion, processing, and storage, and expose APIs consumed by the mobile application. More details about each service can be found in `vehicle-tracker-backend/docs/`.
 
 All requests from the mobile application pass through the reverse proxy, which acts as a single entry point and routes traffic to the appropriate backend service.
 
@@ -63,14 +63,14 @@ flowchart LR
     D <--> IDP
 ```
 
-In folder `docs` you can find more detailed documentation about the architecture, deployment, and other aspects of the system.
+In each project's `docs` folder you can find more detailed documentation about the architecture, deployment, and other aspects of the system.
 ## Stack
 
 - **Backend**: Java with Spring Boot
 - **Mobile**: Kotlin with Jetpack Compose for Android
 - **Database**: PostgreSQL with TimescaleDB and PostGIS extensions
 - **Messaging**: Kafka, Mosquitto (MQTT broker)
-- **Containerization**: Docker (local and cloud deployment)
+- **Containerization**: Podman (local and cloud deployment)
 
 ## Features
 - Real-time vehicle tracking
@@ -79,4 +79,4 @@ In folder `docs` you can find more detailed documentation about the architecture
 - Alerts for unauthorized movements
 
 ## Getting Started
-See `docs/deployment.md` for instructions on setting up the system locally or on the cloud.
+See `vehicle-tracker-infrastructure/docs/overview.md` for instructions on setting up the system locally or on the cloud.
