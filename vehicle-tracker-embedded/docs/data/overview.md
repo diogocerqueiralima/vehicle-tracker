@@ -37,7 +37,7 @@ In this project, we use the [NanoPB](https://github.com/nanopb/nanopb) library t
 
 ## Simulating devices
 
-For development and testing, devices can be simulated with the [Fake Position Ingestion](../../fake-position-ingestion/overview.md) module. It must never run in production.
+For development and testing, devices can be simulated with the [Fake Position Ingestion](../../../vehicle-tracker-backend/docs/fake-position-ingestion/overview.md) module. It must never run in production.
 
 ## Data Reporting Frequency
 

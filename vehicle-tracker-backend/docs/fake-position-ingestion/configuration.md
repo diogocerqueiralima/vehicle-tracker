@@ -26,7 +26,7 @@ The module simulates a single device.
 | `FAKE_REPORT_INTERVAL_SECONDS` | Interval between two reports. | `30` |
 | `FAKE_MAX_REPORTS` | Number of reports before the module stops. Empty means no limit. | empty |
 
-The default interval matches the default reporting interval of a moving device. See [Location Data](../device/data/location-data.md#location-data-reporting-frequency).
+The default interval matches the default reporting interval of a moving device. See [Location Data](../../../vehicle-tracker-embedded/docs/data/location-data.md#location-data-reporting-frequency).
 
 ## Replay mode
 

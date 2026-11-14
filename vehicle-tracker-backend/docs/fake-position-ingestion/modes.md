@@ -6,7 +6,7 @@ The module has two modes that decide how positions are produced. The mode is set
 
 The module does not generate positions. It publishes the locations listed in a file that we produce ourselves.
 
-- The file contains a list of locations. Each location has the attributes in [Location Data](../device/data/location-data.md), such as `latitude`, `longitude`, `altitude`, `speed`, `heading` and `fix_type`.
+- The file contains a list of locations. Each location has the attributes in [Location Data](../../../vehicle-tracker-embedded/docs/data/location-data.md), such as `latitude`, `longitude`, `altitude`, `speed`, `heading` and `fix_type`.
 - The module publishes one location per reporting interval, in the order of the file. The report `timestamp` is set by the module from the simulated clock, as described in [Publishing](publishing.md).
 - When the last location is published, the module stops, or starts again from the first location, depending on the configuration.
 
