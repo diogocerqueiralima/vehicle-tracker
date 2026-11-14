@@ -34,7 +34,7 @@ sequenceDiagram
     WG-->>GH: Homelab network reachable
     GH->>VPS: ansible-playbook over SSH (through tunnel)
     VPS->>VPS: Render compose and nginx config from templates
-    VPS->>DC: podman compose -f docker-compose.yml pull and up -d <services>
+    VPS->>DC: podman compose -f compose.yml pull and up -d <services>
     DC-->>VPS: Services running
     VPS->>DC: nginx -t and reload in the nginx container
     VPS-->>GH: Playbook result
@@ -69,7 +69,7 @@ vehicle-tracker-infrastructure/
 │       ├── common/                 # Base packages, users, firewall
 │       ├── podman/                 # Podman and compose provider
 │       └── app/
-│           ├── tasks/main.yml      # Template files, validate nginx, podman compose -f docker-compose.yml up -d <services>
+│           ├── tasks/main.yml      # Template files, validate nginx, podman compose -f compose.yml up -d <services>
 │           ├── handlers/main.yml   # Reload nginx container, restart changed services
 │           └── templates/
 │               ├── compose.yml.j2  # All services, including the nginx container
@@ -106,9 +106,9 @@ vehicle-tracker-infrastructure/
 
 - `ansible/roles/common/`: base host setup. It handles package updates, essential tools, the deploy user, SSH hardening and the firewall. It runs once per host and rarely changes.
 - `ansible/roles/podman/`: installs Podman and a compose provider, enables the Podman socket for the deploy user and installs the Harbor CA so the host can pull images. It runs once per host and rarely changes.
-- `ansible/roles/app/tasks/main.yml`: the deploy steps. It renders the templates onto the VPS, validates the nginx config, runs `podman compose -f docker-compose.yml pull <services>` and `podman compose -f docker-compose.yml up -d <services>`, where `<services>` are the services being deployed.
+- `ansible/roles/app/tasks/main.yml`: the deploy steps. It renders the templates onto the VPS, validates the nginx config, runs `podman compose -f compose.yml pull <services>` and `podman compose -f compose.yml up -d <services>`, where `<services>` are the services being deployed.
 - `ansible/roles/app/handlers/main.yml`: actions triggered only when a file changed. It reloads the nginx container and restarts services whose env file changed.
-- `ansible/roles/app/templates/docker-compose.yml.j2`: the compose file for every service, including the nginx container. nginx is a service in the compose file, not installed on the host, so the host only needs Docker.
+- `ansible/roles/app/templates/compose.yml.j2`: the compose file for every service, including the nginx container. nginx is a service in the compose file, not installed on the host, so the host only needs Docker.
 - `ansible/roles/app/templates/env.j2`: the environment file rendered for each service, with secrets read from environment variables (`lookup('env', ...)`) that the workflow exports from GitHub Secrets.
 - `ansible/roles/app/templates/nginx.conf.j2`: the global nginx configuration, mounted into the nginx container.
 - `ansible/roles/app/templates/service.conf.j2`: the nginx server/location block, rendered once per entry in the service list.
@@ -120,7 +120,7 @@ vehicle-tracker-infrastructure/
 
 ## 4. Podman Compose
 
-Podman Compose describes every container of the system in one place. Ansible renders the compose file onto the VPS from `docker-compose.yml.j2` and runs it, so the file is generated from the service list in `group_vars/all.yml` instead of being edited by hand.
+Podman Compose describes every container of the system in one place. Ansible renders the compose file onto the VPS from `compose.yml.j2` and runs it, so the file is generated from the service list in `group_vars/all.yml` instead of being edited by hand.
 
 ### 4.1 What runs in the stack
 
@@ -132,10 +132,10 @@ Podman Compose describes every container of the system in one place. Ansible ren
 
 ### 4.2 One compose file, rendered by Ansible
 
-- **Decision:** a single `docker-compose.yml` for production, rendered from the template. There are no override files, because there is only one environment (`production`).
+- **Decision:** a single `compose.yml` for production, rendered from the template. There are no override files, because there is only one environment (`production`).
 - **Why a template:** the application services are the same shape (image, env file, network, healthcheck, restart policy). The template loops over the service list, so adding a service means adding one entry to `all.yml`, and the compose block is generated.
 - **Static parts:** the data and messaging containers and the nginx container are written directly in the template, because they rarely change.
-- **Local development stays separate:** the existing `vehicle-tracker-backend/compose/docker-compose.yml` is for running dependencies locally. The production file is not meant to be used on a developer machine.
+- **Local development stays separate:** the existing `vehicle-tracker-backend/compose/compose.yml` is for running dependencies locally. The production file is not meant to be used on a developer machine.
 
 ### 4.3 Service definition
 
@@ -181,7 +181,7 @@ Each application service gets a block with the same fields, filled from its entr
 
 ### 4.7 Volumes and persistence
 
-- `postgres`, `kafka` and `mosquitto` use **named volumes**, so data survives container recreation and `podman compose -f docker-compose.yml up -d`.
+- `postgres`, `kafka` and `mosquitto` use **named volumes**, so data survives container recreation and `podman compose -f compose.yml up -d`.
 - The nginx config is mounted read-only from the host path where Ansible renders it, and the TLS certificates from their own path.
 - Backups of the Postgres volume are out of scope for this document, but must be solved before production use.
 
@@ -189,11 +189,11 @@ Each application service gets a block with the same fields, filled from its entr
 
 - Every container defines a `healthcheck`. `depends_on` with `condition: service_healthy` makes the application services wait for `postgres` and `kafka`, so a deploy does not start them against a database that is not ready.
 - All containers use `restart: unless-stopped`, so they come back after a reboot of the VPS.
-- `podman compose -f docker-compose.yml up -d <services>` only recreates containers whose image or configuration changed. After it, the deploy waits for the changed services to become healthy and fails the playbook if they do not.
+- `podman compose -f compose.yml up -d <services>` only recreates containers whose image or configuration changed. After it, the deploy waits for the changed services to become healthy and fails the playbook if they do not.
 
 ### 4.9 Validation
 
-- `podman compose -f docker-compose.yml config` runs in CI against the rendered file to catch syntax and variable errors before anything reaches the VPS.
+- `podman compose -f compose.yml config` runs in CI against the rendered file to catch syntax and variable errors before anything reaches the VPS.
 - `ansible-lint` and the template rendering run in a dry run (`--check --diff`) on pull requests that touch the infrastructure folder.
 
 ## 5. CI/CD Integration
@@ -211,7 +211,7 @@ Today `build-push-backend.yml` builds and pushes all four images on any backend 
 1. **Detect changes per service** (in the build workflow). A first job (for example with `dorny/paths-filter`) maps changed paths to services: `vehicle-tracker-backend/asset-service/**` → `asset-service`, and so on. Shared modules (`api-common`, `error-common`, `events`, `schema`, `gradle`, `settings.gradle.kts`) map to **all** services, since every service depends on them.
 2. **Build and push only those images** (a matrix over the changed services), reusing each `buildAndPushContainer.sh`. At the end, the workflow uploads an artifact with the list of changed services and the image tag.
 3. **Deploy in a separate workflow, after the images are on Harbor.** `deploy-infrastructure.yml` is a new workflow that triggers with `workflow_run` on the build workflow (`types: [completed]`) and only continues when its conclusion is `success`. It downloads the artifact from the triggering run, so it knows which services to deploy and which tag to use. It checks out the commit that was built (`github.event.workflow_run.head_sha`), because `workflow_run` otherwise uses the default branch.
-4. **Run Ansible with the changed services.** The deploy workflow passes the services and the image tag to Ansible as extra variables, and the `app` role runs `podman compose -f docker-compose.yml pull <services>` and `podman compose -f docker-compose.yml up -d <services>`. Untouched containers are not recreated.
+4. **Run Ansible with the changed services.** The deploy workflow passes the services and the image tag to Ansible as extra variables, and the `app` role runs `podman compose -f compose.yml pull <services>` and `podman compose -f compose.yml up -d <services>`. Untouched containers are not recreated.
 5. **One deploy at a time** (`concurrency`), so two quick merges to `main` cannot deploy in parallel.
 
 The build and the deploy are two workflows on purpose: the deploy only starts when every image is already on Harbor, and a failed build never reaches the VPS. The WireGuard and Ansible steps live only in the deploy workflow. The same workflow also handles the infrastructure-change and manual triggers from 5.1 through its own `push` and `workflow_dispatch` triggers.
@@ -229,7 +229,7 @@ This is an open question to decide before implementation.
 ### 5.4 Other checks
 
 - Job steps: checkout → WireGuard → Ansible deploy → smoke test.
-- Linting and checks (`ansible-lint`, `podman compose -f docker-compose.yml config`, `nginx -t`).
+- Linting and checks (`ansible-lint`, `podman compose -f compose.yml config`, `nginx -t`).
 - Concurrency control and environment protection.
 
 ## References
