@@ -3,8 +3,8 @@ set -euo pipefail
 
 IMAGE_NAME="ingestion-service"
 
-docker buildx build \
+podman build \
   --platform linux/amd64 \
   -t $IMAGE_NAME:ci \
-  -f Dockerfile \
+  -f Containerfile \
   ../..

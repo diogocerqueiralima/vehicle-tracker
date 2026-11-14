@@ -6,13 +6,12 @@ HARBOR_PROJECT="vehicle-tracker"
 IMAGE_NAME="ingestion-service"
 IMAGE_TAG=${GITHUB_SHA:0:10}
 
-docker buildx build \
+podman build \
   --platform linux/amd64 \
   -t $HARBOR_URL/$HARBOR_PROJECT/$IMAGE_NAME:$IMAGE_TAG \
   -t $HARBOR_URL/$HARBOR_PROJECT/$IMAGE_NAME:latest \
-  -f Dockerfile \
-  --load \
+  -f Containerfile \
   ../..
 
-docker push $HARBOR_URL/$HARBOR_PROJECT/$IMAGE_NAME:$IMAGE_TAG
-docker push $HARBOR_URL/$HARBOR_PROJECT/$IMAGE_NAME:latest
+podman push $HARBOR_URL/$HARBOR_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+podman push $HARBOR_URL/$HARBOR_PROJECT/$IMAGE_NAME:latest

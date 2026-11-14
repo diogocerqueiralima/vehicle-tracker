@@ -13,26 +13,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
       - name: Set up WireGuard Connection
         uses: niklaskeerl/easy-wireguard-action@v2
         with:
           WG_CONFIG_FILE: ${{ secrets.WG_CONFIG_FILE }}
-      - name: Trust Harbor CA in Docker
+      - name: Trust Harbor CA in Podman
         env:
           HARBOR_CA_CRT: ${{ secrets.HARBOR_CA_CRT }}
           HARBOR_URL: ${{ secrets.HARBOR_URL }}
         run: |
-          sudo mkdir -p "/etc/docker/certs.d/$HARBOR_URL"
-          printf '%s' "$HARBOR_CA_CRT" | sudo tee "/etc/docker/certs.d/$HARBOR_URL/ca.crt" > /dev/null
-          sudo systemctl restart docker
+          sudo mkdir -p "/etc/containers/certs.d/$HARBOR_URL"
+          printf '%s' "$HARBOR_CA_CRT" | sudo tee "/etc/containers/certs.d/$HARBOR_URL/ca.crt" > /dev/null
       - name: Login to registry
-        uses: docker/login-action@v3
-        with:
-          registry: "${{ secrets.HARBOR_URL }}"
-          username: "${{ secrets.HARBOR_USERNAME }}"
-          password: "${{ secrets.HARBOR_PASSWORD }}"
+        env:
+          HARBOR_URL: ${{ secrets.HARBOR_URL }}
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: printf '%s' "$HARBOR_PASSWORD" | podman login "$HARBOR_URL" -u "$HARBOR_USERNAME" --password-stdin
       - name: Build & push ingestion-service image
         working-directory: vehicle-tracker-backend/ingestion-service/container
         run: ./buildAndPushContainer.sh

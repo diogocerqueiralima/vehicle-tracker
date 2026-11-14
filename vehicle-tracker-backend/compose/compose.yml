@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: timescale/timescaledb-ha:pg18.1-ts2.23.0-all
+    image: docker.io/timescale/timescaledb-ha:pg18.1-ts2.23.0-all
     container_name: tracker_postgres
     environment:
       POSTGRES_DB: tracker
@@ -10,7 +10,7 @@ services:
     networks:
       - network
   redis:
-    image: redis
+    image: docker.io/library/redis
     container_name: tracker_redis
     ports:
       - 6379:6379

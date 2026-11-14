@@ -1,7 +1,7 @@
 {
 	"name": "ESP-IDF QEMU",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Containerfile"
 	},
 	"customizations": {
 		"vscode": {

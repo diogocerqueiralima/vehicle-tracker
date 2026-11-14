@@ -108,7 +108,7 @@ vehicle-tracker-infrastructure/
 - `ansible/roles/podman/`: installs Podman and a compose provider, enables the Podman socket for the deploy user and installs the Harbor CA so the host can pull images. It runs once per host and rarely changes.
 - `ansible/roles/app/tasks/main.yml`: the deploy steps. It renders the templates onto the VPS, validates the nginx config, runs `podman compose -f compose.yml pull <services>` and `podman compose -f compose.yml up -d <services>`, where `<services>` are the services being deployed.
 - `ansible/roles/app/handlers/main.yml`: actions triggered only when a file changed. It reloads the nginx container and restarts services whose env file changed.
-- `ansible/roles/app/templates/compose.yml.j2`: the compose file for every service, including the nginx container. nginx is a service in the compose file, not installed on the host, so the host only needs Docker.
+- `ansible/roles/app/templates/compose.yml.j2`: the compose file for every service, including the nginx container. nginx is a service in the compose file, not installed on the host, so the host only needs Podman.
 - `ansible/roles/app/templates/env.j2`: the environment file rendered for each service, with secrets read from environment variables (`lookup('env', ...)`) that the workflow exports from GitHub Secrets.
 - `ansible/roles/app/templates/nginx.conf.j2`: the global nginx configuration, mounted into the nginx container.
 - `ansible/roles/app/templates/service.conf.j2`: the nginx server/location block, rendered once per entry in the service list.
