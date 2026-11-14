@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk
+FROM docker.io/library/eclipse-temurin:21-jdk
 
 RUN apt-get update
 RUN apt-get install -y libtpm2-pkcs11-tools libtpm2-pkcs11-1
