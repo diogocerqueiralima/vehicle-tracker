@@ -67,7 +67,7 @@ vehicle-tracker-infrastructure/
 │   │   └── deploy.yml              # Only renders config and updates services
 │   └── roles/
 │       ├── common/                 # Base packages, users, firewall
-│       ├── podman/                 # Podman and compose provider
+│       ├── podman/                 # Podman, compose provider, Harbor CA (files/ca.crt) and login
 │       └── app/
 │           ├── tasks/main.yml      # Template files, validate nginx, podman compose -f compose.yml up -d <services>
 │           ├── handlers/main.yml   # Reload nginx container, restart changed services
@@ -104,8 +104,8 @@ vehicle-tracker-infrastructure/
 
 **Roles**
 
-- `ansible/roles/common/`: base host setup. It handles package updates, essential tools, the deploy user, SSH hardening and the firewall. It runs once per host and rarely changes.
-- `ansible/roles/podman/`: installs Podman and a compose provider, enables the Podman socket for the deploy user and installs the Harbor CA so the host can pull images. It runs once per host and rarely changes.
+- `ansible/roles/common/`: base host setup. It installs the base tools (`python3`, `ufw`, `sudo`), creates the deploy user, enables lingering so the rootless containers keep running without a login session, and opens the firewall ports (80 and 443). It runs once per host and rarely changes.
+- `ansible/roles/podman/`: installs Podman and `podman-compose` as the compose provider, installs the Harbor CA (`roles/podman/files/ca.crt`) and logs the deploy user in to Harbor so the host can pull images. The credentials come from the `HARBOR_USERNAME` and `HARBOR_PASSWORD` environment variables. It runs once per host and rarely changes.
 - `ansible/roles/app/tasks/main.yml`: the deploy steps. It renders the templates onto the VPS, validates the nginx config, runs `podman compose -f compose.yml pull <services>` and `podman compose -f compose.yml up -d <services>`, where `<services>` are the services being deployed.
 - `ansible/roles/app/handlers/main.yml`: actions triggered only when a file changed. It reloads the nginx container and restarts services whose env file changed.
 - `ansible/roles/app/templates/compose.yml.j2`: the compose file for every service, including the nginx container. nginx is a service in the compose file, not installed on the host, so the host only needs Podman.
@@ -117,6 +117,29 @@ vehicle-tracker-infrastructure/
 
 - `docs/`: documentation for this project, including this research document and later runbooks and operational notes.
 - `README.md`: how to use the project: required tools, the list of GitHub Secrets, and how to run the playbooks manually.
+
+### 3.3 Two users: root for provisioning, deploy for CI
+
+The two playbooks connect to the VPS as different users, on purpose.
+
+| Playbook | Runs from | Connects as | Needs |
+|---|---|---|---|
+| `site.yml` | The maintainer's PC, by hand | `root` | Installing packages, creating users, the firewall, `/etc/containers` |
+| `deploy.yml` | GitHub Actions, on every release | `deploy` | Rootless Podman, files in the deploy user's home |
+
+**Why not use root everywhere:**
+
+- **Smaller blast radius.** The SSH key stored in GitHub Secrets can be leaked through a compromised workflow, a malicious pull request or a third-party action. If it is the `deploy` key, an attacker can only run rootless Podman as an unprivileged user. If it were root's key, they would own the whole VPS and everything else on the homelab network that it can reach.
+- **Least privilege.** Deploying only renders files, pulls images and runs containers. None of that needs root, so CI does not get it.
+- **Rootless containers.** Containers run as `deploy`, so a container escape lands in an unprivileged account, not in root. The Harbor login is also stored for `deploy`, which is the user that pulls the images.
+- **Provisioning is rare and supervised.** `site.yml` runs once per host and when host-level setup changes. A maintainer starts it manually, so root's key never has to leave their PC.
+
+**Where each key lives:**
+
+- Root's SSH key stays on the maintainer's PC. It is never stored in GitHub.
+- A separate key pair is created for CI. The public key is installed in the `deploy` user's `authorized_keys` by `site.yml`, using the `deploy_ssh_public_key` variable. The private key is the only SSH secret stored in GitHub (`VPS_SSH_KEY`).
+
+Because `deploy` has no `sudo`, the `app` role must not use `become`. The inventory does not set `ansible_user`, because an inventory variable would override the play. Instead, each playbook sets its own connection user: `site.yml` uses `remote_user: root` and `deploy.yml` uses `remote_user: deploy`.
 
 ## 4. Podman Compose
 

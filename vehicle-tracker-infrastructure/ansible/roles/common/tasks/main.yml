@@ -1,0 +1,40 @@
+---
+- name: Install base tools
+  ansible.builtin.apt:
+    name: [python3, ufw, sudo]
+    state: present
+    update_cache: true
+
+- name: Create deploy user
+  ansible.builtin.user:
+    name: "{{ deploy_user }}"
+    shell: /bin/bash
+    create_home: true
+
+- name: Authorize CI SSH key for deploy user
+  ansible.posix.authorized_key:
+    user: "{{ deploy_user }}"
+    key: "{{ deploy_ssh_public_key }}"
+
+- name: Enable lingering # Allows the deploy user to run systemd services without being logged in
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ deploy_user }}"
+    creates: "/var/lib/systemd/linger/{{ deploy_user }}"
+
+- name: Allow SSH from the WireGuard subnet
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    from_ip: "10.10.20.0/24"
+
+- name: Allow firewall ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop: "{{ firewall_tcp_ports }}"
+
+- name: Enable firewall
+  community.general.ufw:
+    state: enabled

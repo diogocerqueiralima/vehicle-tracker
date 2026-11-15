@@ -7,3 +7,12 @@ The services are described with Podman Compose and deployed with Ansible from Gi
 ## Contents
 
 - [Overview](overview.md): the research and design for automating the infrastructure. It covers the deployment flow, the repository layout, the Podman Compose setup and how the CI/CD workflows deploy only the services that changed.
+
+## Running the playbooks
+
+The playbooks need `ansible-core` and the collections listed in `ansible/requirements.yml`. Run the commands from the `ansible/` directory, because that is where `ansible.cfg` is read.
+
+```bash
+cd ansible
+ansible-galaxy collection install -r requirements.yml
+```
