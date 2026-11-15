@@ -1,0 +1,25 @@
+---
+- name: Install Podman and compose provider
+  ansible.builtin.apt:
+    name: [podman, podman-compose]
+    state: present
+
+- name: Create Harbor CA directory
+  ansible.builtin.file:
+    path: "/etc/containers/certs.d/{{ harbor_registry }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Harbor CA
+  ansible.builtin.copy:
+    src: "ca.crt"
+    dest: "/etc/containers/certs.d/{{ harbor_registry }}/ca.crt"
+    mode: "0644"
+
+- name: Log in to Harbor
+  containers.podman.podman_login:
+    registry: "{{ harbor_registry }}"
+    username: "{{ harbor_username }}"
+    password: "{{ harbor_password }}"
+  become_user: "{{ deploy_user }}"
+  no_log: true

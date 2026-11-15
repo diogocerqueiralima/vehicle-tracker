@@ -1,0 +1,9 @@
+---
+# Full provisioning: takes a bare VPS to a host ready to run the stack. Idempotent.
+# ansible-playbook -i inventory/production/hosts.yml playbooks/site.yml
+- name: Provision VPS
+  hosts: all
+  become: true
+  roles:
+    - common
+    - podman
