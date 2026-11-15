@@ -11,6 +11,11 @@
     shell: /bin/bash
     create_home: true
 
+- name: Authorize CI SSH key for deploy user
+  ansible.posix.authorized_key:
+    user: "{{ deploy_user }}"
+    key: "{{ deploy_ssh_public_key }}"
+
 - name: Enable lingering # Allows the deploy user to run systemd services without being logged in
   ansible.builtin.command:
     cmd: "loginctl enable-linger {{ deploy_user }}"

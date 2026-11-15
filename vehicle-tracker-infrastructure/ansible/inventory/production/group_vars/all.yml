@@ -1,8 +1,10 @@
 ---
 deploy_user: deploy
+# Public key (not a secret) that GitHub Actions uses to log in as the deploy user
+deploy_ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICrB8C/is3+ymCJNcPdh8h7iRNqMCvgW76cpZpacvW4R github-actions-deploy"
 firewall_tcp_ports: ["80", "443"]
 
 # Secrets come from the environment (GitHub Secrets), never from the repo
-harbor_registry: "{{ lookup('env', 'HARBOR_URL') }}"
+harbor_url: "{{ lookup('env', 'HARBOR_URL') }}"
 harbor_username: "{{ lookup('env', 'HARBOR_USERNAME') }}"
 harbor_password: "{{ lookup('env', 'HARBOR_PASSWORD') }}"

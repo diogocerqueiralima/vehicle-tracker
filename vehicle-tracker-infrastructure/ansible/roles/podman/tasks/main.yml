@@ -6,19 +6,19 @@
 
 - name: Create Harbor CA directory
   ansible.builtin.file:
-    path: "/etc/containers/certs.d/{{ harbor_registry }}"
+    path: "/etc/containers/certs.d/{{ harbor_url }}"
     state: directory
     mode: "0755"
 
 - name: Install Harbor CA
   ansible.builtin.copy:
     src: "ca.crt"
-    dest: "/etc/containers/certs.d/{{ harbor_registry }}/ca.crt"
+    dest: "/etc/containers/certs.d/{{ harbor_url }}/ca.crt"
     mode: "0644"
 
 - name: Log in to Harbor
   containers.podman.podman_login:
-    registry: "{{ harbor_registry }}"
+    registry: "{{ harbor_url }}"
     username: "{{ harbor_username }}"
     password: "{{ harbor_password }}"
   become_user: "{{ deploy_user }}"
