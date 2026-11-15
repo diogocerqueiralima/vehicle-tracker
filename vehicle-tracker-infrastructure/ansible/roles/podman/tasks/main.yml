@@ -1,4 +1,15 @@
 ---
+- name: Check the Harbor variables are set
+  ansible.builtin.assert:
+    that:
+      - harbor_url | length > 0
+      - harbor_username | length > 0
+      - harbor_password | length > 0
+    fail_msg: >-
+      HARBOR_URL, HARBOR_USERNAME and HARBOR_PASSWORD must be set in the environment
+      (hostname without https://, e.g. registry.homelab).
+    quiet: true
+
 - name: Install Podman and compose provider
   ansible.builtin.apt:
     name: [podman, podman-compose]
@@ -16,10 +27,22 @@
     dest: "/etc/containers/certs.d/{{ harbor_url }}/ca.crt"
     mode: "0644"
 
+# By default the rootless login is stored under /run/user/<uid>, a tmpfs lost on reboot.
+# Store it in the deploy user's home instead, where Podman also looks for it.
+- name: Create deploy user Podman config directories
+  ansible.builtin.file:
+    path: "/home/{{ deploy_user }}/{{ item }}"
+    state: directory
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    mode: "0700"
+  loop: [.config, .config/containers]
+
 - name: Log in to Harbor
   containers.podman.podman_login:
     registry: "{{ harbor_url }}"
     username: "{{ harbor_username }}"
     password: "{{ harbor_password }}"
+    authfile: "/home/{{ deploy_user }}/.config/containers/auth.json"
   become_user: "{{ deploy_user }}"
   no_log: true

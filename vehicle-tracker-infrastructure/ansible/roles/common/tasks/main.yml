@@ -21,6 +21,13 @@
     cmd: "loginctl enable-linger {{ deploy_user }}"
     creates: "/var/lib/systemd/linger/{{ deploy_user }}"
 
+- name: Allow SSH from the WireGuard subnet
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    from_ip: "10.10.20.0/24"
+
 - name: Allow firewall ports
   community.general.ufw:
     rule: allow

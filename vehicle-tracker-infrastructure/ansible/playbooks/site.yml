@@ -3,6 +3,7 @@
 # ansible-playbook -i inventory/production/hosts.yml playbooks/site.yml
 - name: Provision VPS
   hosts: all
+  remote_user: root   # only this playbook needs root; deploy.yml runs as deploy
   become: true
   roles:
     - common

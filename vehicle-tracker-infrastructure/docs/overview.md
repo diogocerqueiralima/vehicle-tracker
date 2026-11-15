@@ -139,7 +139,7 @@ The two playbooks connect to the VPS as different users, on purpose.
 - Root's SSH key stays on the maintainer's PC. It is never stored in GitHub.
 - A separate key pair is created for CI. The public key is installed in the `deploy` user's `authorized_keys` by `site.yml`, using the `deploy_ssh_public_key` variable. The private key is the only SSH secret stored in GitHub (`VPS_SSH_KEY`).
 
-Because `deploy` has no `sudo`, the `app` role must not use `become`. CI overrides the connection user for the deploy run (`-e ansible_user=deploy`).
+Because `deploy` has no `sudo`, the `app` role must not use `become`. The inventory does not set `ansible_user`, because an inventory variable would override the play. Instead, each playbook sets its own connection user: `site.yml` uses `remote_user: root` and `deploy.yml` uses `remote_user: deploy`.
 
 ## 4. Podman Compose
 
