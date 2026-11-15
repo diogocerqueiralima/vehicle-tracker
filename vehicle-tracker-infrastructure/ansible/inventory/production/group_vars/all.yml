@@ -1,8 +1,8 @@
 ---
 deploy_user: deploy
-firewall_tcp_ports: ["22", "80", "443"]
+firewall_tcp_ports: ["80", "443"]
 
-harbor_registry: registry.homelab
 # Secrets come from the environment (GitHub Secrets), never from the repo
+harbor_registry: "{{ lookup('env', 'HARBOR_URL') }}"
 harbor_username: "{{ lookup('env', 'HARBOR_USERNAME') }}"
 harbor_password: "{{ lookup('env', 'HARBOR_PASSWORD') }}"
