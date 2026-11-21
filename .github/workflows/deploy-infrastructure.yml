@@ -1,0 +1,63 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'vehicle-tracker-infrastructure/**'
+      - '.github/workflows/deploy-infrastructure.yml'
+  workflow_dispatch:
+
+# One deploy at a time, so two quick merges cannot deploy in parallel
+concurrency:
+  group: deploy-infrastructure
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up WireGuard Connection
+        env:
+          WG_CONFIG_FILE: ${{ secrets.WG_CONFIG_FILE }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq wireguard-tools resolvconf
+          sudo install -d -m 700 /etc/wireguard
+          printf '%s\n' "$WG_CONFIG_FILE" | sudo tee /etc/wireguard/wg0.conf > /dev/null
+          sudo chmod 600 /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
+
+      - name: Load the SSH key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Install Ansible
+        working-directory: vehicle-tracker-infrastructure/ansible
+        run: |
+          python3 -m pip install --quiet ansible-core
+          ansible-galaxy collection install -r requirements.yml
+
+      # The playbook fails if postgres does not become healthy, which fails the job
+      - name: Deploy with Ansible
+        working-directory: vehicle-tracker-infrastructure/ansible
+        env:
+          ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/deploy_key
+          ANSIBLE_HOST_KEY_CHECKING: 'False'
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: ansible-playbook playbooks/deploy.yml
+
+      - name: Remove the SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+      - name: Tear down WireGuard
+        if: always()
+        run: sudo wg-quick down wg0 || true
