@@ -1,0 +1,149 @@
+name: Deploy Infrastructure
+
+on:
+  # Config change: re-render everything and apply it
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'vehicle-tracker-infrastructure/**'
+      - '.github/workflows/deploy-infrastructure.yml'
+  # Backend change: runs only after the images are on Harbor
+  workflow_run:
+    workflows: [ "Backend Build & Push" ]
+    types: [ completed ]
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      services:
+        description: 'Services to deploy, separated by spaces (e.g. "postgres api-gateway"), or "all"'
+        required: false
+        default: 'all'
+
+# One deploy at a time, so two quick merges cannot deploy in parallel
+concurrency:
+  group: deploy-infrastructure
+  cancel-in-progress: false
+
+env:
+  # Services the app role can deploy. Add a service here once it exists in compose.yml.j2,
+  # otherwise a backend change would try to deploy a service that is not defined.
+  DEPLOYABLE_SERVICES: 'postgres'
+  # Backend modules that every service depends on: a change in them redeploys all services
+  SHARED_MODULES: 'api-common error-common events schema gradle'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # A failed backend build must never reach the VPS
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      # workflow_run uses the default branch unless the built commit is checked out
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
+
+      - name: Select the services to deploy
+        id: services
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_SERVICES: ${{ inputs.services }}
+        run: |
+          selected=""
+          case "$EVENT" in
+            workflow_dispatch)
+              if [ "$INPUT_SERVICES" != "all" ]; then
+                selected="$INPUT_SERVICES"
+              fi
+              ;;
+            workflow_run)
+              changed=$(git diff --name-only HEAD^ HEAD -- vehicle-tracker-backend)
+              all_services="api-gateway identity-service asset-service ingestion-service"
+              for module in $SHARED_MODULES settings.gradle.kts gradlew; do
+                if grep -q "^vehicle-tracker-backend/$module\(/\|$\)" <<< "$changed"; then
+                  selected="$all_services"
+                fi
+              done
+              if [ -z "$selected" ]; then
+                for service in $all_services; do
+                  if grep -q "^vehicle-tracker-backend/$service/" <<< "$changed"; then
+                    selected="$selected $service"
+                  fi
+                done
+              fi
+              # Keep only the services the app role knows how to deploy
+              deployable=""
+              for service in $selected; do
+                if [[ " $DEPLOYABLE_SERVICES " == *" $service "* ]]; then
+                  deployable="$deployable $service"
+                fi
+              done
+              selected="$deployable"
+              if [ -z "$selected" ]; then
+                echo "skip=true" >> "$GITHUB_OUTPUT"
+                echo "No deployable service changed, nothing to do."
+              fi
+              ;;
+          esac
+          selected=$(echo $selected)
+          if ! [[ "$selected" =~ ^[a-z0-9-]*( [a-z0-9-]+)*$ ]]; then
+            echo "Invalid service list: $selected" >&2
+            exit 1
+          fi
+          echo "services=$selected" >> "$GITHUB_OUTPUT"
+          if [ "$(grep -c '^skip=true' "$GITHUB_OUTPUT")" -eq 0 ]; then
+            echo "Services to deploy: ${selected:-all}"
+          fi
+
+      - name: Set up WireGuard Connection
+        if: steps.services.outputs.skip != 'true'
+        env:
+          WG_CONFIG_FILE: ${{ secrets.WG_CONFIG_FILE }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq wireguard-tools resolvconf
+          sudo install -d -m 700 /etc/wireguard
+          printf '%s\n' "$WG_CONFIG_FILE" | sudo tee /etc/wireguard/wg0.conf > /dev/null
+          sudo chmod 600 /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
+
+      - name: Load the SSH key
+        if: steps.services.outputs.skip != 'true'
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Install Ansible
+        if: steps.services.outputs.skip != 'true'
+        working-directory: vehicle-tracker-infrastructure/ansible
+        run: |
+          python3 -m pip install --quiet ansible-core
+          ansible-galaxy collection install -r requirements.yml
+
+      # The playbook fails if postgres does not become healthy, which fails the job
+      - name: Deploy with Ansible
+        if: steps.services.outputs.skip != 'true'
+        working-directory: vehicle-tracker-infrastructure/ansible
+        env:
+          ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/deploy_key
+          ANSIBLE_HOST_KEY_CHECKING: 'False'
+          DEPLOY_SERVICES: ${{ steps.services.outputs.services }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: |
+          extra_vars=()
+          if [ -n "$DEPLOY_SERVICES" ]; then
+            extra_vars=(-e "deploy_services=$DEPLOY_SERVICES")
+          fi
+          ansible-playbook playbooks/deploy.yml "${extra_vars[@]}"
+
+      - name: Remove the SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+      - name: Tear down WireGuard
+        if: always()
+        run: sudo wg-quick down wg0 || true
