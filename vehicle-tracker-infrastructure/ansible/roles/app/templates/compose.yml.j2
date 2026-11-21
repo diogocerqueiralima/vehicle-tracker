@@ -17,9 +17,24 @@ services:
       retries: 5
       start_period: 30s
 
+  mosquitto:
+    container_name: "app_mosquitto"
+    image: {{ mosquitto_image }}
+    restart: unless-stopped
+    networks: [backend]
+    volumes:
+      - mosquitto_data:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -t healthcheck -m ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 networks:
   backend:
     driver: bridge
 
 volumes:
   postgres_data:
+  mosquitto_data:

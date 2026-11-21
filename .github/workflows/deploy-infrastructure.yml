@@ -44,7 +44,7 @@ jobs:
           python3 -m pip install --quiet ansible-core
           ansible-galaxy collection install -r requirements.yml
 
-      # The playbook fails if postgres does not become healthy, which fails the job
+      # The playbook fails if a service does not become healthy, which fails the job
       - name: Deploy with Ansible
         working-directory: vehicle-tracker-infrastructure/ansible
         env:
