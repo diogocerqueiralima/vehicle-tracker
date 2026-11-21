@@ -1,0 +1,7 @@
+---
+# Fast deploy: renders the config and updates the services. Runs as the deploy user, no root.
+- name: Deploy services
+  hosts: all
+  remote_user: deploy
+  roles:
+    - app

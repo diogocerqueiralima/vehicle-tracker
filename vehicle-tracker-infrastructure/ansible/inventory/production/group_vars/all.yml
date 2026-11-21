@@ -8,3 +8,13 @@ firewall_tcp_ports: ["80", "443"]
 harbor_url: "{{ lookup('env', 'HARBOR_URL') }}"
 harbor_username: "{{ lookup('env', 'HARBOR_USERNAME') }}"
 harbor_password: "{{ lookup('env', 'HARBOR_PASSWORD') }}"
+
+# Where the app role renders the compose file and the env files (on the VPS)
+app_dir: "/home/{{ deploy_user }}/app"
+
+# Postgres superuser
+postgres_user: "{{ lookup('env', 'POSTGRES_USER') }}"
+postgres_password: "{{ lookup('env', 'POSTGRES_PASSWORD') }}"
+
+# Third-party images are pinned to an exact version, never `latest`
+postgres_image: docker.io/timescale/timescaledb:2.32.1-pg18
