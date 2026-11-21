@@ -7,6 +7,7 @@ The services are described with Podman Compose and deployed with Ansible from Gi
 ## Contents
 
 - [Overview](overview.md): the research and design for automating the infrastructure. It covers the deployment flow, the repository layout, the Podman Compose setup and how the CI/CD workflows deploy only the services that changed.
+- [Certificates](certificates.md): the TLS certificates on the VPS, how Ansible sets their permissions and how the containers use them.
 
 ## Running the playbooks
 

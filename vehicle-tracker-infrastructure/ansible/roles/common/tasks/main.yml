@@ -21,6 +21,14 @@
     cmd: "loginctl enable-linger {{ deploy_user }}"
     creates: "/var/lib/systemd/linger/{{ deploy_user }}"
 
+# The files belong to root. The deploy user needs to read them to mount them into the containers.
+- name: Let the deploy user read the TLS certificate and key
+  ansible.builtin.file:
+    path: "{{ tls_cert_dir }}/{{ item }}"
+    group: "{{ deploy_user }}"
+    mode: "0640"
+  loop: "{{ [tls_cert_file, tls_key_file] }}"
+
 - name: Allow SSH from the WireGuard subnet
   community.general.ufw:
     rule: allow

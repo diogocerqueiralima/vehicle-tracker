@@ -13,7 +13,7 @@
     path: "{{ app_dir }}/{{ item }}"
     state: directory
     mode: "0700"
-  loop: ["", env]
+  loop: ["", env, mosquitto]
 
 - name: Render the postgres env file
   ansible.builtin.template:
@@ -21,6 +21,20 @@
     dest: "{{ app_dir }}/env/postgres.env"
     mode: "0600"
   no_log: true
+
+- name: Check the TLS certificate and key exist
+  ansible.builtin.stat:
+    path: "{{ tls_cert_dir }}/{{ item }}"
+  register: tls_files
+  failed_when: not tls_files.stat.exists
+  loop: "{{ [tls_cert_file, tls_key_file] }}"
+
+# Mode 0644: mosquitto drops to an unprivileged user (a subuid on the host) that must read it.
+- name: Copy the mosquitto config
+  ansible.builtin.copy:
+    src: mosquitto.conf
+    dest: "{{ app_dir }}/mosquitto/mosquitto.conf"
+    mode: "0644"
 
 - name: Render compose.yml
   ansible.builtin.template:
