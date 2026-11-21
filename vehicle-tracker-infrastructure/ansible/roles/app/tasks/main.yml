@@ -13,7 +13,7 @@
     path: "{{ app_dir }}/{{ item }}"
     state: directory
     mode: "0700"
-  loop: ["", env, postgres, postgres/data]
+  loop: ["", env]
 
 - name: Render the postgres env file
   ansible.builtin.template:
