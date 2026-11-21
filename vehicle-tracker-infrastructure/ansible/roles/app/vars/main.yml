@@ -1,0 +1,17 @@
+---
+app_gateway: "{{ services['api-gateway'] }}"
+app_gateway_dependencies: "{{ app_gateway.compose.depends_on.keys() | list }}"
+app_gateway_config_hash: "{{ app_gateway.compose | to_json(sort_keys=true) | hash('sha256') }}"
+app_gateway_image: "{{ app_gateway.compose.image | replace('${API_GATEWAY_TAG}', api_gateway_tag) }}"
+app_gateway_find_command:
+  - podman
+  - ps
+  - --all
+  - --quiet
+  - --no-trunc
+  - --filter
+  - "label=com.docker.compose.project={{ app_project_name }}"
+  - --filter
+  - "label=com.docker.compose.service=api-gateway"
+app_compose_command: [podman, compose, "--project-name", "{{ app_project_name }}", "-f", compose.yml]
+app_state_format: !unsafe '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}} {{.Image}}'

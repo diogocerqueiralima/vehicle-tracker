@@ -1,0 +1,9 @@
+---
+- name: Deploy the production API gateway
+  hosts: all
+  remote_user: "{{ deploy_user }}"
+  gather_facts: false
+  environment:
+    PODMAN_COMPOSE_PROVIDER: podman-compose
+  roles:
+    - app

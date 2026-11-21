@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":api-common"))
     implementation(platform(libs.spring.cloud.dependencies))
     implementation(libs.spring.cloud.gateway.webflux)
+    implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.oauth2.resource.server)
     implementation(libs.kotlin.reflect)
 

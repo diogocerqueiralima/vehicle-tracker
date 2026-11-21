@@ -16,6 +16,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 
 private val log = LoggerFactory.getLogger(SecurityConfig::class.java)
 
+private const val HEALTH_ENDPOINT = "/actuator/health"
 private const val SWAGGER_UI_HTML = "/swagger-ui.html"
 private const val SWAGGER_API_DOCS = "/v3/api-docs/**"
 private const val SWAGGER_UI = "/swagger-ui/**"
@@ -31,7 +32,7 @@ class SecurityConfig {
      * Configures the default security filter chain for the application. Route-scoped rules
      * (see `gateway.routes[].rules` in application.yml) require the given role; every
      * other request under a configured route's prefix just requires authentication, and each
-     * route's swagger endpoints are open.
+     * route's swagger endpoints and the container's GET health probe are open.
      *
      * @param http the [ServerHttpSecurity] object used to configure security settings
      * @param routes the configured downstream services and their authorization rules
@@ -42,6 +43,7 @@ class SecurityConfig {
         http
             .csrf { it.disable() }
             .authorizeExchange { authorize ->
+                authorize.pathMatchers(HttpMethod.GET, HEALTH_ENDPOINT).permitAll()
 
                 routes.routes.forEach { route ->
 

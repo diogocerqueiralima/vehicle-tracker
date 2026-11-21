@@ -7,6 +7,12 @@ spring:
         jwt:
           issuer-uri: ${KEYCLOAK_ISSUER_URI}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
 gateway:
   routes:
     - id: asset-service

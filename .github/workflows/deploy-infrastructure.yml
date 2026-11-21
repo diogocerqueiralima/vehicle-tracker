@@ -1,0 +1,63 @@
+name: Deploy API Gateway
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_gateway_tag:
+        description: Published gateway commit tag (10 lowercase hexadecimal characters)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vehicle-tracker-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ansible and WireGuard
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ansible-core wireguard-tools resolvconf
+      - name: Validate the deploy playbook
+        working-directory: vehicle-tracker-infrastructure/ansible
+        run: ansible-playbook playbooks/deploy.yml --syntax-check
+      - name: Configure SSH and connect to WireGuard
+        env:
+          WG_CONFIG_FILE: ${{ secrets.WG_CONFIG_FILE }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$WG_CONFIG_FILE"
+          test -n "$VPS_SSH_KEY"
+          test -n "$VPS_SSH_KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/vehicle-tracker-deploy
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/vehicle-tracker-known-hosts
+          sudo install -d -m 700 /etc/wireguard
+          printf '%s\n' "$WG_CONFIG_FILE" | sudo install -m 600 /dev/stdin /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
+      - name: Deploy and verify the gateway
+        working-directory: vehicle-tracker-infrastructure/ansible
+        env:
+          API_GATEWAY_TAG: ${{ inputs.api_gateway_tag }}
+          KEYCLOAK_ISSUER_URI: ${{ secrets.KEYCLOAK_ISSUER_URI }}
+          ANSIBLE_HOST_KEY_CHECKING: "True"
+        run: |
+          ansible-playbook playbooks/deploy.yml \
+            --private-key "$HOME/.ssh/vehicle-tracker-deploy" \
+            --ssh-common-args "-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/vehicle-tracker-known-hosts -o GlobalKnownHostsFile=/dev/null -o IdentitiesOnly=yes"
+      - name: Tear down WireGuard
+        if: always()
+        run: |
+          if sudo wg show interfaces | tr ' ' '\n' | grep -qx wg0; then
+            sudo wg-quick down wg0
+          fi

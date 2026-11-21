@@ -1,0 +1,113 @@
+---
+- name: Require a published gateway commit tag
+  ansible.builtin.assert:
+    that: api_gateway_tag is match('^[0-9a-f]{10}$')
+    fail_msg: Set API_GATEWAY_TAG to the 10-character SHA published by the backend build.
+
+- name: Check that the production issuer is a single HTTPS URL
+  ansible.builtin.set_fact:
+    app_issuer_valid: "{{ app_gateway.env.KEYCLOAK_ISSUER_URI is match('^https://[A-Za-z0-9.:-]+/[A-Za-z0-9._~/%-]+\\Z') }}"
+  no_log: true
+
+- name: Require the Keycloak issuer
+  ansible.builtin.assert:
+    that: app_issuer_valid
+    fail_msg: Provide the HTTPS realm URL in the KEYCLOAK_ISSUER_URI secret.
+
+- name: Require production definitions for the gateway dependencies
+  ansible.builtin.assert:
+    that:
+      - item in services
+      - services[item].compose.healthcheck.test | length > 0
+      - "'backend' in services[item].compose.networks"
+    fail_msg: "{{ item }} must be defined with a healthcheck on the backend network before deploying the gateway."
+  loop: "{{ app_gateway_dependencies }}"
+
+- name: Check the Podman Compose provider version
+  ansible.builtin.command:
+    argv: [podman-compose, version]
+  register: app_provider_version
+  changed_when: false
+  check_mode: false
+
+- name: Require a provider that honors gateway-only updates
+  ansible.builtin.assert:
+    that:
+      - app_compose_version is not none
+      - app_compose_version is version('1.5.0', '>=')
+    fail_msg: Install podman-compose 1.5.0 or newer before deploying against the shared project.
+  vars:
+    app_compose_version: "{{ app_provider_version.stdout | regex_search('(?m)(?<=podman-compose version )[0-9]+[.][0-9]+[.][0-9]+') }}"
+
+- name: Find the running upstream containers in the shared project
+  ansible.builtin.command:
+    argv:
+      - podman
+      - ps
+      - --quiet
+      - --no-trunc
+      - --filter
+      - "label=com.docker.compose.project={{ app_project_name }}"
+      - --filter
+      - "label=com.docker.compose.service={{ item }}"
+  loop: "{{ app_gateway_dependencies }}"
+  register: app_upstreams
+  changed_when: false
+  check_mode: false
+  failed_when: app_upstreams.rc != 0 or app_upstreams.stdout_lines | length == 0
+
+- name: Require each upstream container to be healthy on the shared network
+  ansible.builtin.command:
+    argv: "{{ ['podman', 'inspect', '--type', 'container', '--format', app_upstream_state_format] + item.stdout_lines }}"
+    expand_argument_vars: false
+  vars:
+    app_upstream_state_format: !unsafe '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}} {{range $name, $network := .NetworkSettings.Networks}}{{$name}} {{end}}'
+  loop: "{{ app_upstreams.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  register: app_upstream_state
+  changed_when: false
+  check_mode: false
+  failed_when: >-
+    app_upstream_state.rc != 0 or
+    (app_upstream_state.stdout_lines | reject('search', '^running healthy (?:[^ ]+ )*' ~
+    (app_project_name | regex_escape) ~ '_backend(?: |$)') | list | length > 0)
+
+- name: Create private project directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0700"
+  loop:
+    - "{{ app_project_dir }}"
+    - "{{ app_project_dir }}/env"
+
+- name: Pin the gateway image in the project environment
+  ansible.builtin.lineinfile:
+    path: "{{ app_project_dir }}/.env"
+    regexp: '^API_GATEWAY_TAG='
+    line: "API_GATEWAY_TAG={{ api_gateway_tag }}"
+    create: true
+    mode: "0600"
+  diff: false
+  no_log: true
+
+- name: Render the gateway environment
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ app_project_dir }}/env/api-gateway.env"
+    mode: "0600"
+  diff: false
+  no_log: true
+
+- name: Render the shared Compose project
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ app_project_dir }}/compose.yml"
+    mode: "0600"
+  diff: false
+  no_log: true
+
+- name: Apply and verify the gateway deployment
+  ansible.builtin.include_tasks: deploy-gateway.yml
+  when: not ansible_check_mode

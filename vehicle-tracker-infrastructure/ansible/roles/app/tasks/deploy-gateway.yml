@@ -1,0 +1,99 @@
+---
+- name: Validate the rendered Compose project
+  ansible.builtin.command:
+    argv: "{{ app_compose_command + ['config'] }}"
+    chdir: "{{ app_project_dir }}"
+  register: app_compose_config
+  failed_when: false
+  changed_when: false
+  no_log: true
+
+- name: Require a valid Compose project
+  ansible.builtin.assert:
+    that: app_compose_config.rc | default(1) == 0
+    fail_msg: The Compose provider rejected the rendered project. Check its service definitions and environment files.
+
+- name: Check whether the pinned gateway image is cached
+  ansible.builtin.command:
+    argv: [podman, image, exists, "{{ app_gateway_image }}"]
+  register: app_cached_image
+  changed_when: false
+  failed_when: app_cached_image.rc not in [0, 1]
+
+- name: Pull the pinned gateway image when it is absent
+  ansible.builtin.command:
+    argv: [podman, pull, "{{ app_gateway_image }}"]
+  when: app_cached_image.rc == 1
+  changed_when: true
+
+- name: Resolve the pinned gateway image ID
+  ansible.builtin.command:
+    argv: [podman, image, inspect, "--format", !unsafe '{{.Id}}', "{{ app_gateway_image }}"]
+  register: app_gateway_image_id
+  changed_when: false
+
+- name: Find the existing gateway container
+  ansible.builtin.command:
+    argv: "{{ app_gateway_find_command }}"
+  register: app_gateway_existing
+  changed_when: false
+  failed_when: app_gateway_existing.rc != 0 or app_gateway_existing.stdout_lines | length > 1
+
+- name: Check the current gateway image, definition and environment
+  when: app_gateway_existing.stdout_lines | length == 1
+  no_log: true
+  block:
+    - name: Inspect the existing gateway
+      ansible.builtin.command:
+        argv: [podman, inspect, "--type", container, "{{ app_gateway_existing.stdout }}"]
+      register: app_gateway_inspect
+      changed_when: false
+
+    - name: Identify a stale gateway
+      ansible.builtin.set_fact:
+        app_gateway_stale: >-
+          {{ (app_current_gateway.Image | regex_replace('^sha256:', '')) !=
+             (app_gateway_image_id.stdout | regex_replace('^sha256:', '')) or
+             (app_current_gateway.Config.Labels['vehicle-tracker.gateway.config-hash'] | default('')) != app_gateway_config_hash or
+             (app_expected_env | difference(app_current_gateway.Config.Env) | length > 0) }}
+        app_gateway_running: "{{ app_current_gateway.State.Running }}"
+      vars:
+        app_current_gateway: "{{ (app_gateway_inspect.stdout | from_json)[0] }}"
+        app_expected_env: "{{ lookup('template', 'env.j2').splitlines() }}"
+
+- name: Remove the outdated gateway container by ID
+  ansible.builtin.command:
+    argv: [podman, rm, "--force", "{{ app_gateway_existing.stdout }}"]
+  when: app_gateway_stale | default(false)
+  changed_when: true
+
+# 1. The upstream preflight enforces service_healthy for this gateway-only deployment.
+- name: Bring up the gateway without updating other services
+  ansible.builtin.command:
+    argv: "{{ app_compose_command + ['up', '-d', '--no-deps', '--no-recreate', '--no-build', 'api-gateway'] }}"
+    chdir: "{{ app_project_dir }}"
+  when: app_gateway_stale | default(false) or not (app_gateway_running | default(false))
+  changed_when: true
+
+- name: Locate the gateway container for verification
+  ansible.builtin.command:
+    argv: "{{ app_gateway_find_command }}"
+  register: app_gateway_deployed
+  changed_when: false
+  failed_when: app_gateway_deployed.rc != 0 or app_gateway_deployed.stdout_lines | length != 1
+
+- name: Wait up to five minutes for the pinned gateway to become healthy
+  ansible.builtin.command:
+    argv: [podman, inspect, "--type", container, "--format", "{{ app_state_format }}", "{{ app_gateway_deployed.stdout }}"]
+  register: app_gateway_state
+  changed_when: false
+  until: >-
+    app_gateway_state.rc == 0 and app_gateway_state.stdout is match('^running healthy ') and
+    (app_gateway_state.stdout.split()[-1] | regex_replace('^sha256:', '')) ==
+    (app_gateway_image_id.stdout | regex_replace('^sha256:', ''))
+  retries: 30
+  delay: 10
+
+- name: Report the deployed gateway
+  ansible.builtin.debug:
+    msg: "api-gateway {{ api_gateway_tag }} {{ app_gateway_state.stdout }}"

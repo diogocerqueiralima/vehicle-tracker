@@ -8,3 +8,27 @@ firewall_tcp_ports: ["80", "443"]
 harbor_url: "{{ lookup('env', 'HARBOR_URL') }}"
 harbor_username: "{{ lookup('env', 'HARBOR_USERNAME') }}"
 harbor_password: "{{ lookup('env', 'HARBOR_PASSWORD') }}"
+
+services:
+  api-gateway:
+    compose:
+      image: "registry.homelab/vehicle-tracker/api-gateway:${API_GATEWAY_TAG}"
+      restart: unless-stopped
+      env_file: [./env/api-gateway.env]
+      networks: [backend]
+      expose: ["8080"]
+      healthcheck:
+        test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8080/actuator/health"]
+        interval: 30s
+        timeout: 5s
+        retries: 3
+        start_period: 60s
+      depends_on:
+        asset-service:
+          condition: service_healthy
+        identity-service:
+          condition: service_healthy
+    env:
+      ASSET_SERVICE_URI: "http://asset-service:8080"
+      IDENTITY_SERVICE_URI: "http://identity-service:8080"
+      KEYCLOAK_ISSUER_URI: "{{ lookup('env', 'KEYCLOAK_ISSUER_URI') }}"

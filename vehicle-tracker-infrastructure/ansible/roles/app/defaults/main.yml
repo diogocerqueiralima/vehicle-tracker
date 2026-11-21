@@ -1,0 +1,5 @@
+---
+app_project_name: vehicle-tracker
+app_project_dir: "/home/{{ deploy_user }}/{{ app_project_name }}"
+app_volumes: {}
+api_gateway_tag: "{{ lookup('env', 'API_GATEWAY_TAG') }}"

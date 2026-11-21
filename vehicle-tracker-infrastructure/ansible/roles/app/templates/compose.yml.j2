@@ -1,0 +1,15 @@
+services:
+{% for name, service in services.items() %}
+{% set definition = service.compose %}
+{% if name == 'api-gateway' %}
+{% set definition = definition | combine({'labels': {'vehicle-tracker.gateway.config-hash': app_gateway_config_hash}}, recursive=true) %}
+{% endif %}
+  {{ name }}:
+{{ definition | to_nice_yaml(indent=2) | indent(4, true) }}
+{% endfor %}
+networks:
+  backend: {}
+{% if app_volumes %}
+volumes:
+{{ app_volumes | to_nice_yaml(indent=2) | indent(2, true) }}
+{% endif %}
