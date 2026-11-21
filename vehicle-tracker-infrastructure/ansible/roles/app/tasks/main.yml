@@ -29,16 +29,22 @@
     mode: "0600"
   register: compose_file
 
+# `podman compose` delegates to an external provider. Without this it can pick Docker's compose
+# plugin, which needs a Docker API socket that rootless Podman does not provide.
 - name: Pull the images
   ansible.builtin.command: podman compose -f compose.yml pull {{ deploy_services | default('postgres') }}
   args:
     chdir: "{{ app_dir }}"
+  environment:
+    PODMAN_COMPOSE_PROVIDER: podman-compose
   changed_when: false
 
 - name: Start the services
   ansible.builtin.command: podman compose -f compose.yml up -d{{ ' --force-recreate' if compose_file.changed else '' }} {{ deploy_services | default('postgres') }}
   args:
     chdir: "{{ app_dir }}"
+  environment:
+    PODMAN_COMPOSE_PROVIDER: podman-compose
   changed_when: false
 
 - name: Wait for postgres to be healthy
