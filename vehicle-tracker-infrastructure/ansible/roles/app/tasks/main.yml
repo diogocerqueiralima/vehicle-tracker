@@ -40,17 +40,25 @@
   changed_when: false
 
 - name: Start the services
-  ansible.builtin.command: podman compose -f compose.yml up -d{{ ' --force-recreate' if compose_file.changed else '' }} {{ deploy_services | default('postgres') }}
+  ansible.builtin.command: podman compose -f compose.yml up -d
   args:
     chdir: "{{ app_dir }}"
   environment:
     PODMAN_COMPOSE_PROVIDER: podman-compose
   changed_when: false
 
-- name: Wait for postgres to be healthy
-  ansible.builtin.command: podman inspect --format '{% raw %}{{.State.Health.Status}}{% endraw %}' app_postgres_1
-  register: postgres_health
-  until: postgres_health.stdout == 'healthy'
+# Every container of the compose project (name: app) must define a healthcheck and become healthy
+- name: Wait for all services to be healthy
+  ansible.builtin.shell: |
+    ids=$(podman ps -aq --filter label=io.podman.compose.project=app)
+    [ -n "$ids" ] || exit 1
+    podman inspect --format '{% raw %}{{.Name}} {{.State.Health.Status}}{% endraw %}' $ids
+  args:
+    executable: /bin/bash
+  register: services_health
+  until: >-
+    services_health.rc == 0 and
+    (services_health.stdout_lines | reject('match', '^\S+ healthy$') | list | length == 0)
   retries: 20
   delay: 5
   changed_when: false
