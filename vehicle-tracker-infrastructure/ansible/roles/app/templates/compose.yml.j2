@@ -1,0 +1,25 @@
+# Rendered by Ansible. Do not edit by hand.
+name: app
+
+services:
+  postgres:   # TimescaleDB
+    container_name: "app_postgres"
+    image: {{ postgres_image }}
+    restart: unless-stopped # If the container exits, restart it unless it was stopped manually.
+    env_file: ./env/postgres.env
+    networks: [backend]
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  postgres_data:

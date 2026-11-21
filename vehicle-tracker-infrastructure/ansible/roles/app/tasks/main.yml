@@ -1,0 +1,50 @@
+---
+# Runs as the deploy user (rootless Podman): no become.
+- name: Check the secrets are set
+  ansible.builtin.assert:
+    that:
+      - postgres_user | length > 0
+      - postgres_password | length > 0
+    fail_msg: POSTGRES_USER and POSTGRES_PASSWORD must be set in the environment.
+    quiet: true
+
+- name: Create app directories
+  ansible.builtin.file:
+    path: "{{ app_dir }}/{{ item }}"
+    state: directory
+    mode: "0700"
+  loop: ["", env, postgres, postgres/data]
+
+- name: Render the postgres env file
+  ansible.builtin.template:
+    src: postgres.env.j2
+    dest: "{{ app_dir }}/env/postgres.env"
+    mode: "0600"
+  no_log: true
+
+- name: Render compose.yml
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ app_dir }}/compose.yml"
+    mode: "0600"
+  register: compose_file
+
+- name: Pull the images
+  ansible.builtin.command: podman compose -f compose.yml pull {{ deploy_services | default('postgres') }}
+  args:
+    chdir: "{{ app_dir }}"
+  changed_when: false
+
+- name: Start the services
+  ansible.builtin.command: podman compose -f compose.yml up -d{{ ' --force-recreate' if compose_file.changed else '' }} {{ deploy_services | default('postgres') }}
+  args:
+    chdir: "{{ app_dir }}"
+  changed_when: false
+
+- name: Wait for postgres to be healthy
+  ansible.builtin.command: podman inspect --format '{% raw %}{{.State.Health.Status}}{% endraw %}' app_postgres_1
+  register: postgres_health
+  until: postgres_health.stdout == 'healthy'
+  retries: 20
+  delay: 5
+  changed_when: false
