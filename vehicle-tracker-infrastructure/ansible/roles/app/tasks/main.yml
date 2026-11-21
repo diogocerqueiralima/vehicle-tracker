@@ -32,7 +32,7 @@
 # `podman compose` delegates to an external provider. Without this it can pick Docker's compose
 # plugin, which needs a Docker API socket that rootless Podman does not provide.
 - name: Pull the images
-  ansible.builtin.command: podman compose -f compose.yml pull {{ deploy_services | default('postgres') }}
+  ansible.builtin.command: podman compose -f compose.yml pull
   args:
     chdir: "{{ app_dir }}"
   environment:
