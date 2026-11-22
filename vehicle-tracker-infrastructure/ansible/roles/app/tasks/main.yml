@@ -29,12 +29,13 @@
   failed_when: not tls_files.stat.exists
   loop: "{{ [tls_cert_file, tls_key_file, identity_ca_cert_file] }}"
 
-# Mode 0644: mosquitto drops to an unprivileged user (a subuid on the host) that must read it.
-- name: Copy the mosquitto config
+# Mode 0644: mosquitto drops to an unprivileged user (a subuid on the host) that must read them.
+- name: Copy the mosquitto config and ACL
   ansible.builtin.copy:
-    src: mosquitto.conf
-    dest: "{{ app_dir }}/mosquitto/mosquitto.conf"
+    src: "{{ item }}"
+    dest: "{{ app_dir }}/mosquitto/{{ item }}"
     mode: "0644"
+  loop: [mosquitto.conf, mosquitto.acl]
 
 - name: Render compose.yml
   ansible.builtin.template:
