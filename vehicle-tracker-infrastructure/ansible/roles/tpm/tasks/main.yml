@@ -1,0 +1,198 @@
+---
+# Gives the deploy user access to the TPM and creates, with tpm2-pkcs11, the PKCS#11 token and the
+# signing key used by the identity-service. The key is generated inside the TPM: the store only
+# holds a blob wrapped by the TPM, so no plaintext private key is ever written to the host.
+- name: Check the TPM secrets are set
+  ansible.builtin.assert:
+    that:
+      - tpm_so_pin | length > 0
+      - tpm_user_pin | length > 0
+    fail_msg: TPM_SO_PIN and TPM_USER_PIN must be set in the environment.
+    quiet: true
+
+# tpm2_ptool (libtpm2-pkcs11-tools) depends on tpm2-tools, which it calls. The PKCS#11 library
+# (libtpm2-pkcs11-1) and the OpenSSL PKCS#11 provider are used to create the certificate with the key.
+- name: Install tpm2_ptool, the PKCS#11 library and the OpenSSL PKCS#11 provider
+  ansible.builtin.apt:
+    name: [libtpm2-pkcs11-tools, libtpm2-pkcs11-1, pkcs11-provider, openssl]
+    state: present
+    update_cache: true
+
+# /dev/tpmrm0 is owned by tss:tss (0660), so deploy needs the tss group to use it
+- name: Add deploy user to the tss group
+  ansible.builtin.user:
+    name: "{{ deploy_user }}"
+    groups: tss
+    append: true
+
+- name: Check the TPM resource manager device exists
+  ansible.builtin.stat:
+    path: /dev/tpmrm0
+  register: tpm_device
+
+- name: Fail if the host has no TPM
+  ansible.builtin.assert:
+    that: tpm_device.stat.exists
+    fail_msg: "/dev/tpmrm0 not found. The VPS needs a physical or virtual TPM 2.0."
+    quiet: true
+
+- name: Create the tpm2-pkcs11 store directory
+  ansible.builtin.file:
+    path: "{{ tpm_store_dir }}"
+    state: directory
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    mode: "0700"
+
+# Everything below runs as deploy, the user that runs the identity-service, so the store is owned by it.
+- name: Configure the tpm2-pkcs11 store and key
+  become_user: "{{ deploy_user }}"
+  environment:
+    TPM2_PKCS11_STORE: "{{ tpm_store_dir }}"
+  block:
+    - name: List the primary objects of the store
+      ansible.builtin.command: tpm2_ptool listprimaries
+      register: tpm_primaries
+      changed_when: false
+
+    - name: Initialize the store (creates the primary object, id 1)
+      ansible.builtin.command: tpm2_ptool init
+      when: "'id: 1' not in tpm_primaries.stdout"
+
+    - name: List the tokens of the store
+      ansible.builtin.command: tpm2_ptool listtokens --pid=1
+      register: tpm_tokens
+      changed_when: false
+
+    - name: Create the token
+      ansible.builtin.command: >-
+        tpm2_ptool addtoken --pid=1 --label={{ tpm_token_label }}
+        --sopin={{ tpm_so_pin | quote }} --userpin={{ tpm_user_pin | quote }}
+      when: "('label: ' ~ tpm_token_label) not in tpm_tokens.stdout"
+      no_log: true
+
+    - name: List the objects of the token
+      ansible.builtin.command: "tpm2_ptool listobjects --label={{ tpm_token_label }}"
+      register: tpm_objects
+      changed_when: false
+
+    - name: Generate the ECDSA P-256 key inside the TPM
+      ansible.builtin.command: >-
+        tpm2_ptool addkey --label={{ tpm_token_label }} --userpin={{ tpm_user_pin | quote }}
+        --algorithm=ecc256 --key-label={{ tpm_key_label }}
+      when: "('CKA_LABEL: ' ~ tpm_key_label) not in tpm_objects.stdout"
+      no_log: true
+
+# ---- Certificate -------------------------------------------------------------------------------
+# The self-signed CA certificate is signed by the TPM key through the OpenSSL PKCS#11 provider.
+# It is added to the token (the identity-service reads it from the keystore) and exported to the host.
+- name: Find the tpm2-pkcs11 library
+  ansible.builtin.shell: dpkg -L libtpm2-pkcs11-1 | grep -m1 '/libtpm2_pkcs11\.so$'
+  args:
+    executable: /bin/bash
+  register: tpm_pkcs11_lib
+  changed_when: false
+
+- name: Check if the certificate was already exported
+  ansible.builtin.stat:
+    path: "{{ tls_cert_dir }}/identity-service.crt"
+  register: tpm_cert_file
+
+- name: Create the certificate directory
+  ansible.builtin.file:
+    path: "{{ tls_cert_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create the certificate, add it to the token and export it
+  when: not tpm_cert_file.stat.exists
+  block:
+    - name: List the objects of the token
+      ansible.builtin.command: "tpm2_ptool listobjects --label={{ tpm_token_label }}"
+      become_user: "{{ deploy_user }}"
+      environment:
+        TPM2_PKCS11_STORE: "{{ tpm_store_dir }}"
+      register: tpm_token_objects
+      changed_when: false
+
+    # A certificate already in the token without the exported file would end up duplicated
+    - name: Fail if the token already has a certificate
+      ansible.builtin.assert:
+        that: "'CERTIFICATE' not in tpm_token_objects.stdout"
+        fail_msg: >-
+          The token already holds a certificate but {{ tls_cert_dir }}/identity-service.crt is missing.
+          Remove the certificate from the token (tpm2_ptool objdel) or restore the file.
+        quiet: true
+
+    - name: Create a temporary working directory
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: tpm-cert-
+      become_user: "{{ deploy_user }}"
+      register: tpm_workdir
+
+    # The PIN reaches OpenSSL through a file in the private temporary directory (pin-source=<path>),
+    # never on the command line. The directory is always removed at the end.
+    - name: Write the PIN file
+      ansible.builtin.copy:
+        content: "{{ tpm_user_pin }}"
+        dest: "{{ tpm_workdir.path }}/pin"
+        owner: "{{ deploy_user }}"
+        mode: "0600"
+      no_log: true
+
+    - name: Create the self-signed CA certificate with the TPM key
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - req
+          - -x509
+          - -new
+          - -provider
+          - default
+          - -provider
+          - pkcs11
+          - -sha256
+          - -days
+          - "{{ tpm_ca_validity_days }}"
+          - -subj
+          - "{{ tpm_ca_subject }}"
+          - -addext
+          - basicConstraints=critical,CA:TRUE
+          - -addext
+          - keyUsage=critical,keyCertSign,cRLSign
+          - -key
+          - "pkcs11:token={{ tpm_token_label }};object={{ tpm_key_label }};type=private?pin-source={{ tpm_workdir.path }}/pin"
+          - -out
+          - "{{ tpm_workdir.path }}/identity-service.crt"
+      become_user: "{{ deploy_user }}"
+      environment:
+        TPM2_PKCS11_STORE: "{{ tpm_store_dir }}"
+        PKCS11_PROVIDER_MODULE: "{{ tpm_pkcs11_lib.stdout }}"
+
+    - name: Add the certificate to the token
+      ansible.builtin.command: >-
+        tpm2_ptool addcert --label={{ tpm_token_label }} --key-label={{ tpm_key_label }}
+        {{ tpm_workdir.path }}/identity-service.crt
+      become_user: "{{ deploy_user }}"
+      environment:
+        TPM2_PKCS11_STORE: "{{ tpm_store_dir }}"
+
+    # Public certificate only: the private key never leaves the TPM
+    - name: Export the certificate to the host
+      ansible.builtin.copy:
+        src: "{{ tpm_workdir.path }}/identity-service.crt"
+        dest: "{{ tls_cert_dir }}/identity-service.crt"
+        remote_src: true
+        owner: root
+        group: "{{ deploy_user }}"
+        mode: "0644"
+
+  always:
+    - name: Remove the temporary working directory
+      ansible.builtin.file:
+        path: "{{ tpm_workdir.path }}"
+        state: absent
+      when: tpm_workdir is defined and tpm_workdir.path is defined
