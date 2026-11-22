@@ -26,6 +26,7 @@ services:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - {{ tls_cert_dir }}/{{ tls_cert_file }}:/mosquitto/certs/tracker.crt:ro
       - {{ tls_cert_dir }}/{{ tls_key_file }}:/mosquitto/certs/tracker.key:ro
+      - {{ tls_cert_dir }}/{{ identity_ca_cert_file }}:/mosquitto/certs/identity-service.crt:ro
       - mosquitto_data:/mosquitto/data
     healthcheck:
       test: ["CMD-SHELL", "mosquitto_pub -h localhost -t healthcheck -m ok"]

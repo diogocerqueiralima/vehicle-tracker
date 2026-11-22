@@ -16,11 +16,6 @@ app_dir: "/home/{{ deploy_user }}/app"
 postgres_user: "{{ lookup('env', 'POSTGRES_USER') }}"
 postgres_password: "{{ lookup('env', 'POSTGRES_PASSWORD') }}"
 
-# TLS certificate of the VPS: directory on the host and the file names inside it
-tls_cert_dir: /etc/tracker/certs
-tls_cert_file: tracker.crt
-tls_key_file: tracker.key
-
 # Third-party images are pinned to an exact version, never `latest`
 postgres_image: docker.io/timescale/timescaledb:2.32.1-pg18
 mosquitto_image: docker.io/library/eclipse-mosquitto:2.0.23
@@ -34,7 +29,12 @@ tpm_key_label: identity-service-ca-key
 tls_cert_dir: /etc/tracker/certs
 tpm_ca_subject: "/CN=Vehicle Tracker Identity Service CA"
 tpm_ca_validity_days: 3650
+identity_ca_cert_file: identity-service.crt
 
-# PINs come from the environment (GitHub Secrets), never from the repo
+# TLS certificate and key that the app uses to serve HTTPS/MQTTS.
+tls_cert_file: tracker.crt
+tls_key_file: tracker.key
+
+# PINs come from the environment, never from the repo
 tpm_so_pin: "{{ lookup('env', 'TPM_SO_PIN') }}"
 tpm_user_pin: "{{ lookup('env', 'TPM_USER_PIN') }}"
