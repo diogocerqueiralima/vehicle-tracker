@@ -1,0 +1,4 @@
+# Access control for the mTLS listener (8883). %u is the username, which is the CN of the device
+# certificate (use_identity_as_username), so a device can only publish in its own topic.
+# Anything not listed here is denied, including all reads.
+pattern write devices/%u/locations

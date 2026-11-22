@@ -13,7 +13,7 @@
     path: "{{ app_dir }}/{{ item }}"
     state: directory
     mode: "0700"
-  loop: ["", env, postgres, postgres/data]
+  loop: ["", env, mosquitto]
 
 - name: Render the postgres env file
   ansible.builtin.template:
@@ -21,6 +21,21 @@
     dest: "{{ app_dir }}/env/postgres.env"
     mode: "0600"
   no_log: true
+
+- name: Check the TLS certificate, key and Identity Service CA exist
+  ansible.builtin.stat:
+    path: "{{ tls_cert_dir }}/{{ item }}"
+  register: tls_files
+  failed_when: not tls_files.stat.exists
+  loop: "{{ [tls_cert_file, tls_key_file, identity_ca_cert_file] }}"
+
+# Mode 0600: the mosquitto container runs as the deploy user (userns_mode: keep-id in compose.yml).
+- name: Copy the mosquitto config and ACL
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ app_dir }}/mosquitto/{{ item }}"
+    mode: "0600"
+  loop: [mosquitto.conf, mosquitto.acl]
 
 - name: Render compose.yml
   ansible.builtin.template:

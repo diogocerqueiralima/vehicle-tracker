@@ -6,7 +6,9 @@ The services are described with Podman Compose and deployed with Ansible from Gi
 
 ## Contents
 
-- [Overview](overview.md): the research and design for automating the infrastructure. It covers the deployment flow, the repository layout, the Podman Compose setup and how the CI/CD workflows deploy only the services that changed.
+- [Overview](docs/overview.md): the research and design for automating the infrastructure. It covers the deployment flow, the repository layout, the Podman Compose setup and how the CI/CD workflows deploy only the services that changed.
+- [Certificates](docs/certificates.md): the TLS certificates on the VPS, how Ansible sets their permissions and how the containers use them.
+- [TPM](docs/tpm.md): what a TPM is, why the Identity Service CA key lives in one and how the `tpm` Ansible role sets it up.
 
 ## Running the playbooks
 

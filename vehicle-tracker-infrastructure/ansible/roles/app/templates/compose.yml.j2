@@ -17,9 +17,30 @@ services:
       retries: 5
       start_period: 30s
 
+  mosquitto:
+    container_name: "app_mosquitto"
+    image: {{ mosquitto_image }}
+    restart: unless-stopped
+    userns_mode: keep-id # keep the same uid inside the container
+    networks: [backend]
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/mosquitto.acl:/mosquitto/config/mosquitto.acl:ro
+      - {{ tls_cert_dir }}/{{ tls_cert_file }}:/mosquitto/certs/tracker.crt:ro
+      - {{ tls_cert_dir }}/{{ tls_key_file }}:/mosquitto/certs/tracker.key:ro
+      - {{ tls_cert_dir }}/{{ identity_ca_cert_file }}:/mosquitto/certs/identity-service.crt:ro
+      - mosquitto_data:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -t healthcheck -m ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 networks:
   backend:
     driver: bridge
 
 volumes:
   postgres_data:
+  mosquitto_data:
