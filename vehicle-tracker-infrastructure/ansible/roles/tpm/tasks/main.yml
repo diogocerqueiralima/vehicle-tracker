@@ -1,0 +1,26 @@
+---
+# Installs the TPM tools and gives the deploy user access to the TPM.
+# Key and certificate creation are added in later tasks.
+- name: Install TPM tools
+  ansible.builtin.apt:
+    name: [tpm2-tools, tpm2-openssl, openssl]
+    state: present
+    update_cache: true
+
+# /dev/tpmrm0 is owned by tss:tss (0660), so deploy needs the tss group to use it
+- name: Add deploy user to the tss group
+  ansible.builtin.user:
+    name: "{{ deploy_user }}"
+    groups: tss
+    append: true
+
+- name: Check the TPM resource manager device exists
+  ansible.builtin.stat:
+    path: /dev/tpmrm0
+  register: tpm_device
+
+- name: Fail if the host has no TPM
+  ansible.builtin.assert:
+    that: tpm_device.stat.exists
+    fail_msg: "/dev/tpmrm0 not found. The VPS needs a physical or virtual TPM 2.0."
+    quiet: true
