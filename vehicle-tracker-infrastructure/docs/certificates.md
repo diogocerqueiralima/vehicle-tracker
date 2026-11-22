@@ -56,7 +56,7 @@ Inside the `mosquitto` container the files are always mounted at the same paths,
 - `use_identity_as_username true`: the CN of the device certificate becomes the MQTT username, so no password file is needed.
 - `allow_anonymous false`: connections without an identity are refused.
 
-Mosquitto reads them at startup, as root of the container. With rootless Podman that is the `deploy` user on the host, which is why the `deploy` user must be able to read the key. The Identity Service CA is public, so it is exported by the `tpm` role with mode `0644`.
+Mosquitto reads them at startup. The `mosquitto` container runs with `userns_mode: keep-id` and as the uid of the `deploy` user, so the process has the same identity inside and outside the container and does not drop to an unprivileged subuid. This is why the `deploy` user must be able to read the key (`0640`, group `deploy`), and why the Mosquitto config and ACL can be private to the `deploy` user (`0600`). The Identity Service CA is public, so it is exported by the `tpm` role with mode `0644`.
 
 ## Homelab Root CA
 

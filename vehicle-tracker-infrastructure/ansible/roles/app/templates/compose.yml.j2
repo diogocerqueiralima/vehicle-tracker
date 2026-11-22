@@ -21,6 +21,7 @@ services:
     container_name: "app_mosquitto"
     image: {{ mosquitto_image }}
     restart: unless-stopped
+    userns_mode: keep-id # keep the same uid inside the container
     networks: [backend]
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro

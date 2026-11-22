@@ -29,12 +29,12 @@
   failed_when: not tls_files.stat.exists
   loop: "{{ [tls_cert_file, tls_key_file, identity_ca_cert_file] }}"
 
-# Mode 0644: mosquitto drops to an unprivileged user (a subuid on the host) that must read them.
+# Mode 0600: the mosquitto container runs as the deploy user (userns_mode: keep-id in compose.yml).
 - name: Copy the mosquitto config and ACL
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ app_dir }}/mosquitto/{{ item }}"
-    mode: "0644"
+    mode: "0600"
   loop: [mosquitto.conf, mosquitto.acl]
 
 - name: Render compose.yml
