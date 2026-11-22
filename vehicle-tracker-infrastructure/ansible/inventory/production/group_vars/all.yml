@@ -18,3 +18,12 @@ postgres_password: "{{ lookup('env', 'POSTGRES_PASSWORD') }}"
 
 # Third-party images are pinned to an exact version, never `latest`
 postgres_image: docker.io/timescale/timescaledb:2.32.1-pg18
+
+# tpm2-pkcs11: where the store lives (on the VPS), and the token and key labels the service uses
+tpm_store_dir: "/home/{{ deploy_user }}/.tpm2_pkcs11"
+tpm_token_label: IDENTITY_SERVICE_CA
+tpm_key_label: identity-service-ca-key
+
+# PINs come from the environment (GitHub Secrets), never from the repo
+tpm_so_pin: "{{ lookup('env', 'TPM_SO_PIN') }}"
+tpm_user_pin: "{{ lookup('env', 'TPM_USER_PIN') }}"
