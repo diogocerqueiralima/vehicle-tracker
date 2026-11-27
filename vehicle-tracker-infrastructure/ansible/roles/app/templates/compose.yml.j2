@@ -1,6 +1,10 @@
 # Rendered by Ansible. Do not edit by hand.
 name: app
 
+# No pod: podman-compose creates one by default, and Podman rejects `userns_mode` (--userns) inside a pod.
+x-podman:
+  in_pod: false
+
 services:
   postgres:   # TimescaleDB
     container_name: "app_postgres"
@@ -32,6 +36,27 @@ services:
       - mosquitto_data:/mosquitto/data
     healthcheck:
       test: ["CMD-SHELL", "mosquitto_pub -h localhost -t healthcheck -m ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nginx:
+    container_name: "app_nginx"
+    image: {{ nginx_image }}
+    restart: unless-stopped
+    networks: [backend]
+    ports:
+      - "8883:8883"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/mqtt.conf:/etc/nginx/conf.d/mqtt.conf:ro
+      - ./nginx/healthcheck.conf:/etc/nginx/conf.d/healthcheck.conf:ro
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 5
