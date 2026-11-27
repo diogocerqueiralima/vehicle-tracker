@@ -19,6 +19,7 @@ postgres_password: "{{ lookup('env', 'POSTGRES_PASSWORD') }}"
 # Third-party images are pinned to an exact version, never `latest`
 postgres_image: docker.io/timescale/timescaledb:2.32.1-pg18
 mosquitto_image: docker.io/library/eclipse-mosquitto:2.0.23
+nginx_image: docker.io/library/nginx:1.31.10
 
 # tpm2-pkcs11: where the store lives (on the VPS), and the token and key labels the service uses
 tpm_store_dir: "/home/{{ deploy_user }}/.tpm2_pkcs11"

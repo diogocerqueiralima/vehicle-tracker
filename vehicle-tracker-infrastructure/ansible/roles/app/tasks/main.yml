@@ -13,7 +13,7 @@
     path: "{{ app_dir }}/{{ item }}"
     state: directory
     mode: "0700"
-  loop: ["", env, mosquitto]
+  loop: ["", env, mosquitto, nginx]
 
 - name: Render the postgres env file
   ansible.builtin.template:
@@ -32,10 +32,31 @@
 # Mode 0600: the mosquitto container runs as the deploy user (userns_mode: keep-id in compose.yml).
 - name: Copy the mosquitto config and ACL
   ansible.builtin.copy:
-    src: "{{ item }}"
+    src: "mqtt/{{ item }}"
     dest: "{{ app_dir }}/mosquitto/{{ item }}"
     mode: "0600"
   loop: [mosquitto.conf, mosquitto.acl]
+
+- name: Copy the main nginx config
+  ansible.builtin.copy:
+    src: nginx/nginx.conf
+    dest: "{{ app_dir }}/nginx/nginx.conf"
+    mode: "0600"
+  register: nginx_main_config
+
+- name: Copy the nginx MQTT config
+  ansible.builtin.copy:
+    src: nginx/mqtt/mqtt.conf
+    dest: "{{ app_dir }}/nginx/mqtt.conf"
+    mode: "0600"
+  register: nginx_mqtt_config
+
+- name: Copy the nginx healthcheck config
+  ansible.builtin.copy:
+    src: nginx/healthcheck/healthcheck.conf
+    dest: "{{ app_dir }}/nginx/healthcheck.conf"
+    mode: "0600"
+  register: nginx_healthcheck_config
 
 - name: Render compose.yml
   ansible.builtin.template:
@@ -62,18 +83,29 @@
     PODMAN_COMPOSE_PROVIDER: podman-compose
   changed_when: false
 
-# Every container of the compose project (name: app) must define a healthcheck and become healthy
+# Fails if a container does not exist. `timeout` stops the wait if one never becomes healthy.
+# The names come from the compose template, so a new service is checked automatically.
+# Every service must define `container_name` and a healthcheck.
 - name: Wait for all services to be healthy
-  ansible.builtin.shell: |
-    ids=$(podman ps -aq --filter label=io.podman.compose.project=app)
-    [ -n "$ids" ] || exit 1
-    podman inspect --format '{% raw %}{{.Name}} {{.State.Health.Status}}{% endraw %}' $ids
-  args:
-    executable: /bin/bash
-  register: services_health
-  until: >-
-    services_health.rc == 0 and
-    (services_health.stdout_lines | reject('match', '^\S+ healthy$') | list | length == 0)
-  retries: 20
-  delay: 5
+  ansible.builtin.command:
+    argv: >-
+      {{ ['timeout', '120', 'podman', 'wait', '--condition=healthy']
+         + ((lookup('ansible.builtin.template', 'compose.yml.j2') | from_yaml).services.values()
+            | map(attribute='container_name') | list) }}
+  changed_when: false
+
+# A config change does not recreate the container. A reload is not enough either: Ansible replaces the
+# file, and a single-file bind mount keeps pointing to the old one until the container restarts.
+- name: Restart nginx
+  ansible.builtin.command: podman restart app_nginx
+  when: nginx_main_config.changed or nginx_mqtt_config.changed or nginx_healthcheck_config.changed
+  changed_when: true
+
+# nginx resolves the upstream names only when it loads the config. A reload picks up the new address
+# of a recreated container and keeps the open connections on the old workers until they close.
+# Skipped after a restart, which already resolves the names again. It does not depend on compose.yml
+# changing: a deploy that failed earlier may have left nginx with an old address.
+- name: Reload nginx
+  ansible.builtin.command: podman exec app_nginx nginx -s reload
+  when: not (nginx_main_config.changed or nginx_mqtt_config.changed or nginx_healthcheck_config.changed)
   changed_when: false
