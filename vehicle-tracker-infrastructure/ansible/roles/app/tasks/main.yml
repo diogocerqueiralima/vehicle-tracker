@@ -84,11 +84,14 @@
   changed_when: false
 
 # Fails if a container does not exist. `timeout` stops the wait if one never becomes healthy.
-# A new service in compose.yml must be added to this list.
+# The names come from the compose template, so a new service is checked automatically.
+# Every service must define `container_name` and a healthcheck.
 - name: Wait for all services to be healthy
-  ansible.builtin.command: >-
-    timeout 120 podman wait --condition=healthy
-    app_postgres app_mosquitto app_nginx
+  ansible.builtin.command:
+    argv: >-
+      {{ ['timeout', '120', 'podman', 'wait', '--condition=healthy']
+         + ((lookup('ansible.builtin.template', 'compose.yml.j2') | from_yaml).services.values()
+            | map(attribute='container_name') | list) }}
   changed_when: false
 
 # A config change does not recreate the container. A reload is not enough either: Ansible replaces the
@@ -100,6 +103,9 @@
 
 # nginx resolves the upstream names only when it loads the config. A reload picks up the new address
 # of a recreated container and keeps the open connections on the old workers until they close.
+# Skipped after a restart, which already resolves the names again. It does not depend on compose.yml
+# changing: a deploy that failed earlier may have left nginx with an old address.
 - name: Reload nginx
   ansible.builtin.command: podman exec app_nginx nginx -s reload
+  when: not (nginx_main_config.changed or nginx_mqtt_config.changed or nginx_healthcheck_config.changed)
   changed_when: false
